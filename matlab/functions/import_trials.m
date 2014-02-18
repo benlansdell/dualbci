@@ -1,5 +1,5 @@
 function trials = import_trials(fn)
-        %plotsol       Imports all trials from a .mat file output from LabVIEW as a list of structures.
+        %import_trials  Imports all trials from a .mat file output from LabVIEW as a list of structures.
 	%		By default will not import all raw recording data, or torque data.
 	%		Use import_torque, import_spikes, and import_raw to append those data to these structures
         %

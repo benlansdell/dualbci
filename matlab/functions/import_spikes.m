@@ -1,5 +1,5 @@
 function trial = import_spikes(trial)
-        %plotsol       Imports all trials from a .mat file output from LabVIEW as a list of structures.
+        %import_spikes       Imports spike information from .nev file corresponding to trial loaded from import_trials
         %
         % Usage:
         %                       import_spikes(trial)
@@ -16,7 +16,7 @@ function trial = import_spikes(trial)
         %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%			trial = import_spikes(trials(117));
 
-	openNEV(['./data/' trial.nevfile]);
+	NEV=openNEV(['./data/' trial.nevfile]);
 
 	nevsamplerate = NEV.MetaTags.TimeRes;
 	%Find all spikes that occur within the 1/60s timebin
@@ -28,7 +28,7 @@ function trial = import_spikes(trial)
 	trial.nevspikes = zeros(nE, nT);
 	for i=1:length(spiketimes)
 		if (spiketimes(i) > trial.starttime) & (spiketimes(i) < trial.endtime)
-			T = (spiketimes-trial.starttime)*labviewsamplerate;
+			T = floor((spiketimes(i)-trial.starttime)*labviewsamplerate)
 			E = NEV.Data.Spikes.Electrode(i);
 			trial.nevspikes(E,T) = trial.nevspikes(E,T) + 1;
 		end
