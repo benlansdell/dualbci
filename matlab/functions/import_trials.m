@@ -42,14 +42,15 @@ function trials = import_trials(fn)
 		trial.errors = data.stateHist.error(withintrial,:);		
 		trial.velocity = data.stateHist.velocity(withintrial,:);
 		trial.times = data.stateHist.time(withintrial);
-		
-		trial.spikes = data.stateHist.spikes(withintrial); 
-		trial.rates = data.stateHist.rates(withintrial);
+		trial.spikes = data.stateHist.spikes(withintrial,:); 
+		trial.torque = trial.spikes(:,5:7);
+		trial.spikes = trial.spikes(:,1:4);
+		trial.rates = data.stateHist.rates(withintrial,:);
 
-		%determine the nev, nsx file to look in. extract electrodes, raw data
-		%for each nev file in data.nev, check if the duration and offset mean that it contains the data we want
 		trial.nevfile = '';
+		trial.ns3file = '';
 		trial.electrodes = [];
+		trial.type = '';
 		for j = 1:length(data.nev)
 			nevdur = data.nev(j).DurationSec;
 			nevoffset = data.nev(j).Toffset(1)/60;
@@ -57,6 +58,7 @@ function trials = import_trials(fn)
 				trial.nevfile = data.nev(j).nevfile;
 				trial.ns3file = [trial.nevfile(1:end-3) 'ns3'];
 				trial.electrodes = data.nev(j).chans;
+				trial.type = data.nev(j).map;
 			end
 		end
 		trials = [trials trial];
