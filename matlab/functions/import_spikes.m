@@ -23,13 +23,13 @@ function trial = import_spikes(trial)
 	labviewsamplerate = 60;
 	nE = length(NEV.MetaTags.ChannelID);
 	
-	spiketimes = NEV.Data.Spikes.TimeStamp/nevsamplerate + trial.offset;
+	spiketimes = single(NEV.Data.Spikes.TimeStamp)/nevsamplerate + trial.offset;
 	nT = floor(trial.duration*labviewsamplerate)+1;
 	trial.nevspikes = zeros(nE, nT);
 	for i=1:length(spiketimes)
 		if (spiketimes(i) > trial.starttime) & (spiketimes(i) < trial.endtime)
-			T = floor((spiketimes(i)-trial.starttime)*labviewsamplerate)
-			E = NEV.Data.Spikes.Electrode(i);
+			T = floor((spiketimes(i)-trial.starttime)*labviewsamplerate)+1;
+			E = NEV.Data.Spikes.Electrode(i)
 			trial.nevspikes(E,T) = trial.nevspikes(E,T) + 1;
 		end
 	end
