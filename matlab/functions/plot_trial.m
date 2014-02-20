@@ -25,7 +25,7 @@ function plot_trial(trial, fn)
 	nsubplots=3;
 	%Plot animation of trial at 60Hz
         frames = 1:length(trial.cursor);
-        %frames = 1:10;
+        frames = 1:10;
 	framen = 1;
         for i=frames
         	clf(fig);
@@ -39,13 +39,14 @@ function plot_trial(trial, fn)
         	ylabel('y');
 		%xlim([-0.5 0.5]); ylim([-0.5 0.5]);
 		xlim([-1 1]); ylim([-1 1]);
-		title(['time = ' num2str(trial.times(i))]);
+		title(['Trial. time = ' num2str(trial.times(i))]);
 		legend('Cursor', 'Target', 'Start')
 		%Plot torque data
 		subplot(1,nsubplots, 2);
 		plot3(trial.torque(1:i,1), trial.torque(1:i,2), trial.torque(1:i,3))
 		xlim([min(trial.torque(:,1)) max(trial.torque(:,1))]); ylim([min(trial.torque(:,2)) max(trial.torque(:,2))]); zlim([min(trial.torque(:,3)) max(trial.torque(:,3))]);
-		xlabel('x'); ylabel('y'); zlabel('z');
+		xlabel('torque axes 1'); ylabel('torque axes 2'); zlabel('torque axes 3');
+		title('Torque data')
 
 		%Plot electrode data
 		subplot(1,nsubplots, 3)
@@ -53,7 +54,8 @@ function plot_trial(trial, fn)
 		maxrate4 = max(trial.rates(:,4));
 		scatter3(trial.rates(1:i,1), trial.rates(1:i,2), trial.rates(1:i,3), [], cm(floor(100*trial.rates(1:i,4)/maxrate4),:));
 		xlim([min(trial.rates(:,1)) max(trial.rates(:,1))]); ylim([min(trial.rates(:,2)) max(trial.rates(:,2))]); zlim([min(trial.rates(:,3)) max(trial.rates(:,3))]);
-		xlabel('x'); ylabel('y'); zlabel('z');
+		xlabel('electrode 1'); ylabel('electrode 2'); zlabel('electrode 3');
+		title('Electrode firing rates')
 
 		%Write file to temp png
 	        plotmult(gcf, [fn '_tmp.png'], nsubplots, 'png', [6 4]);
