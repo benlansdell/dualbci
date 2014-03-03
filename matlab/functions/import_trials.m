@@ -29,11 +29,13 @@ function trials = import_trials(fn)
 
 	trials = [];
 	for i=1:n_trials
-		trial.starttime = data.trials.time(i);
+		trial.duration = data.trials.duration(i);
+		trial.duration = data.trials.duration(i);
+		trial.endtime = data.trials.time(i);
+		trial.starttime = trial.endtime-trial.duration;
 		trial.success = data.trials.success(i);
 		trial.valid = data.trials.valid(i);
 		trial.duration = data.trials.duration(i);
-		trial.endtime = trial.starttime+trial.duration;
 		trial.cursorstart = data.trials.startPos(i,:);
 		trial.target = data.trials.targetPos(i,:);
 	
