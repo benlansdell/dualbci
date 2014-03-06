@@ -1,4 +1,9 @@
-addpath('./data', './functions');
+global metaData matpath nevpath
+matpath = '/home/lansdell/projects/bci/matlab/labview';
+nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
+metaData = '/home/lansdell/projects/bci/matlab/labview';
+
+addpath('./functions', './LogProcess');
 addpath_recurse('./worksheets');
 
 % Change default axes fonts.

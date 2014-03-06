@@ -1,4 +1,4 @@
-function trial_out = import_spikes(trial_in)
+function trial_out = import_spikes(trial_in, timebin)
         %import_spikes       Imports spike information from .nev file corresponding to trial loaded from import_trials
         %
         % Usage:
@@ -6,6 +6,7 @@ function trial_out = import_spikes(trial_in)
         %
         % Input:
         %                       trial_in = trial structure from import_trials
+	%			timebin = (optional, default=100ms) size of timebin over which to compute firing rates
 	%
 	% Output:
 	%			trial_out = trial structure from import_trials with nevspikes appended:
@@ -42,4 +43,9 @@ function trial_out = import_spikes(trial_in)
 	for i = 1:nE
 		trial.nevrates(i,:) = smooth(trial.nevspikes(i,:), span);
 	end
+
+	%Compute firing rate from spikes
+	%trial_in.nevrates = trial_	
+
+	trial_out = trial_in;
 end
