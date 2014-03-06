@@ -74,4 +74,6 @@ function plot_spikes(trial, fn)
         end
 	%Save to file
 	imwrite(im, map, [fn], 'gif', 'DelayTime', 0, 'LoopCount', inf);
+	%Delete tmp file if it exists
+	delete([fn '_tmp.png']);
 end

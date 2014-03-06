@@ -59,4 +59,6 @@ function plot_electrodes(trial, fn)
         end
 	%Save to file
 	imwrite(im, map, [fn], 'gif', 'DelayTime', 0, 'LoopCount', inf);
+	%Remove tmp file if it exists
+	delete([fn '_tmp.png']);
 end

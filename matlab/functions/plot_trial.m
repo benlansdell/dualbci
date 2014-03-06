@@ -70,4 +70,6 @@ function plot_trial(trial, fn)
         end
 	%Save to file
 	imwrite(im, map, [fn], 'gif', 'DelayTime', 0, 'LoopCount', inf);
+	%Delete file if it exists
+	delete([fn '_tmp.png']);
 end
