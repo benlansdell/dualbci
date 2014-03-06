@@ -16,11 +16,16 @@ function trial = import_spikes(trial)
         %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%			trial = import_spikes(trials(117));
 
-	NEV=openNEV(['./data/' trial.nevfile]);
+	if length(trial.nevfile) > 0
+		NEV=openNEV(['./data/' trial.nevfile]);
+	else
+		return;
+	end
 
 	nevsamplerate = NEV.MetaTags.TimeRes;
 	%Find all spikes that occur within the 1/60s timebin
 	labviewsamplerate = 60;
+	span = 5;
 	nE = length(NEV.MetaTags.ChannelID);
 	
 	spiketimes = single(NEV.Data.Spikes.TimeStamp)/nevsamplerate + trial.offset;
@@ -32,5 +37,10 @@ function trial = import_spikes(trial)
 			E = NEV.Data.Spikes.Electrode(i)
 			trial.nevspikes(E,T) = trial.nevspikes(E,T) + 1;
 		end
+	end
+
+	%Compute a smoothed firing rate for each channel
+	for i = 1:nE
+		trial.nevrates(i,:) = smooth(trial.nevspikes(i,:), span);
 	end
 end
