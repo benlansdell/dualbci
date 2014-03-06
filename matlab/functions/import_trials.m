@@ -56,7 +56,7 @@ function trials = import_trials(fn)
 		trial.offset = 0;
 		for j = 1:length(data.nev)
 			nevdur = data.nev(j).DurationSec;
-			nevoffset = data.nev(j).Toffset(1)/60;
+			nevoffset = single(data.nev(j).Toffset(1))/60;
 			if (trial.starttime > nevoffset) & (trial.starttime < (nevoffset + nevdur))
 				trial.offset = nevoffset;
 				trial.nevfile = data.nev(j).nevfile;

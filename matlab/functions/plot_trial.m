@@ -1,6 +1,5 @@
 function plot_trial(trial, fn)
-        %plot_trial       Plot the specified solution components as a heatmap for all times specified. Output to gif file
-        %              named specified. Use subplot to display multiple solution components at once.
+        %plot_trial       Plot trial information: cursor position, recorded torque and BCI-electrode firing rates
         %
         % Usage:
         %                       plot_trial(trial,fn)
@@ -52,7 +51,7 @@ function plot_trial(trial, fn)
 		subplot(1,nsubplots, 3)
 		cm = hsv(100);
 		maxrate4 = max(trial.rates(:,4));
-		scatter3(trial.rates(1:i,1), trial.rates(1:i,2), trial.rates(1:i,3), [], cm(floor(100*trial.rates(1:i,4)/maxrate4),:));
+		scatter3(trial.rates(1:i,1), trial.rates(1:i,2), trial.rates(1:i,3), [], cm(floor(100*trial.rates(1:i,4)/maxrate4),:), '.');
 		xlim([min(trial.rates(:,1)) max(trial.rates(:,1))]); ylim([min(trial.rates(:,2)) max(trial.rates(:,2))]); zlim([min(trial.rates(:,3)) max(trial.rates(:,3))]);
 		xlabel('electrode 1'); ylabel('electrode 2'); zlabel('electrode 3');
 		title('Electrode firing rates')
