@@ -5,6 +5,8 @@ metaData = '/home/lansdell/projects/bci/matlab/labview';
 
 addpath('./functions', './LogProcess', './NPMK', './testdata/');
 addpath_recurse('./worksheets');
+%Add extra code
+
 
 % Change default axes fonts.
 set(0,'DefaultAxesFontName', 'Arial')
