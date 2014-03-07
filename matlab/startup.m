@@ -3,7 +3,7 @@ matpath = '/home/lansdell/projects/bci/matlab/labview';
 nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
 metaData = '/home/lansdell/projects/bci/matlab/labview';
 
-addpath('./functions', './LogProcess', './NPMK');
+addpath('./functions', './LogProcess', './NPMK', './testdata/');
 addpath_recurse('./worksheets');
 
 % Change default axes fonts.
