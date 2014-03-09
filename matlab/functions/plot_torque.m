@@ -9,7 +9,7 @@ function plot_torque(trial, fn)
         %                       fn = output file name for plot
         %
         % Examples:
-        %                       fn = './worksheets/diagnostics/torque_plot.eps';
+        %                       fn = './worksheets/diagnostics/plots/torque_plot.eps';
         %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%			plot_torque(trials(117), fn);
 
@@ -27,7 +27,7 @@ function plot_torque(trial, fn)
 	%Plot torque between labview and ns3 file
 	plot(trial.times, trial.ns3data(138,:), trial.times, trial.ns3data(139,:));
 	xlabel('time (s)');
-	saveplot(gcf, [fn '.ns3');
+	saveplot(gcf, [fn '.ns3']);
 	plot(trial.times, trial.torque(:,1), trial.times, trial.torque(:,2));
 	xlabel('time (s)')
 	saveplot(gcf, [fn '.labview']);
