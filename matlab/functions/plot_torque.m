@@ -24,12 +24,14 @@ function plot_torque(trial, fn)
 		trial = import_raw(trial);
 	end
 
+	%Plot torque between labview and ns3 file
 	plot(trial.times, trial.ns3data(138,:), trial.times, trial.ns3data(139,:));
 	xlabel('time (s)');
-	saveplot(gcf, fn);
-	%figure
+	saveplot(gcf, [fn '.ns3');
 	plot(trial.times, trial.torque(:,1), trial.times, trial.torque(:,2));
 	xlabel('time (s)')
-	saveplot(gcf, [fn '2']);
-
+	saveplot(gcf, [fn '.labview']);
+	plot(trial.times, trial.cursor(:,1), trial.times, trial.cursor(:,2));
+	xlabel('time (s)')
+	saveplot(gcf, [fn '.cursor']);
 end
