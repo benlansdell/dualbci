@@ -1,66 +1,34 @@
-function trials = import_trials(fn)
-        %plotsol       Imports all trials from a .mat file output from LabVIEW as a list of structures.
-	%		By default will not import all raw recording data, or torque data.
-	%		Use import_torque, import_spikes, and import_raw to append those data to these structures
+function t_out = import_raw(t_in)
+        %import_raw       Import raw extra-cellular recording data from ns3 file. Includes Blackrock electrode data, and torque data
         %
         % Usage:
-        %                       import_trials(fn)
+        %                       t_out = import_raw(t_in)
         %
         % Input:
-        %                       fn = input LabVIEW output filename
+        %                       t_in = a trial structure produced by import_trials().
 	%
 	% Output:
-	%			trials = list of structures containing the following fields:
-	%				starttime, endtime
-	%				cursorpos, error
-	%				cursorstart, target
-	%				success, valid
-	%				electrodes, spikes
-	%				nev_files, nsx_files
+	%			t_out = trial structure with channel data sampled at labview rate
         %
         % Examples:
         %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
+	%			t = trials(117);
+	%			t = import_raw(t);
+        if length(t_in.ns3file) > 0
+                NS3=openNSx(t_in.ns3file, 'read');
+        else
+                return;
+        end
 
-	load(fn);
-	n_trials = length(data.trials.time)
+        ns3samplerate = NS3.MetaTags.SamplingFreq;
+        labviewsamplerate = 60;
 
-	%Debug
-	%n_trials = 1;
-
-	trials = [];
-	for i=1:n_trials
-		trial.starttime = data.trials.time(i);
-		trial.success = data.trials.success(i);
-		trial.valid = data.trials.valid(i);
-		trial.duration = data.trials.duration(i);
-		trial.endtime = trial.starttime+trial.duration;
-		trial.cursorstart = data.trials.startPos(i,:);
-		trial.target = data.trials.targetPos(i,:);
-	
-		withintrial = (data.stateHist.time < trial.endtime) & (data.stateHist.time > trial.starttime);
-		trial.cursor = data.stateHist.cursor(withintrial,:);		
-		trial.errors = data.stateHist.error(withintrial,:);		
-		trial.velocity = data.stateHist.velocity(withintrial,:);
-		trial.times = data.stateHist.time(withintrial);
-		trial.spikes = data.stateHist.spikes(withintrial,:); 
-		trial.torque = trial.spikes(:,5:7);
-		trial.spikes = trial.spikes(:,1:4);
-		trial.rates = data.stateHist.rates(withintrial,:);
-
-		trial.nevfile = '';
-		trial.ns3file = '';
-		trial.electrodes = [];
-		trial.type = '';
-		for j = 1:length(data.nev)
-			nevdur = data.nev(j).DurationSec;
-			nevoffset = data.nev(j).Toffset(1)/60;
-			if (trial.starttime > nevoffset) & (trial.starttime < (nevoffset + nevdur))
-				trial.nevfile = data.nev(j).nevfile;
-				trial.ns3file = [trial.nevfile(1:end-3) 'ns3'];
-				trial.electrodes = data.nev(j).chans;
-				trial.type = data.nev(j).map;
-			end
-		end
-		trials = [trials trial];
-	end
+	t_in.ns3data = resample(double(NS3.Data'), labviewsamplerate, ns3samplerate)';
+	%Only find data within trial span
+	s = size(t_in.ns3data);
+	nsamples = s(2);
+	times = t_in.offset + (0:(nsamples-1))/labviewsamplerate;
+	withintrial = (times > t_in.starttime) & (times < t_in.endtime);
+	t_in.ns3data = t_in.ns3data(:,withintrial);
+        t_out = t_in;
 end
