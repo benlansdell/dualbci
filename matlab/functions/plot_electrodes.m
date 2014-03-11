@@ -1,5 +1,5 @@
 function plot_electrodes(trial, fn)
-        %plot_electrodes       Plot electrode activity as a heatmap for all times specified. Output to gif file
+        %plot_electrodes       Plot electrode firing rate activity as a heatmap for all times specified. Output to gif file
         %              named specified.
         %
         % Usage:

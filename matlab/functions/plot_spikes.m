@@ -28,8 +28,7 @@ function plot_spikes(trial, fn)
 		trial = import_spikes(trial);
 	end
 
-	nsubplots=3;
-	nsubplots=1;
+	nsubplots=2;
 	%Plot animation of trial at 60Hz
         frames = 1:length(trial.cursor);
 	%Test run
@@ -38,27 +37,27 @@ function plot_spikes(trial, fn)
 
 	%Reshape to square array for plotting
 	shape = size(trial.nevspikes);
+	bcimap = zeros(144,1);
+	bcimap(floor(trial.electrodes)) = 1;
+	bcimap = reshape(bcimap, 12, 12);
 	spikes = reshape(trial.nevspikes, 12, 12, shape(2));
 	zaxis = [min(min(trial.nevspikes)), max(max(trial.nevspikes))];
 
         for i=frames
         	clf(fig);
-        	%subplot(1,nsubplots,1);
+        	subplot(1,nsubplots,1);
 		%Highlight BCI electrodes, other electrode info
+		image(bcimap, 'CDataMapping', 'scaled');
+		title('Electrodes used for BCI');
 
 		%Plot spikes, not smoothed
-		subplot(1,nsubplots, 1);
-		pcolor(spikes(:,:,i));
+		subplot(1,nsubplots, 2);
+		image(spikes(:,:,i), 'CDataMapping', 'scaled');
 		caxis(zaxis);
 		set(gca,'Zlim',zaxis,'Ztick',zaxis, 'NextPlot', 'replacechildren');
 		colorbar;
 		xlabel('Electrode'); zlabel('MUA spike count');
 		title(['MUA spike data. time=' num2str(trial.times(i))])
-
-		%Plot firing rate
-		%subplot(1,nsubplots, 3)
-		%xlabel('electrode 1'); ylabel('electrode 2'); zlabel('electrode 3');
-		%title('Electrode firing rates')
 
 		%Write file to temp png
 	        plotmult(gcf, [fn '_tmp.png'], nsubplots, 'png', [6 4]);
