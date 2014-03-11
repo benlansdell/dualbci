@@ -17,8 +17,9 @@ function trial_out = import_spikes(trial_in, timebin)
         %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%			trial = import_spikes(trials(117));
 
-	if length(trial.nevfile) > 0
-		NEV=openNEV(['./data/' trial.nevfile]);
+	if length(trial_in.nevfile) > 0
+		trial_in.nevfile
+		NEV=openNEV(['./blackrock/' trial_in.nevfile]);
 	else
 		return;
 	end
@@ -41,7 +42,7 @@ function trial_out = import_spikes(trial_in, timebin)
 	end
 	%Compute a smoothed firing rate for each channel
 	for i = 1:nE
-		trial.nevrates(i,:) = smooth(trial.nevspikes(i,:), span);
+		trial_in.nevrates(i,:) = smooth(trial_in.nevspikes(i,:), span);
 	end
 
 	%Compute firing rate from spikes

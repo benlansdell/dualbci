@@ -10,9 +10,8 @@ function plot_electrodes(trial, fn)
         %                       fn = output file name for plot
         %
         % Examples:
-        %                       %plot voltage and A fields
-        %                       fn = './test_electrodes_plot.gif';
-        %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
+        %                       fn = './tmp/test_electrodes_plot.gif';
+        %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
 	%			plot_electrodes(trials(117), fn);
 
         close all;
@@ -34,8 +33,7 @@ function plot_electrodes(trial, fn)
         for i=frames
         	clf(fig);
         	sol=reshape(trial.nevrates(1:96,i),8,12);
-        	pcolor(sol);
-        	%shading interp;
+		image(sol, 'CDataMapping', 'scaled');
         	caxis(zaxis);
         	set(gca,'Zlim',zaxis,'Ztick',zaxis, 'NextPlot', 'replacechildren');
         	xlabel(['time = ' num2str(trial.times(i))]);
