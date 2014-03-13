@@ -50,12 +50,18 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out)
 		%Place the spikes into bins
 	        spiketimes = single(NEV.Data.Spikes.TimeStamp)/nevsamplerate;
         	nT = ceil(duration/binsize);
-        	nevspikes = zeros(nE, nT);
+        	binnedspikes = zeros(nE, nT);
         	for i=1:length(spiketimes)
                 	T = ceil(spiketimes(i)/binsize);
                         E = NEV.Data.Spikes.Electrode(i);
-                        nevspikes(E,T) = nevspikes(E,T) + 1;
+                        binnedspikes(E,T) = binnedspikes(E,T) + 1;
         	end
+	
+		%Or, place in small bins and smooth with a low-pass filter so we can less zero-values
+
+		%Or, just use a sliding window moving average approach
+		windowSize = 5;
+		binnedspikes = filter(ones(1,windowSize)/windowSize,1,binnedspikes);
 		
 		%Load torque data from NS3 file
 		NS3 = openNSx(ns3file, 'read', 'c:138:139');
@@ -67,7 +73,7 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out)
 		%Concatenate to previously loaded files
 		totaltime = totaltime + duration;
 		torques = [torques, torque];
-		spikes = [spikes, nevspikes];
+		spikes = [spikes, binnedspikes];
 	end
 
 	%For each electrode
@@ -75,11 +81,13 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out)
 		%Compute correlation for each electrode
 		corr4(idx, 1) = corr(subplus(torques(1,:)'), spikes(idx,:)');
 		corr4(idx, 2) = corr(-subplus(-torques(1,:)'), spikes(idx,:)');
+		%corr4(idx, 1) = corr(torques(1,:)', spikes(idx,:)');
+		%corr4(idx, 2) = corr(torques(2,:)', spikes(idx,:)');
 		corr4(idx, 3) = corr(subplus(torques(2,:)'), spikes(idx,:)');
 		corr4(idx, 4) = corr(-subplus(-torques(2,:)'), spikes(idx,:)');
 	
 		%If filename provided, plot density estimates of distributions
-		if exist('fn_out', 'var')
+		if (length(fn_out) > 0)
 			plot(subplus(torques(1,:)), spikes(idx,:), '.');
 			title(['correlation = ' num2str(corr4(idx,1))]);
 			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque1+.eps']);

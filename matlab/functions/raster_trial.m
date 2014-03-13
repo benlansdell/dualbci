@@ -18,7 +18,7 @@ function raster_trial(trial, fn)
             throw(MException('Argin:MoreExpected', 'More input arguments expected'));
     end
 
-    if ~isfield(trial, 'nevspikes')
+    if ~isfield(trial, 'binnedspikes')
 	trial = import_spikes(trial);
     end
 

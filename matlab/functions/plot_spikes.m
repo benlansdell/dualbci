@@ -24,7 +24,7 @@ function plot_spikes(trial, fn)
         end
 
 	%Load spike info, if not already present
-	if ~isfield(trial, 'nevspikes')
+	if ~isfield(trial, 'binnedspikes')
 		trial = import_spikes(trial);
 	end
 
@@ -36,12 +36,12 @@ function plot_spikes(trial, fn)
 	framen = 1;
 
 	%Reshape to square array for plotting
-	shape = size(trial.nevspikes);
+	shape = size(trial.binnedspikes);
 	bcimap = zeros(144,1);
 	bcimap(floor(trial.electrodes)) = 1;
 	bcimap = reshape(bcimap, 12, 12);
-	spikes = reshape(trial.nevspikes, 12, 12, shape(2));
-	zaxis = [min(min(trial.nevspikes)), max(max(trial.nevspikes))];
+	spikes = reshape(trial.binnedspikes, 12, 12, shape(2));
+	zaxis = [min(min(trial.binnedspikes)), max(max(trial.binnedspikes))];
 
         for i=frames
         	clf(fig);
