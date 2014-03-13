@@ -5,7 +5,7 @@ metaData = '/home/lansdell/projects/bci/matlab/labview';
 
 addpath('./functions', './LogProcess', './NPMK', './testdata/');
 addpath_recurse('./worksheets');
-addpath_recurse('~/matlab/chronux_2_10');
+addpath_recurse('~/matlab/chronux');
 %Add extra code
 
 
