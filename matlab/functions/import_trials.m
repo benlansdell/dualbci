@@ -22,7 +22,7 @@ function trials = import_trials(fn)
         %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
 
 	load(fn);
-	n_trials = length(data.trials.time)
+	n_trials = length(data.trials.time);
 
 	%Debug
 	%n_trials = 1;
