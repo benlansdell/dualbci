@@ -38,6 +38,7 @@ function trials = import_trials(fn)
 		trial.duration = data.trials.duration(i);
 		trial.cursorstart = data.trials.startPos(i,:);
 		trial.target = data.trials.targetPos(i,:);
+		trial.samplerate = data.sampleRate;
 	
 		withintrial = (data.stateHist.time < trial.endtime) & (data.stateHist.time > trial.starttime);
 		trial.cursor = data.stateHist.cursor(withintrial,:);		
