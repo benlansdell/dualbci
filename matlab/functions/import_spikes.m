@@ -50,6 +50,7 @@ function trial_out = import_spikes(trial_in)
 
 	%Bin spikes and estimate the firing rate
 	trial_in.binnedspikes = binspikes(trial_in.spikemuas, labviewsamplerate, [trial_in.starttime, trial_in.endtime]);
-	trial_in = chr_rates(trial_in);
+	%trial_in = chr_rates(trial_in);
+	trial_in = gauss_rates(trial_in);
 	trial_out = trial_in;
 end

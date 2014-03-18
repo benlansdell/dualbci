@@ -1,8 +1,8 @@
-function plot_electrodes_nev(nev, fn)
-        %plot_electrodes_nev       Plot total number of spikes for each electrode as a heatmap for given nev file. Output to eps file
+function plot_total_spikes_nev(nev, fn)
+        %plot_total_spikes_nev       Plot total number of spikes for each electrode as a heatmap for given nev file. Output to eps file
         %
         % Usage:
-        %                       plot_electrodes_nev(nev,fn)
+        %                       plot_total_spikes_nev(nev,fn)
         %
         % Input:
         %                       nev = input nev file
@@ -11,7 +11,7 @@ function plot_electrodes_nev(nev, fn)
         % Examples:
         %                       fn = './tmp/test_electrodes_plot.eps';
         %                       nev = './testdata/20130117SpankyUtah005.nev';
-	%			plot_electrodes_nev(nev, fn);
+	%			plot_total_spikes_nev(nev, fn);
         close all;
 	%fig = figure('visible', 'off');
 	fig = figure;

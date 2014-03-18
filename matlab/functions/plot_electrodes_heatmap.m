@@ -1,9 +1,9 @@
-function plot_electrodes(trial, fn)
-        %plot_electrodes       Plot electrode firing rate activity as a heatmap for all times specified. Output to gif file
+function plot_electrodes_heatmap(trial, fn)
+        %plot_electrodes_heatmap       Plot electrode firing rate activity as a heatmap for all times specified. Output to gif file
         %              named specified.
         %
         % Usage:
-        %                       plot_electrodes(trial,fn)
+        %                       plot_electrodes_heatmap(trial,fn)
         %
         % Input:
         %                       trial = a trial structure from import_trials
@@ -12,7 +12,7 @@ function plot_electrodes(trial, fn)
         % Examples:
         %                       fn = './tmp/test_electrodes_plot.gif';
         %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
-	%			plot_electrodes(trials(117), fn);
+	%			plot_electrodes_heatmap(trials(117), fn);
 
         close all;
 	fig = figure('visible', 'off');
