@@ -1,17 +1,17 @@
-function plot_total_spikes_nev(nev, fn)
-        %plot_total_spikes_nev       Plot total number of spikes for each electrode as a heatmap for given nev file. Output to eps file
+function plot_total_spikes_muas_nev(nev, fn)
+        %plot_total_spikes_muas_nev       Plot total number of spikes for each electrode as a heatmap for given nev file. Output to eps file
         %
         % Usage:
-        %                       plot_total_spikes_nev(nev,fn)
+        %                       plot_total_spikes_muas_nev(nev,fn)
         %
         % Input:
         %                       nev = input nev file
         %                       fn = output file name for plot
         %
         % Examples:
-        %                       fn = './tmp/test_electrodes_plot.eps';
+        %                       fn = './worksheets/diagnostics/plots/test_total_spikes_muas_nev.eps';
         %                       nev = './testdata/20130117SpankyUtah005.nev';
-	%			plot_total_spikes_nev(nev, fn);
+	%			plot_total_spikes_muas_nev(nev, fn);
         close all;
 	%fig = figure('visible', 'off');
 	fig = figure;
@@ -50,6 +50,6 @@ function plot_total_spikes_nev(nev, fn)
         title('Spike counts for electrodes 97-128')
 	xlabel(['Recording duration: ' num2str(NEV.MetaTags.DataDurationSec) 's']);
 
-	%Write file to temp png
+	%Write file
 	saveplot(gcf, fn);
 end

@@ -1,18 +1,18 @@
-function plot_electrodes_heatmap(trial, fn)
-        %plot_electrodes_heatmap       Plot electrode firing rate activity as a heatmap for all times specified. Output to gif file
+function plot_mua_rates_heatmap(trial, fn)
+        %plot_mua_rates_heatmap       Plot electrode firing rate activity as a heatmap for given trial. Output to gif file
         %              named specified.
         %
         % Usage:
-        %                       plot_electrodes_heatmap(trial,fn)
+        %                       plot_mua_rates_heatmap(trial,fn)
         %
         % Input:
         %                       trial = a trial structure from import_trials
         %                       fn = output file name for plot
         %
         % Examples:
-        %                       fn = './tmp/test_electrodes_plot.gif';
+        %                       fn = './worksheets/diagnostics/plots/test_mua_rates_heatmap.gif';
         %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
-	%			plot_electrodes_heatmap(trials(117), fn);
+	%			plot_mua_rates_heatmap(trials(117), fn);
 
         close all;
 	fig = figure('visible', 'off');
@@ -33,7 +33,7 @@ function plot_electrodes_heatmap(trial, fn)
         for i=frames
         	clf(fig);
         	sol=reshape(trial.nevrates(1:96,i),8,12);
-		image(sol, 'CDataMapping', 'scaled');
+		      image(sol, 'CDataMapping', 'scaled');
         	caxis(zaxis);
         	set(gca,'Zlim',zaxis,'Ztick',zaxis, 'NextPlot', 'replacechildren');
         	xlabel(['time = ' num2str(trial.times(i))]);

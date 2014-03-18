@@ -1,8 +1,8 @@
-function raster_trial(trial, fn)
-    %raster_trial       Plot electrodes firing spiking activity as a raster plot for specified trial. Output to eps file
+function raster_mua_trial(trial, fn)
+    %raster_mua_trial       Plot electrodes firing spiking activity as a raster plot for specified trial. Output to eps file
     %
     % Usage:
-    %                       raster_trial(trial,fn)
+    %                       raster_mua_trial(trial,fn)
     %
     % Input:
     %                       trial = a trial structure from import_trials
@@ -11,7 +11,7 @@ function raster_trial(trial, fn)
     % Examples:
     %                       fn = './worksheets/diagnostics/plots/test_raster.eps';
     %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
-    %                       raster_trial(trials(117), fn);
+    %                       raster_mua_trial(trials(117), fn);
     close all;
 
     if (nargin < 2)

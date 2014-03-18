@@ -1,10 +1,10 @@
-function plot_spikes_heatmap(trial, fn)
-	%plot_spikes_heatmap       Plot the spiking activity as a heatmap for each electrode during given trial. If import_spikes hasn't
+function plot_mua_heatmap(trial, fn)
+	%plot_mua_heatmap       Plot the spiking activity as a heatmap for each electrode during given trial. If import_spikes hasn't
 	%					been run on the trial structure, then function will run import_spikes, adding spiking information 
 	%			
 	%
 	% Usage:
-	%					plot_spikes_heatmap(trial,fn)
+	%					plot_mua_heatmap(trial,fn)
 	%
 	% Input:
 	%                       trial = a trial structure from import_trials
@@ -12,9 +12,9 @@ function plot_spikes_heatmap(trial, fn)
 	%
 	% Examples:
 	%                       %plot voltage and A fields
-	%                       fn = './diagnostics/plots/test_spike_animation.gif';
+	%                       fn = './worksheets/diagnostics/plots/test_mua_heatmap.gif';
 	%                       trials = import_trials('Spanky_2013-01-17-1325.mat');
-	%						plot_spikes_heatmap(trials(117), fn);
+	%						plot_mua_heatmap(trials(117), fn);
 	close all;
 	fig = figure('visible', 'off');
 	if (nargin < 2)
@@ -35,7 +35,8 @@ function plot_spikes_heatmap(trial, fn)
 	bcimap = zeros(144,1);
 	bcimap(floor(trial.electrodes)) = 1;
 	bcimap = reshape(bcimap, 12, 12);
-	spikes = reshape(trial.binnedspikes, 12, 12, shape(2));
+	spks = reshape(trial.binnedspikes, shape(1), 12, 12);
+	spikes = permute(spks, [2 3 1]);
 	zaxis = [min(min(trial.binnedspikes)), max(max(trial.binnedspikes))];
 	for i=frames
 		clf(fig);
