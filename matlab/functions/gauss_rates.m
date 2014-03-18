@@ -25,7 +25,6 @@ function trial_out = gauss_rates(trial_in, sigma, sz)
 		sz = 30;
 	end
 
-
 	trial_out = trial_in;
 	nE = length(trial_in.spikemuas);
 	%Bin spikes into small bins

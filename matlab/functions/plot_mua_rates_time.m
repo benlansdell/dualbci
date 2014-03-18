@@ -10,7 +10,7 @@ function plot_mua_rates_time(trial, fn)
         %                       fn = output file name for plot
         %
         % Examples:
-        %                       fn = './worksheets/diagnostics/plots/test_mua_rates_time.gif';
+        %                       fn = './worksheets/diagnostics/plots/test_mua_rates_time.eps';
         %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
 	%			plot_mua_rates_time(trials(117), fn);
 
