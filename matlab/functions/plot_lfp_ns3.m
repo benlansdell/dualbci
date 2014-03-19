@@ -1,4 +1,4 @@
-function plot_lfp_ns3(ns3s, chans, fn)
+function [S, f] = plot_lfp_ns3(ns3s, chans, fn)
         %plot_lfp_ns3       Plot spectral content of nsx file for specified channels. Output to eps file
         %
         % Usage:
@@ -41,7 +41,10 @@ function plot_lfp_ns3(ns3s, chans, fn)
         %Plot the data
         params.Fs = nsxsamplerate;
         [S, f] =  mtspectrumc(nsxlfps, params);
-        plot_vector(S,f);
-	%Write file
-	saveplot(gcf, fn);
+        for idx = 1:length(chans)
+               plot_vector(S(:,idx),f);
+               title('Frequency content of channel ' num2str(chans(idx)))
+	       %Write file
+	       saveplot(gcf, [fn '_ch_' num2str(chans(idx)) '.eps']);
+        end
 end
