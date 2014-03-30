@@ -17,9 +17,10 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out, sigma, offset)
 	%				in each of 4 cardinal directions
 	%
 	%		Test code:
-	%			nevfiles = {'./blackrock/20130821SpankyUtah017.nev'};
+	%			nevfiles = {'./testdata/20130117SpankyUtah001.nev'};
 	%			bs = 0.1;
-	%			corr4 = corr_mua4(nevfiles, bs);
+	%			fn = './worksheets/diagnostics/plots/test_corr_mua4_20130117SpankyUtah001';
+	%			corr4 = corr_mua4(nevfiles, bs, fn);
 	
 	if (nargin < 2)
 		sigma = 5;
@@ -44,6 +45,7 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out, sigma, offset)
 	sz = 30;
 	totaltime = 0;
 	corr4 = zeros(nE, 4);
+	p4 = zeros(nE,4);
 	samplerate = 1/binsize;
 	rates = []; torques = [];
 	%Make sure we can perform the sample rate conversion easily
@@ -59,34 +61,45 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out, sigma, offset)
 		duration = NEV.MetaTags.DataDuration/nevsamplerate;
 
 		spiketimes = double(NEV.Data.Spikes.TimeStamp)/nevsamplerate;
-        	elecs = cell(1,nE);
-        	spikemuas = struct('times', elecs);
-        	for idx=1:nE
-        	        spikemuas(idx).times = [0];
-        	end
-        	for i=1:length(spiketimes)
-                	E = NEV.Data.Spikes.Electrode(i);
-                	spikemuas(E).times = [spikemuas(E).times; spiketimes(i)];
-        	end
-
+        elecs = cell(1,nE);
+        spikemuas = struct('times', elecs);
+        for idx=1:nE
+                spikemuas(idx).times = [0];
+        end
+        for i=1:length(spiketimes)
+               	E = NEV.Data.Spikes.Electrode(i);
+               	spikemuas(E).times = [spikemuas(E).times; spiketimes(i)];
+        end
         	%Bin spikes
-        	binnedspikes = binspikes(spikemuas, labviewsamplerate);
-	        %From this apply gaussian filter to spike train for each electrode
-	        x = linspace(-sz/2, sz/2, sz);
-	        gaussFilter = exp(-x.^2/(2*sigma^2));
-	        gaussFilter = gaussFilter/sum(gaussFilter);
-	        for idx=1:nE
-	                gf = conv(binnedspikes(:,idx), gaussFilter, 'same');
-        	        nevrates(:,idx) = resample(gf, samplerate, labviewsamplerate)*samplerate;
-        	end
+        binnedspikes = binspikes(spikemuas, labviewsamplerate);
+
+	    %From this apply gaussian filter to spike train for each electrode
+	    x = linspace(-sz/2, sz/2, sz);
+	    gaussFilter = exp(-x.^2/(2*sigma^2));
+	    gaussFilter = gaussFilter/sum(gaussFilter);
+	    for idx=1:nE
+	            gf = conv(binnedspikes(:,idx), gaussFilter, 'same');
+                nevrates(:,idx) = resample(gf, samplerate, labviewsamplerate)*samplerate;
+        end
 		size(nevrates)
 
 		%Load torque data from NS3 file
 		NS3 = openNSx(ns3file, 'read', 'c:138:139');
 		nsxtorque = double(NS3.Data);
 		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
+		%Smooth and subtract mean from data
+                for j=1:2
+                        %nsxtorque(j,:) = conv(nsxtorque(j,:), gaussFilter, 'same')-mean(nsxtorque(j,:));
+                        nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
+                end
 		%Resample at rate of binsize
 		torque = resample(nsxtorque', samplerate, nsxsamplerate);		
+                t = size(torque)
+                n = size(nevrates)
+                if t(1) < n(1)
+                        torque = [torque; 0 0];
+                end
+
 		size(torque)
 
 		%Concatenate to previously loaded files
@@ -95,31 +108,52 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out, sigma, offset)
 		rates = [rates; nevrates];
 	end
 
-	%For each electrode
+	%For each electrode compute correlation and make scatter plot
 	for idx = 1:nE
 		%Compute correlation for each electrode
-		corr4(idx, 1) = corr(subplus(torques(:,1)), rates(:,idx));
-		corr4(idx, 2) = corr(-subplus(-torques(:,1)), rates(:,idx));
+		[corr4(idx, 1), p4(idx,1)] = corr(subplus(torques(:,1)), rates(:,idx));
+		[corr4(idx, 2), p4(idx,2)] = corr(-subplus(-torques(:,1)), rates(:,idx));
 		%corr4(idx, 1) = corr(torques(1,:)', spikes(idx,:)');
 		%corr4(idx, 2) = corr(torques(2,:)', spikes(idx,:)');
-		corr4(idx, 3) = corr(subplus(torques(:,2)), rates(:,idx));
-		corr4(idx, 4) = corr(-subplus(-torques(:,2)), rates(:,idx));
+		[corr4(idx, 3), p4(idx,3)] = corr(subplus(torques(:,2)), rates(:,idx));
+		[corr4(idx, 4), p4(idx,4)] = corr(-subplus(-torques(:,2)), rates(:,idx));
 	
 		%If filename provided, plot density estimates of distributions
 		if (length(fn_out) > 0)
 			plot(subplus(torques(:,1)), rates(:,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,1))]);
 			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque1+.eps']);
-			plot(-subplus(torques(:,1)), rates(:,idx), '.');
+			plot(-subplus(-torques(:,1)), rates(:,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,2))]);
 			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque1-.eps']);
 			plot(subplus(torques(:,2)), rates(:,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,3))]);
 			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque2+.eps']);
-			plot(-subplus(torques(:,2)), rates(:,idx), '.');
+			plot(-subplus(-torques(:,2)), rates(:,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,4))]);
 			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque2-.eps']);
 		end
 	end
 
+	%Heat map of correlations and p-values
+	if length(fn_out)
+		for idx = 1:4
+			image(reshape(corr4(:,idx), 8,16), 'CDataMapping', 'scaled');
+			zaxis = [-1 1];
+   			caxis(zaxis);
+   			set(gca,'Zlim',zaxis,'Ztick',zaxis);
+   			xlabel('channel');
+ 	   		title('correlation with torque axis per channel')
+    		colorbar
+			saveplot(gcf, [fn_out '_axis_' num2str(idx) '_heatmap.eps']);
+			image(reshape(p4(:,idx), 8,16), 'CDataMapping', 'scaled');
+            zaxis = [0 1];
+            caxis(zaxis);
+            set(gca,'Zlim',zaxis,'Ztick',zaxis);
+            xlabel('channel');
+            title('p-value of non-zero correlation with torque axis per channel')
+            colorbar
+            saveplot(gcf, [fn_out '_axis_' num2str(idx) '_heatmap_p-val.eps']);
+		end
+	end
 end
