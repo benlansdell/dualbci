@@ -25,7 +25,7 @@ function plot_mua_rates_time(trial, fn)
 		trial = import_spikes(trial);
 	end
 
-	zaxis = [0 max(max(trial.nevrates(:,1:128)))];
+  	zaxis = [0 max(max(trial.nevrates(:,1:128)))];
    	image(trial.nevrates', 'CDataMapping', 'scaled');
    	caxis(zaxis);
    	set(gca,'Zlim',zaxis,'Ztick',zaxis, 'NextPlot', 'replacechildren');
