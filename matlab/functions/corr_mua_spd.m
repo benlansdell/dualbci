@@ -90,8 +90,8 @@ function cor = corr_mua_spd(nevfiles, binsize, fn_out, sigma, offset)
 		size(nsxtorque)
 		for j=1:2
 			%Should divide each torque axis by its std so we can compare them??
-			%nsxtorque(j,:) = (nsxtorque(j,:)-mean(nsxtorque(j,:)))/std(nsxtorque(j,:));
-			nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
+			nsxtorque(j,:) = (nsxtorque(j,:)-mean(nsxtorque(j,:)))/std(nsxtorque(j,:));
+			%nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
 		end
 		size(nsxtorque);
 		%Resample at rate of binsize
