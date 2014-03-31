@@ -20,15 +20,21 @@ function t_out = import_raw(t_in)
                 return;
         end
 
-        ns3samplerate = NS3.MetaTags.SamplingFreq;
+        t_in.ns3samplerate = NS3.MetaTags.SamplingFreq;
         labviewsamplerate = 60;
 
-	t_in.ns3data = resample(double(NS3.Data'), labviewsamplerate, ns3samplerate)';
+	t_in.ns3data_raw = double(NS3.Data);
+	t_in.ns3data = resample(double(NS3.Data'), labviewsamplerate, t_in.ns3samplerate)';
 	%Only find data within trial span
 	s = size(t_in.ns3data);
 	nsamples = s(2);
+	s = size(t_in.ns3data_raw);
+	nsamples_raw = s(2);
 	times = t_in.offset + (0:(nsamples-1))/labviewsamplerate;
+	times_raw = t_in.offset + (0:(nsamples_raw-1))/t_in.ns3samplerate;
 	withintrial = (times > t_in.starttime) & (times < t_in.endtime);
+	withintrial_raw = (times_raw > t_in.starttime) & (times_raw < t_in.endtime);
 	t_in.ns3data = t_in.ns3data(:,withintrial);
+	t_in.ns3data_raw = t_in.ns3data_raw(:,withintrial_raw);
         t_out = t_in;
 end
