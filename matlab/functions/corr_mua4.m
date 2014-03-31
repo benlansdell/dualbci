@@ -111,27 +111,35 @@ function corr4 = corr_mua4(nevfiles, binsize, fn_out, sigma, offset)
 	%For each electrode compute correlation and make scatter plot
 	for idx = 1:nE
 		%Compute correlation for each electrode
-		[corr4(idx, 1), p4(idx,1)] = corr(subplus(torques(:,1)), rates(:,idx));
-		[corr4(idx, 2), p4(idx,2)] = corr(-subplus(-torques(:,1)), rates(:,idx));
-		%corr4(idx, 1) = corr(torques(1,:)', spikes(idx,:)');
-		%corr4(idx, 2) = corr(torques(2,:)', spikes(idx,:)');
-		[corr4(idx, 3), p4(idx,3)] = corr(subplus(torques(:,2)), rates(:,idx));
-		[corr4(idx, 4), p4(idx,4)] = corr(-subplus(-torques(:,2)), rates(:,idx));
+		%Find those values which are positive, those which are negative
+		pindices1 = torques(:,1)>0;
+		nindices1 = torques(:,1)<0;
+		pindices2 = torques(:,2)>0;
+		nindices2 = torques(:,2)<0;
+		%[corr4(idx, 1), p4(idx,1)] = corr(subplus(torques(:,1)), rates(:,idx));
+		%[corr4(idx, 2), p4(idx,2)] = corr(-subplus(-torques(:,1)), rates(:,idx));
+		%[corr4(idx, 3), p4(idx,3)] = corr(subplus(torques(:,2)), rates(:,idx));
+		%[corr4(idx, 4), p4(idx,4)] = corr(-subplus(-torques(:,2)), rates(:,idx));
+		[corr4(idx, 1), p4(idx,1)] = corr(torques(pindices1,1), rates(pindices1,idx));
+		[corr4(idx, 2), p4(idx,2)] = corr(torques(nindices1,1), rates(nindices1,idx));
+		[corr4(idx, 3), p4(idx,3)] = corr(torques(pindices2,2), rates(pindices2,idx));
+		[corr4(idx, 4), p4(idx,4)] = corr(torques(nindices2,2), rates(nindices2,idx));
+
 	
 		%If filename provided, plot density estimates of distributions
 		if (length(fn_out) > 0)
-			plot(subplus(torques(:,1)), rates(:,idx), '.');
+			plot(torques(pindices1,1), rates(pindices1,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,1))]);
-			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque1+.eps']);
-			plot(-subplus(-torques(:,1)), rates(:,idx), '.');
+			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque1+_corr_' num2str(corr4(idx,1)) '.eps']);
+			plot(torques(nindices1,1), rates(nindices1,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,2))]);
-			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque1-.eps']);
-			plot(subplus(torques(:,2)), rates(:,idx), '.');
+			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque1-_corr_' num2str(corr4(idx,2)) '.eps']);
+			plot(torques(pindices2,2), rates(pindices2,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,3))]);
-			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque2+.eps']);
-			plot(-subplus(-torques(:,2)), rates(:,idx), '.');
+			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque2+_corr_' num2str(corr4(idx,3)) '.eps']);
+			plot(torques(nindices2,2), rates(nindices2,idx), '.');
 			title(['correlation = ' num2str(corr4(idx,4))]);
-			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque2-.eps']);
+			saveplot(gcf, [fn_out '_channel_' num2str(idx) '_torque2-_corr_' num2str(corr4(idx,4)) '.eps']);
 		end
 	end
 
