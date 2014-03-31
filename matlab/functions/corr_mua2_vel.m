@@ -19,8 +19,8 @@ function corr2 = corr_mua2(nevfiles, binsize, fn_out, sigma, offset)
 	%		Test code:
 	%			nevfiles = {'./testdata/20130117SpankyUtah001.nev'};
 	%			bs = 0.1;
-	%			fn = './worksheets/diagnostics/plots/test_corr_mua2_20130117SpankyUtah001';
-	%			corr2 = corr_mua2(nevfiles, bs, fn);
+	%			fn = './worksheets/diagnostics/plots/test_corr_mua2_vel_20130117SpankyUtah001';
+	%			corr2 = corr_mua2_vel(nevfiles, bs, fn);
 	
 	if (nargin < 2)
 		sigma = 5;

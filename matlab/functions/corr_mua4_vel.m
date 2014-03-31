@@ -1,5 +1,5 @@
-function corr4 = corr_mua4(nevfiles, binsize, fn_out, sigma, offset)
-	%corr_mua4	Function to compute correlation between spike trains (firing rates) for a set of 
+function corr4 = corr_mua4_vel(nevfiles, binsize, fn_out, sigma, offset)
+	%corr_mua4_vel	Function to compute correlation between spike trains (firing rates) for a set of 
 	%		Blackrock recording (nev and ns3) files for each electrode (multi unit) and the 4 cardinal directions. 
 	%		Function takes list of nev files, concatenates their spike trains and torque data. Torque data
 	%		assumed to reside in file of same name, but with extension .ns3.
