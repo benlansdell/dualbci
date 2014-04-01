@@ -13,7 +13,7 @@ function plot_lfp_trial(trial, chans, fn_out)
     %                       fn_out = './worksheets/diagnostics/plots/test_lfp_ns3.eps';
     %                       chans = [51, 52];
     %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
-    %		            plot_lfp_trial(trials(117), chans, fn_out);
+    %		                plot_lfp_trial(trials(117), chans, fn_out);
 
     close all;
     fig = figure;
@@ -34,8 +34,8 @@ function plot_lfp_trial(trial, chans, fn_out)
     params.trialave = 0;
     params.err = 0;
     for idx = 1:length(chans)
-	figure
-	%t_in.ns3data = t_in.ns3data(:,withintrial);
+	    figure
+	    %t_in.ns3data = t_in.ns3data(:,withintrial);
         [S,t,f] =  mtspecgramc(trial.ns3data_raw(chans(idx),:)', movingwin, params);
         plot_matrix(S,t,f);
         title(['Frequency content of channel ' num2str(chans(idx))]);
