@@ -29,7 +29,7 @@ function plot_lfp_trial(trial, chans, fn_out)
     %Plot the data
     params.Fs = trial.ns3samplerate;
     movingwin = [0.2 0.01];
-    params.fpass = [0 1000];
+    params.fpass = [0 400];
     params.tapers = [5 9];
     params.trialave = 0;
     params.err = 0;
