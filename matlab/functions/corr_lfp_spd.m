@@ -74,8 +74,8 @@ function corrbands = corr_lfp_spd(nevfiles, binsize, fn_out, movingwin, bands, o
 		NS3 = openNSx(ns3file, 'read');
 		NS3Data = double(NS3.Data);
 		%Test run
-		nsxelectrodes = NS3Data(1:2,:);
-		%nsxelectrodes = NS3Data(1:128,:);
+		%nsxelectrodes = NS3Data(1:2,:);
+		nsxelectrodes = NS3Data(1:128,:);
 		nsxtorque = NS3Data(138:139,:);
 		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 
@@ -121,8 +121,8 @@ function corrbands = corr_lfp_spd(nevfiles, binsize, fn_out, movingwin, bands, o
 	end
 
 	%For each electrode compute correlation and make scatter plot
-	%for i = 1:nE
-	for i = 1:2
+	for i = 1:nE
+	%for i = 1:2
 		%Compute correlation for each electrode for each band
 		for j = 1:nbands
 			[corrbands(i,j), p(i,j)] = corr(spds(:,1), lfps(j,:,i)');
