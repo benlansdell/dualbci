@@ -10,8 +10,8 @@ function plot_lfp_trial(trial, chans, fn_out)
     %                       fn_out = output file name for plot
     %
     % Examples:
-    %                       fn_out = './worksheets/diagnostics/plots/test_lfp_ns3.eps';
-    %                       chans = [51, 52];
+    %                       fn_out = './worksheets/diagnostics/plots/test_lfp_trial';
+    %                       chans = [55 59];
     %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
     %		                plot_lfp_trial(trials(117), chans, fn_out);
 

@@ -45,6 +45,7 @@ function plot_lfpband_trial(trial, bands, chans, fn_out)
         Sb = S(:,idxb,:);
         %Average spectral content over band to get one feature per band per timestep per electrode
         lfp = squeeze(mean(Sb,2));
+        %Normalize to z-scores?
         %Plot each bands activity for each channel as a heatmap
         zaxis = [min(min(lfp)), max(max(lfp))];
         image(lfp', 'CDataMapping', 'scaled');
