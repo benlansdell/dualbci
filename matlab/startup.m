@@ -8,7 +8,6 @@ addpath_recurse('./worksheets');
 addpath_recurse('~/matlab/chronux');
 %Add extra code
 
-
 % Change default axes fonts.
 set(0,'DefaultAxesFontName', 'Arial')
 set(0,'DefaultAxesFontSize', 8)
