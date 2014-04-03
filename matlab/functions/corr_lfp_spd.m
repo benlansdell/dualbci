@@ -77,7 +77,7 @@ function corrbands = corr_lfp_spd(nevfiles, binsize, fn_out, movingwin, bands, o
 		%Test run
 		%nsxelectrodes = NS3Data(1:2,:);
 
-		%nsxelectrodes = NS3Data(1:128,:);
+		nsxelectrodes = NS3Data(1:128,:);
 		nsxtorque = NS3Data(138:139,:);
 		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 
