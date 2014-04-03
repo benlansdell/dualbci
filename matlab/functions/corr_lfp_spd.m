@@ -73,9 +73,11 @@ function corrbands = corr_lfp_spd(nevfiles, binsize, fn_out, movingwin, bands, o
 		%Load data from NS3 file
 		NS3 = openNSx(ns3file, 'read');
 		NS3Data = double(NS3.Data);
+
 		%Test run
 		%nsxelectrodes = NS3Data(1:2,:);
-		nsxelectrodes = NS3Data(1:128,:);
+
+		%nsxelectrodes = NS3Data(1:128,:);
 		nsxtorque = NS3Data(138:139,:);
 		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 
@@ -87,8 +89,9 @@ function corrbands = corr_lfp_spd(nevfiles, binsize, fn_out, movingwin, bands, o
 
 		%Split into frequency bands
 		for j = 1:nbands
-			idxb = (f>bands{idx}(1)) & (f<bands{idx}(2));
+			idxb = (f>bands{j}(1)) & (f<bands{j}(2));
 			Sb = S(:,idxb,:);
+			%figure; plot_matrix(Sb(:,:,1), t, f(idxb));
 			%Average spectral content over those bands to get one feature per timestep per electrode
 			lfpb = squeeze(mean(Sb,2));
 			lfp(j,:,:) = lfpb;
@@ -126,21 +129,19 @@ function corrbands = corr_lfp_spd(nevfiles, binsize, fn_out, movingwin, bands, o
 		%Compute correlation for each electrode for each band
 		for j = 1:nbands
 			[corrbands(i,j), p(i,j)] = corr(spds(:,1), lfps(j,:,i)');
+			%If filename provided, plot density estimates of distributions
+			if length(fn_out)
+				plot(spds(:,1), lfps(j,:,i)', '.');
+				title(['correlation = ' num2str(corrbands(i,j)) ' p-value ' num2str(p(i,j))]);
+				saveplot(gcf, [fn_out '_channel_' num2str(i) '_band_' num2str(bands{j}(1)) ' to ' num2str(bands{j}(2))  'Hz.eps']);
+			end
 		end
-		%If filename provided, plot density estimates of distributions
-		%if (length(fn_out) > 0)
-		%	plot(vels(:,1), rates(:,i), '.');
-		%	title(['correlation = ' num2str(corr2(i,1)) ' p-value ' num2str(p2(i,1))]);
-		%	saveplot(gcf, [fn_out '_channel_' num2str(i) '_torque1.eps']);
-		%	plot(vels(:,2), rates(:,i), '.');
-		%	title(['correlation = ' num2str(corr2(i,2)) 'p-value ' num2str(p2(i,2))]);
-		%	saveplot(gcf, [fn_out '_channel_' num2str(i) '_torque2.eps']);
-		%end
 	end
 
 	%Heat map of correlations and p values
 	if length(fn_out)
 		for idx = 1:nbands
+			figure
 			image(reshape(corrbands(:,idx), 8,16), 'CDataMapping', 'scaled');
 			zaxis = [-1 1];
         		%xaxis = [0 112];
