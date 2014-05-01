@@ -6,7 +6,21 @@ metaData = '/home/lansdell/projects/bci/matlab/labview';
 addpath('./functions', './LogProcess', './NPMK', './testdata/');
 addpath_recurse('./worksheets');
 addpath_recurse('~/matlab/chronux');
-%Add extra code
+%Add extra color
+my_ColorOrder = [   0.00000   0.00000   1.00000;
+   0.00000   0.50000   0.00000;
+   1.00000   0.00000   0.00000;
+   0.00000   0.75000   0.75000;
+   0.75000   0.00000   0.75000;
+   0.75000   0.75000   0.00000;
+   0.25000   0.25000   0.25000;
+   0.00000   0.90000   0.00000;
+   1.00000   0.50000   0.00000;
+   0.95000   0.95000   0.00000;
+   0.60000   0.60000   0.60000;
+   0.00000   0.00000   0.00000;
+   1.00000   0.00000   1.00000];
+set(0,'DefaultAxesColorOrder',my_ColorOrder);
 
 % Change default axes fonts.
 set(0,'DefaultAxesFontName', 'Arial')
