@@ -1,4 +1,4 @@
-function correlation_nev(nevfile, fn_out, threshold, binsize)
+function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsize, sigma_fr, sigma_trq)
 	%correlation_nev	Function to fit the following model to spike and torque data:
 	%			lambda_i(t) = \lambda_0 + \sum_j^N k_j^1 . x_i^1(t+\tau+jh) + \sum_j^N k_j^2 . x_i^2(t+\tau+jh)
 	%		That is, it fits a linear filter to the torque data. In the above formula, time-step size h
@@ -10,7 +10,9 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
 	%			nevfile = file to process
 	%			fn_out = base name for output plots
 	%			threshold = (optional, default = 5) threshold firing rate below which unit is ignored
-	%			binsize = (optional, default = 0.05) time bin size for spikes (torque resmapled to this rate0)
+	%			binsize = (optional, default = 0.01) time bin size for spikes (torque resmapled to this rate0)
+	%			sigma_fr = (optional, default = 5) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
+	%			sigma_trq = (optional, default = 10) width of gaussian filter to apply to torque. If 0 then no filter applied
 	%		
 	%		Output:
 	%			(none) produces plots of the filter for each single-unit channel, along with summary of quality of fits for 
@@ -19,12 +21,15 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
 	%			threshold = 5;
-	%			fn = './worksheets/tuning/plots/corr_20130117SpankyUtah001';
+	%			binsize = 0.01;
+	%			fn_out = './worksheets/tuning/plots/corr_20130117SpankyUtah001';
 	%			correlation_nev(nevfile, fn, threshold);
 	
 	%Optional arguments
 	if (nargin < 3)	threshold = 5; end
-	if (nargin < 4) binsize = 0.05; end
+	if (nargin < 4) binsize = 0.01; end
+	if (nargin < 5) sigma_fr = 5; end
+	if (nargin < 6) sigma_trq = 10; end
 	%Set this to above 0 if want debug info/plots
 	verbosity = 1;
 	%Total number of possible units recorded from
@@ -33,18 +38,27 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
 	nU = nE*nunits;
 	%Offset to apply
 	offset = 0;
-	%Std of gaussian filter to apply
-	sigma = 5;
 	%Size of gaussian filter to apply
 	sz = 30;
 	samplerate = 1/binsize;
 	%Max lag for correlations
 	maxlag = 90;
 	maxlag = round(maxlag*samplerate)/samplerate;
-	maxpeak = 1;
+	maxpeak = 3;
 	%Make sure we can perform the sample rate conversion easily
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');
 	ns3file = [nevfile(1:end-3) 'ns3'];
+
+	%Filters
+    x = linspace(-sz/2, sz/2, sz);
+    if sigma_fr > 0
+	    gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
+    	gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
+    end
+    if sigma_trq > 0
+	    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
+    	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
+    end
 
 	%%%%%%%%%%%%%%%%%%%%%%
 	%Process spiking data%
@@ -84,13 +98,15 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
    	%Bin spikes (chronux function)
     binnedspikes = binspikes(spikemuas, samplerate);
     %From this apply gaussian filter to spike train for each electrode
-    x = linspace(-sz/2, sz/2, sz);
-    gaussFilter = exp(-x.^2/(2*sigma^2));
-    gaussFilter = gaussFilter/sum(gaussFilter);
     for idx=1:nU
-        gf = conv(binnedspikes(:,idx), gaussFilter, 'same');
-        rates(:,idx)=gf*samplerate;
+    	if sigma_fr > 0
+    	    gf = conv(binnedspikes(:,idx), gaussFilter_fr, 'same');
+			rates(:,idx)=gf*samplerate;
+	    else
+    	    rates(:,idx)=binnedspikes(:,idx)*samplerate;
+	    end
     end
+    %rates
 
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
@@ -106,7 +122,9 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
         %Subtract mean
         nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
         %Smooth
-        nsxtorque(j,:) = conv(nsxtorque(j,:),gaussFilter,'same');
+        if sigma_trq > 0
+	        nsxtorque(j,:) = conv(nsxtorque(j,:),gaussFilter_trq,'same');
+	    end
     end
 	%Resample at rate of binsize
 	torque = resample(nsxtorque', samplerate, nsxsamplerate);		
@@ -124,6 +142,37 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
     	torque = torque(1-delaysamples:end,:);
     end
 
+	%{
+
+	dtorquex = [diff(torque(:,1)); 0]; dtorquey = [diff(torque(:,2)); 0];    	
+	dtorquex(1) = 0; dtorquey(1) = 0;
+    [ctrs1,ctrs2,nc, priorF] = smoothhist2D([torque(:,1), torque(:,2)], 5, [100, 100], 0.05);
+    [ctrs1,ctrs2,nc, priorFd] = smoothhist2D([dtorquex, dtorquey], 5, [100, 100], 0.05);
+    for i=1:nU
+
+    	spikeidx = find(binnedspikes(:,i)>0);
+    	figure
+    	subplot(1,2,1)
+     	[ctrs1,ctrs2,nc, relF] = smoothhist2D([torque(spikeidx,1), torque(spikeidx,2)], 5, [100, 100], 0.05);
+%    	plot(torque(spikeidx,1), torque(spikeidx,2), '.');
+     	normF = relF./priorF;
+     	image(ctrs1,ctrs2,floor(nc.*normF) + 1);
+    	title(unitnames{i})
+    	xlim([-0.5 0.5])
+    	ylim([-0.5 0.5])
+    	subplot(1,2,2)
+%    	plot(dtorquex(spikeidx), dtorquey(spikeidx), '.');
+     	[ctrs1,ctrs2,nc, relF] = smoothhist2D([dtorquex(spikeidx), dtorquey(spikeidx)], 5, [100, 100], 0.05);
+     	normFd = relF./priorFd;
+     	image(ctrs1,ctrs2,floor(nc.*normFd) + 1);
+	   	xlim([-0.02 0.02])
+    	ylim([-0.02 0.02])
+    	pause
+
+    end
+    
+    %}
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %Cross- and auto-correlation%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -137,10 +186,26 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
     stdFE = zeros(1,nU);
     scoreRU = zeros(1,nU);
     scoreFE = zeros(1,nU);
+
+   	autotorqueFE = xcov(torque(:,1),samplerate*maxlag);%, 'coeff');
+   	autotorqueRU = xcov(torque(:,2),samplerate*maxlag);%, 'coeff');
+
+	figure 
+	subplot(1,2,1);
+   	plot(tt,autotorqueFE);
+   	xlim([-maxpeak*2 maxpeak*2])
+   	title('Auto-corr torque FE');
+	subplot(1,2,2);
+   	plot(tt,autotorqueRU);
+   	xlim([-maxpeak*2 maxpeak*2])
+   	title('Auto-corr torque RU');
+	saveplot(gcf, [fn_out '_auto-torque'.eps'], 'eps', [2 4]);
+
     for i=1:nU
     	%Compute cross correlation
 	    covFE = xcov(rates(:,i), torque(:,1),samplerate*maxlag,'unbiased');
     	% normalize against spikes auto-covariance
+    	autorate = xcov(rates(:,i),samplerate*maxlag);%, 'coeff');
     	covFE = covFE / sqrt(xcov(rates(:,i),0));
     	covFE = covFE / sqrt(xcov(torque(:,1),0));
     	peakFE(i) = covFE(abs(covFE) == max(abs(covFE(peakrange))));
@@ -149,6 +214,25 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
     	avg = mean(covFE);
     	peakFE(i) = peakFE(i) - avg;
     	scoreFE(i) = peakFE(i)/stdFE(i);
+    	%Plot cross correlation
+    	figure
+    	subplot(3,2,1);
+    	plot(tt,covFE,[-maxlag maxlag],[avg avg],...
+               [lagFE(i) lagFE(i)],[avg avg+peakFE(i)],...
+                  [-maxlag maxlag],avg+[stdFE(i) stdFE(i)]*sign(peakFE(i)));
+		title(['FE Unit: ' unitnames{i} ' Score: ' num2str(scoreFE(i))])
+		xlim([-maxlag maxlag])
+    	subplot(3,2,3);
+    	plot(tt,covFE,[-maxlag maxlag],[avg avg],...
+               [lagFE(i) lagFE(i)],[avg avg+peakFE(i)],...
+                  [-maxlag maxlag],avg+[stdFE(i) stdFE(i)]*sign(peakFE(i)));
+		xlim([-maxpeak maxpeak])
+
+		subplot(3,2,5);
+    	plot(tt,autorate);
+    	xlim([-maxpeak*2 maxpeak*2])
+    	title('Auto-corr rate');
+
 	    covRU = xcov(rates(:,i), torque(:,2),samplerate*maxlag,'unbiased');
     	% normalize against spikes auto-covariance
     	covRU = covRU / sqrt(xcov(rates(:,i),0));
@@ -159,32 +243,21 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
     	avg = mean(covRU);
     	peakRU(i) = peakRU(i) - avg;
     	scoreRU(i) = peakRU(i)/stdRU(i);
-
     	%Plot cross- and auto-correlations
-    	figure
-    	subplot(2,2,1);
-    	plot(tt,covFE,[-maxlag maxlag],[avg avg],...
-               [lagFE(i) lagFE(i)],[avg avg+peakFE(i)],...
-                  [-maxlag maxlag],avg+[stdFE(i) stdFE(i)]*sign(peakFE(i)));
-		title(['FE Unit: ' unitnames{i} ' Score: ' num2str(scoreFE(i))])
-		xlim([-maxlag maxlag])
-    	subplot(2,2,2);
+    	subplot(3,2,2);
     	plot(tt,covRU,[-maxlag maxlag],[avg avg],...
                [lagRU(i) lagRU(i)],[avg avg+peakRU(i)],...
                   [-maxlag maxlag],avg+[stdRU(i) stdRU(i)]*sign(peakRU(i)));
 		title(['RU Score: ' num2str(scoreRU(i))])
 		xlim([-maxlag maxlag])
-    	subplot(2,2,3);
-    	plot(tt,covFE,[-maxlag maxlag],[avg avg],...
-               [lagFE(i) lagFE(i)],[avg avg+peakFE(i)],...
-                  [-maxlag maxlag],avg+[stdFE(i) stdFE(i)]*sign(peakFE(i)));
-		xlim([-maxpeak maxpeak])
-    	subplot(2,2,4);
+    	subplot(3,2,4);
     	plot(tt,covRU,[-maxlag maxlag],[avg avg],...
                [lagRU(i) lagRU(i)],[avg avg+peakRU(i)],...
                   [-maxlag maxlag],avg+[stdRU(i) stdRU(i)]*sign(peakRU(i)));
 		xlim([-maxpeak maxpeak])
+
 		saveplot(gcf, [fn_out '_unit_' unitnames{i} '_cross_maxscore_' num2str(max(scoreFE(i), scoreRU(i))) '.eps'], 'eps', [6 6]);
+		pause
     end
 
 
@@ -252,4 +325,19 @@ function correlation_nev(nevfile, fn_out, threshold, binsize)
 	title(['Score RU cross-correlation' num2str(i)])
 	colorbar
 	saveplot(gcf, [fn_out '_summary.eps'], 'eps', [6 4]);	
+
+	%Plot lag vs scores
+	figure
+	plot(abs(scoreFE), lagFE, '.b', abs(scoreRU), lagRU, '.r')
+	xlabel('|score|')
+	ylabel('lag (s)')
+	legend('FE', 'RU')
+	saveplot(gcf, [fn_out '_lag_vs_score.eps'])
+
+	%figure
+	%plot([0,scoreFE], [0, scoreRU], '.')
+	%xlabel('FE')
+	%ylabel('RU')
+	%saveplot(gcf, [fn_out '_pv.eps'])
+
 end

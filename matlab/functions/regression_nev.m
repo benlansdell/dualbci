@@ -1,18 +1,20 @@
-function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
+function regression_nev(nevfile, fn_out, kernellength, binsize, sigma_fr, sigma_trq, offset, verbosity)
 	%regression_nev	Function to fit the following model to spike and torque data:
 	%			lambda_i(t) = \lambda_0 + \sum_j^N k_j^1 . x_i^1(t+\tau+jh) + \sum_j^N k_j^2 . x_i^2(t+\tau+jh)
 	%		That is, it fits a linear filter to the torque data. In the above formula, time-step size h
 	%		is given by parameter binsize; max value of N is given by kernellength; \tau is given by offset.
 	%		Program fits all models with kernels of length between 1 and N, meaning that for each single-unit N models
-	%		will be fit.
+	%		will be fit. Both filters are applied before resampling
 	%
 	% 		Input:
 	%			nevfile = file to process
 	%			fn_out = base name for output plots
 	%			kernellength = (optional, default = 6) max 
 	%			binsize = (optional, default = 0.05) size of timebins over which to compute regression
-	%			sigma = (optional, default = 5) width of gaussian filter to apply to spikes for firing rate
+	%			sigma_fr = (optional, default = 5) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
+	%			sigma_trq = (optional, default = 10) width of gaussian filter to apply to torque. If 0 then no filter applied
 	%			offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
+	%			versbose = (optional, default = 0) verbosity level. If above 0 then plot/print extra info
 	%		
 	%		Output:
 	%			(none) produces plots of the filter for each single-unit channel, along with summary of quality of fits for 
@@ -20,24 +22,30 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
 	%
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
-	%			bs = 0.05;
-	%			kl = 6;
-	%			fn = './worksheets/diagnostics/plots/test_regression_nev_20130117SpankyUtah001';
-	%			regression_nev(nevfiles, fn, kl, bs);
+	%			binsize = 0.05;
+	%			kernellength = 6;
+	%			sigma_fr = 5
+	%			sigma_trq = 10;
+	%			offset = 0;
+	%			verbosity = 1;
+	%			fn_out = './worksheets/tuning/01172013/20130117SpankyUtah001';
+	%			regression_nev(nevfile, fn_out, kernellength, binsize);
 	
 	%Optional arguments
 	if (nargin < 3)	kernellength = 6; end
 	if (nargin < 4) binsize = 0.05; end
-	if (nargin < 5) sigma = 5; end
-	if (nargin < 6) offset = 0; end
+	if (nargin < 5) sigma_fr = 5; end
+	if (nargin < 6) sigma_trq = 10; end
+	if (nargin < 7) offset = 0; end
+	if (nargin < 8) verbosity = 0; end
 	%Set this to above 0 if want debug info/plots
-	verbosity = 1;
+	%verbosity = 1;
 	%Total number of possible units recorded from
 	nE = 128;
 	nunits = 5; 
 	nU = nE*nunits;
 	%Threshold firing reate below which we ignore that unit
-	threshold = 1;
+	threshold = 5;
 	%Size of gaussian filter to apply
 	sz = 30;
 	samplerate = 1/binsize;
@@ -45,6 +53,16 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');
 	ns3file = [nevfile(1:end-3) 'ns3'];
 
+	%Filters
+    x = linspace(-sz/2, sz/2, sz);
+    if sigma_fr > 0
+	    gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
+    	gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
+    end
+    if sigma_trq > 0
+	    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
+    	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
+    end
 	%%%%%%%%%%%%%%%%%%%%%%
 	%Process spiking data%
 	%%%%%%%%%%%%%%%%%%%%%%
@@ -83,22 +101,14 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
    	%Bin spikes (chronux function)
     binnedspikes = binspikes(spikemuas, samplerate);
     %From this apply gaussian filter to spike train for each electrode
-    x = linspace(-sz/2, sz/2, sz);
-    gaussFilter = exp(-x.^2/(2*sigma^2));
-    gaussFilter = gaussFilter/sum(gaussFilter);
     for idx=1:nU
-        gf = conv(binnedspikes(:,idx), gaussFilter, 'same');
-        rates(:,idx)=gf;
+    	if sigma_fr > 0
+    		gf = conv(binnedspikes(:,idx), gaussFilter_fr, 'same');
+	        rates(:,idx)=gf*samplerate;
+    	else
+    		rates(:,idx) = binnedspikes(:,idx)*samplerate;
+    	end
     end
-    if (verbosity)
-    	%Plot the kernel used
-    	plot((1:sz)/samplerate,gaussFilter)
-    	%And make a plot of smoothed data compared with binned spikes
-    	figure
-    	t = 50; unit = 18;
-    	times = (1:(t*samplerate))*binsize;
-		plot(times, rates(1:(t*samplerate), unit), times, binnedspikes(1:(t*samplerate),unit))
-	end
 
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
@@ -114,10 +124,10 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
         %Subtract mean
         nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
         %Smooth
-        nsxtorque(j,:) = conv(nsxtorque(j,:),gaussFilter,'same');
+        torque(:,j) = conv(nsxtorque(j,:),gaussFilter_trq,'same');
     end
-	%Resample at rate of binsize
-	torque = resample(nsxtorque', samplerate, nsxsamplerate);		
+    %Resample at rate of binsize
+    torque=resample(torque,samplerate,nsxsamplerate);
 	%Check they're the same length, and trim
 	nsamp = min(size(torque,1), size(rates,1));
 	torque=torque(1:nsamp,:);
@@ -131,15 +141,55 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
 	    rates = rates(1:end+delaysamples,:);
     	torque = torque(1-delaysamples:end,:);
     end
-    if (verbosity)
-    	plot(torque(1:100,1),torque(1:100,2))
-    end
+
+    if (verbosity == 1)
+    	%Plot a bunch of preprocessing diagnostics
+    	figure
+    	subplot(3,2,1)
+    	%Plot the kernel used
+    	plot((1:sz)/nsxsamplerate,gaussFilter_trq)
+    	title('Gaussian filter used torque')
+    	%And make a plot of smoothed data compared with binned spikes
+    	subplot(3,2,2);
+    	t = 50; unit = 18;
+    	times = (1:(t*samplerate))*binsize;
+		plot(times, rates(1:(t*samplerate), unit)*binsize, times, binnedspikes(1:(t*samplerate),unit))
+		title('Smoothed rate vs binned spikes');
+		subplot(3,2,3)
+    	t = 10;
+    	times = (1:(t*samplerate))*binsize;
+    	plot(times, torque(1:(t*samplerate),1),times, torque(1:(t*samplerate),2))
+		title('Smoothed torque');		
+		subplot(3,2,4)
+		%Compute auto- and cross-correlation in torque and example firing rate
+		maxlag = 90;
+		autotorqueFE = xcov(torque(:,1),samplerate*maxlag);%, 'coeff');
+   		autotorqueRU = xcov(torque(:,2),samplerate*maxlag);%, 'coeff');
+		covFE = xcov(rates(:,unit), torque(:,1),samplerate*maxlag,'unbiased');
+    	% normalize against spikes auto-covariance
+    	autorate = xcov(rates(:,unit),samplerate*maxlag);%, 'coeff');
+    	covFE = covFE / sqrt(xcov(rates(:,unit),0));
+    	covFE = covFE / sqrt(xcov(torque(:,1),0));
+   		tt = -maxlag:binsize:maxlag;
+    	plot(tt, covFE);
+		title(['cross-corr FE, unit ' num2str(unitnames{unit})]);		
+		subplot(3,2,5)
+		plot(tt, autotorqueFE)
+		title('auto-corr torque FE');
+		subplot(3,2,6)
+		plot(tt, autorate);
+		title(['auto-corr rate' num2str(unitnames{unit})])
+		saveplot(gcf, [fn_out '_preproces.eps'], 'eps', [6 3]);
+
+	end
+	display('Printed preprocessing diagnostics.');
 
     %%%%%%%%%%%%
     %Fit models%
     %%%%%%%%%%%%
     %Produce shifted torque data to fit model to
     laggedtorque = [];
+    sumR2 = 0;
     for i=1:2
 		for j=1:kernellength
 	    	laggedtorque = [laggedtorque, torque(j:end-kernellength+j,i)];
@@ -164,6 +214,7 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
 			model = LinearModel.fit(X,Y);
 			models{i,j} = model;
 			r2(i,j) = model.Rsquared.Ordinary;
+			sumR2 = sumR2 + r2(i,j);
 			coeffs = model.Coefficients.Estimate;
 			lambda_0(i,j) = coeffs(1);
 			kernelRU(i,j,1:i) = coeffs(2:i+1);
@@ -177,6 +228,8 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
 	    	fittedrates(i,j,:) = X*beta;
 	    end
     end
+    maxR2 = max(max(r2));
+    display(['Done fitting. Max R^2 value: ' num2str(maxR2) ' Sum of all R^2 values: '  num2str(sumR2)])
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    	%Plot kernels for each neuron%
@@ -184,26 +237,28 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
    	colors = get(gca, 'colororder');
     for i=1:nU
     	figure
-    	keys = {};
+    	keys1 = {};
+    	keys2 = {};
     	subplot(1,2,1)
 		for j=1:kernellength
 			hold on
 			plot((1:j)*binsize, squeeze(kernelRU(j,i,1:j)), 'Color', colors(j,:));
-			keys = {keys{:}, ['R^2=' num2str(r2(j,i)) ', lambda_0=' num2str(lambda_0(j,i))]}
+			keys1 = {keys1{:}, ['R^2=' num2str(r2(j,i))]};
+			keys2 = {keys2{:}, ['lambda_0=' num2str(lambda_0(j,i))]};
 		end
 		title(['Unit: ' unitnames(i)])
 		xlabel('time (s)')
 		ylabel('k [Radial-Ulnar]')
+		legend(keys1, 'Location', 'NorthOutside')
 		subplot(1,2,2)
 		for j=1:kernellength
 			hold on
 			plot((1:j)*binsize, squeeze(kernelFE(j,i,1:j)), 'Color', colors(j,:));
 		end
-		legend(keys)
-		title(['Fitted lambda_0: ' num2str(lambda_0(j,i))])
+		legend(keys2, 'Location', 'NorthOutside')
 		xlabel('time (s)')
 		ylabel('k [Flexion-Extension]')
-		saveplot(gcf, [fn_out '_kernels_unit_' unitnames(i) '.eps'])
+		saveplot(gcf, [fn_out '_kernel_unit_' unitnames{i} '_maxR2_' num2str(max(r2(:,i))) '.eps'])
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -213,8 +268,9 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
 		subplot(kernellength,1,i)
 		gridx = floor(sqrt(nU));
 		if (gridx < sqrt(nU)) 
-			gridy = gridx+1; 
-			r2_imputed = [squeeze(r2(i,:)), ones(1,gridx*(gridx+1)-nU)];
+			gridx = gridx + 1;
+			gridy = gridx; 
+			r2_imputed = [squeeze(r2(i,:)), ones(1,gridx*gridy-nU)];
 		else
 			r2_imputed = [squeeze(r2(i,:))];
 		end
@@ -226,19 +282,31 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma, offset)
   		title(['R^2 values for kernels of length ' num2str(i)])
    		colorbar
 	end
-	saveplot(gcf, [fn_out '_R2_heatmap.eps'], 'eps', [3 10]);
+	saveplot(gcf, [fn_out '_regress_R2_heatmap_maxR2_' num2str(maxR2) '_sumR2_' num2str(sumR2) '.eps'], 'eps', [3 10]);
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Plot filtered data%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	for i=1:kernellength
 		for j=1:nU
+			subplot(1,3,1)
 			%Plot histogram of filtered data
-			%hist(squeeze(fittedrates(i,j,:));
+			hist(squeeze(fittedrates(i,j,:)));
+			title(['Unit: ' unitnames{j} ' kernel length: ' num2str(i)])
+			xlabel('predicted lambda')
 			%Plot scatter plot of filtered data vs firing rate
-			%plot(fittedrates(i,j,:), rates(:,j));
-			%smoothhist2D([reshape(squeeze(fittedrates(i,j,:)),szRates,1), rates(:,j)], 5, [100 100], 0.05);
+			subplot(1,3,2)
+			smoothhist2D([reshape(squeeze(fittedrates(i,j,:)),szRates,1), -rates(:,j)], 5, [100 100], 0.05);
+			xlabel('linear prediction (lambda)')
+			ylabel('estimated instantaneous rate (hat lambda)')
+			subplot(1,3,3)
+	    	t = 50; unit = 18;
+    		times = (1:(t*samplerate))*binsize;
+			plot(times, rates(1:(t*samplerate), j), times, squeeze(fittedrates(i,j,1:(t*samplerate))))
+			xlabel('time (s)')
+			ylabel('spikes/s')
+			legend('Actual', 'Estimation')
+			saveplot(gcf, [fn_out '_regress_filtered_unit_' unitnames{j} '_klength_' num2str(i) '.eps'], 'eps', [9 3]);
 		end
 	end
-
 end
