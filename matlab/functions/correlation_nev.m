@@ -12,7 +12,8 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%			threshold = (optional, default = 5) threshold firing rate below which unit is ignored
 	%			binsize = (optional, default = 0.01) time bin size for spikes (torque resmapled to this rate0)
 	%			sigma_fr = (optional, default = 0) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
-	%			sigma_trq = (optional, default = 10) width of gaussian filter to apply to torque. If 0 then no filter applied
+	%			sigma_trq = (optional, default = 0.5) width of gaussian filter to apply to torque. If 0 then no filter applied
+	%				Note: both sigmas are in units of seconds, and then are scaled according to binsize
 	%		
 	%		Output:
 	%			(none) produces plots of the filter for each single-unit channel, along with summary of quality of fits for 
@@ -23,7 +24,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%			threshold = 5;
 	%			binsize = 0.01;
 	%			sigma_fr = 0; 
-	%			sigma_trq = 10;
+	%			sigma_trq = 0.5;
 	%			fn_out = './worksheets/preprocessing/corr_20130117SpankyUtah001';
 	%			correlation_nev(nevfile, fn_out, threshold, binsize, sigma_fr, sigma_trq);
 	
@@ -31,7 +32,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	if (nargin < 3)	threshold = 5; end
 	if (nargin < 4) binsize = 0.01; end
 	if (nargin < 5) sigma_fr = 0; end
-	if (nargin < 6) sigma_trq = 10; end
+	if (nargin < 6) sigma_trq = 0.5; end
 	%Set this to above 0 if want debug info/plots
 	verbosity = 1;
 	%Total number of possible units recorded from
@@ -41,7 +42,6 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%Offset to apply
 	offset = 0;
 	%Size of gaussian filter to apply
-	sz = 30;
 	samplerate = 1/binsize;
 	%Max lag for correlations
 	maxlag = 90;
@@ -54,10 +54,16 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%Filters
     x = linspace(-sz/2, sz/2, sz);
     if sigma_fr > 0
+    	sigma_fr = sigma_fr*samplerate;
+   		sz = sigma_fr*3;
+	    x = linspace(-sz/2, sz/2, sz);
 	    gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
     	gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
     end
     if sigma_trq > 0
+    	sigma_trq = sigma_trq*samplerate;
+   		sz = sigma_trq*3;
+	    x = linspace(-sz/2, sz/2, sz);
 	    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
     	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
     end

@@ -11,8 +11,9 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%			fn_out = base name for output plots
 	%			kernellength = (optional, default = 6) max 
 	%			binsize = (optional, default = 0.05) size of timebins over which to compute regression
-	%			sigma_fr = (optional, default = 5) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
-	%			sigma_trq = (optional, default = 10) width of gaussian filter to apply to torque. If 0 then no filter applied
+	%			sigma_fr = (optional, default = 0.25) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
+	%			sigma_trq = (optional, default = 0.5) width of gaussian filter to apply to torque. If 0 then no filter applied
+	%				Note: Note: both sigmas are in units of seconds, and then are scaled according to binsize
 	%			offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
 	%			versbose = (optional, default = 0) verbosity level. If above 0 then plot/print extra info
 	%		
@@ -24,8 +25,8 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
 	%			binsize = 0.05;
 	%			kernellength = 6;
-	%			sigma_fr = 5
-	%			sigma_trq = 10;
+	%			sigma_fr = 0.25;
+	%			sigma_trq = 0.5;
 	%			offset = 0;
 	%			verbosity = 1;
 	%			fn_out = './worksheets/tuning/01172013/20130117SpankyUtah001';
@@ -34,8 +35,8 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%Optional arguments
 	if (nargin < 3)	kernellength = 6; end
 	if (nargin < 4) binsize = 0.05; end
-	if (nargin < 5) sigma_fr = 5; end
-	if (nargin < 6) sigma_trq = 10; end
+	if (nargin < 5) sigma_fr = 0.25; end
+	if (nargin < 6) sigma_trq = 0.5; end
 	if (nargin < 7) offset = 0; end
 	if (nargin < 8) verbosity = 0; end
 	%Set this to above 0 if want debug info/plots
@@ -47,19 +48,24 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%Threshold firing reate below which we ignore that unit
 	threshold = 5;
 	%Size of gaussian filter to apply
-	sz = 60;
+	sz = 90;
 	samplerate = 1/binsize;
 	%Make sure we can perform the sample rate conversion easily
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');
 	ns3file = [nevfile(1:end-3) 'ns3'];
 
 	%Filters
-    x = linspace(-sz/2, sz/2, sz);
     if sigma_fr > 0
+    	sigma_fr = sigma_fr*samplerate;
+   		sz = sigma_fr*3;
+	    x = linspace(-sz/2, sz/2, sz);
 	    gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
     	gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
     end
     if sigma_trq > 0
+    	sigma_trq = sigma_trq*samplerate;
+   		sz = sigma_trq*3;
+	    x = linspace(-sz/2, sz/2, sz);
 	    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
     	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
     end
@@ -113,10 +119,16 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
+	sigma_trq = 0.5*samplerate;
+	clear torque;
 	NS3 = openNSx(ns3file, 'read', 'c:138:139');
 	nsxtorque = double(NS3.Data);
 	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 	%Switch sign of FE axis for coordinate consistency
+	sz = sigma_trq*3*samplerate;
+    x = linspace(-sz/2, sz/2, sz);
+    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
+   	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
 	nsxtorque(2,:)=-nsxtorque(2,:);
     for j=1:2
         %Scale from uint16 value to proportion
@@ -128,6 +140,7 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
     end
     %Resample at rate of binsize
     torque=resample(torque,samplerate,nsxsamplerate);
+    plot(torque(1:100,1), torque(1:100,2));
 	%Check they're the same length, and trim
 	nsamp = min(size(torque,1), size(rates,1));
 	torque=torque(1:nsamp,:);
