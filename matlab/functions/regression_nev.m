@@ -1,4 +1,4 @@
-function regression_nev(nevfile, fn_out, kernellength, binsize, sigma_fr, sigma_trq, offset, verbosity)
+function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, sigma_fr, sigma_trq, offset, verbosity)
 	%regression_nev	Function to fit the following model to spike and torque data:
 	%			lambda_i(t) = \lambda_0 + \sum_j^N k_j^1 . x_i^1(t+\tau+jh) + \sum_j^N k_j^2 . x_i^2(t+\tau+jh)
 	%		That is, it fits a linear filter to the torque data. In the above formula, time-step size h
@@ -17,8 +17,8 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma_fr, sigma_
 	%			versbose = (optional, default = 0) verbosity level. If above 0 then plot/print extra info
 	%		
 	%		Output:
-	%			(none) produces plots of the filter for each single-unit channel, along with summary of quality of fits for 
-	%			each channel
+	%			maxR2 = maximum R^2 value for linear fit over all units and all fitted kernel lengths
+	%			sumR2 = sum of all R^2 values for every linear fit, over all units and all fitted kernel lengths
 	%
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
@@ -47,7 +47,7 @@ function regression_nev(nevfile, fn_out, kernellength, binsize, sigma_fr, sigma_
 	%Threshold firing reate below which we ignore that unit
 	threshold = 5;
 	%Size of gaussian filter to apply
-	sz = 30;
+	sz = 60;
 	samplerate = 1/binsize;
 	%Make sure we can perform the sample rate conversion easily
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');

@@ -11,7 +11,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%			fn_out = base name for output plots
 	%			threshold = (optional, default = 5) threshold firing rate below which unit is ignored
 	%			binsize = (optional, default = 0.01) time bin size for spikes (torque resmapled to this rate0)
-	%			sigma_fr = (optional, default = 5) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
+	%			sigma_fr = (optional, default = 0) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
 	%			sigma_trq = (optional, default = 10) width of gaussian filter to apply to torque. If 0 then no filter applied
 	%		
 	%		Output:
@@ -22,13 +22,15 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
 	%			threshold = 5;
 	%			binsize = 0.01;
-	%			fn_out = './worksheets/tuning/plots/corr_20130117SpankyUtah001';
-	%			correlation_nev(nevfile, fn, threshold);
+	%			sigma_fr = 0; 
+	%			sigma_trq = 10;
+	%			fn_out = './worksheets/preprocessing/corr_20130117SpankyUtah001';
+	%			correlation_nev(nevfile, fn_out, threshold, binsize, sigma_fr, sigma_trq);
 	
 	%Optional arguments
 	if (nargin < 3)	threshold = 5; end
 	if (nargin < 4) binsize = 0.01; end
-	if (nargin < 5) sigma_fr = 5; end
+	if (nargin < 5) sigma_fr = 0; end
 	if (nargin < 6) sigma_trq = 10; end
 	%Set this to above 0 if want debug info/plots
 	verbosity = 1;
@@ -142,36 +144,44 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
     	torque = torque(1-delaysamples:end,:);
     end
 
-	%{
-
-	dtorquex = [diff(torque(:,1)); 0]; dtorquey = [diff(torque(:,2)); 0];    	
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %Compute p(x,y|spike)/p(x,y) ~ p(spike|x,y)%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	dtorquex = [diff(torque(:,1)); 0]; dtorquey = [diff(torque(:,2)); 0];
+	ddtorquex = [diff(dtorquex); 0]; ddtorquey = [diff(dtorquey); 0];
 	dtorquex(1) = 0; dtorquey(1) = 0;
+	ddtorquex(1) = 0; ddtorquey(1) = 0;
     [ctrs1,ctrs2,nc, priorF] = smoothhist2D([torque(:,1), torque(:,2)], 5, [100, 100], 0.05);
     [ctrs1,ctrs2,nc, priorFd] = smoothhist2D([dtorquex, dtorquey], 5, [100, 100], 0.05);
+    [ctrs1,ctrs2,nc, priorFdd] = smoothhist2D([ddtorquex, ddtorquey], 5, [100, 100], 0.05);
     for i=1:nU
-
     	spikeidx = find(binnedspikes(:,i)>0);
     	figure
-    	subplot(1,2,1)
+    	%Position
+    	subplot(2,2,1)
      	[ctrs1,ctrs2,nc, relF] = smoothhist2D([torque(spikeidx,1), torque(spikeidx,2)], 5, [100, 100], 0.05);
-%    	plot(torque(spikeidx,1), torque(spikeidx,2), '.');
      	normF = relF./priorF;
      	image(ctrs1,ctrs2,floor(nc.*normF) + 1);
     	title(unitnames{i})
     	xlim([-0.5 0.5])
     	ylim([-0.5 0.5])
-    	subplot(1,2,2)
-%    	plot(dtorquex(spikeidx), dtorquey(spikeidx), '.');
+    	%Velocity
+    	subplot(2,2,2)
      	[ctrs1,ctrs2,nc, relF] = smoothhist2D([dtorquex(spikeidx), dtorquey(spikeidx)], 5, [100, 100], 0.05);
      	normFd = relF./priorFd;
      	image(ctrs1,ctrs2,floor(nc.*normFd) + 1);
 	   	xlim([-0.02 0.02])
     	ylim([-0.02 0.02])
+    	%Accel
+    	subplot(2,2,3)
+     	[ctrs1,ctrs2,nc, relF] = smoothhist2D([ddtorquex(spikeidx), ddtorquey(spikeidx)], 5, [100, 100], 0.05);
+     	normF = relF./priorFdd;
+     	image(ctrs1,ctrs2,floor(nc.*normF) + 1);
+    	title(unitnames{i})
+    	xlim([-0.5 0.5])
+    	ylim([-0.5 0.5])
     	pause
-
     end
-    
-    %}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %Cross- and auto-correlation%
@@ -199,7 +209,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
    	plot(tt,autotorqueRU);
    	xlim([-maxpeak*2 maxpeak*2])
    	title('Auto-corr torque RU');
-	saveplot(gcf, [fn_out '_auto-torque'.eps'], 'eps', [2 4]);
+	saveplot(gcf, [fn_out '_auto-torque.eps'], 'eps', [2 4]);
 
     for i=1:nU
     	%Compute cross correlation
