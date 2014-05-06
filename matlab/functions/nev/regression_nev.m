@@ -12,7 +12,7 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%			kernellength = (optional, default = 6) max 
 	%			binsize = (optional, default = 0.05) size of timebins over which to compute regression
 	%			sigma_fr = (optional, default = 0.25) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
-	%			sigma_trq = (optional, default = 0.5) width of gaussian filter to apply to torque. If 0 then no filter applied
+	%			sigma_trq = (optional, default = 0.25) width of gaussian filter to apply to torque. If 0 then no filter applied
 	%				Note: Note: both sigmas are in units of seconds, and then are scaled according to binsize
 	%			offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
 	%			versbose = (optional, default = 0) verbosity level. If above 0 then plot/print extra info
@@ -26,17 +26,17 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%			binsize = 0.05;
 	%			kernellength = 6;
 	%			sigma_fr = 0.25;
-	%			sigma_trq = 0.5;
+	%			sigma_trq = 0.25;
 	%			offset = 0;
 	%			verbosity = 1;
 	%			fn_out = './worksheets/tuning/01172013/20130117SpankyUtah001';
-	%			regression_nev(nevfile, fn_out, kernellength, binsize);
+	%			regression_nev(nevfile, fn_out, kernellength, binsize, sigma_fr, sigma_trq, offset, verbosity);
 	
 	%Optional arguments
 	if (nargin < 3)	kernellength = 6; end
 	if (nargin < 4) binsize = 0.05; end
 	if (nargin < 5) sigma_fr = 0.25; end
-	if (nargin < 6) sigma_trq = 0.5; end
+	if (nargin < 6) sigma_trq = 0.25; end
 	if (nargin < 7) offset = 0; end
 	if (nargin < 8) verbosity = 0; end
 	%Set this to above 0 if want debug info/plots
@@ -47,8 +47,6 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	nU = nE*nunits;
 	%Threshold firing reate below which we ignore that unit
 	threshold = 5;
-	%Size of gaussian filter to apply
-	sz = 90;
 	samplerate = 1/binsize;
 	%Make sure we can perform the sample rate conversion easily
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');
@@ -57,14 +55,14 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%Filters
     if sigma_fr > 0
     	sigma_fr = sigma_fr*samplerate;
-   		sz = sigma_fr*3;
+   		sz = sigma_fr*3*2;
 	    x = linspace(-sz/2, sz/2, sz);
 	    gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
     	gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
     end
     if sigma_trq > 0
     	sigma_trq = sigma_trq*samplerate;
-   		sz = sigma_trq*3;
+   		sz = sigma_trq*3*2;
 	    x = linspace(-sz/2, sz/2, sz);
 	    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
     	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
@@ -125,10 +123,7 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	nsxtorque = double(NS3.Data);
 	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 	%Switch sign of FE axis for coordinate consistency
-	sz = sigma_trq*3*samplerate;
-    x = linspace(-sz/2, sz/2, sz);
-    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
-   	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
+
 	nsxtorque(2,:)=-nsxtorque(2,:);
     for j=1:2
         %Scale from uint16 value to proportion
@@ -191,8 +186,8 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 		title('auto-corr torque FE');
 		subplot(3,2,6)
 		plot(tt, autorate);
-		title(['auto-corr rate' num2str(unitnames{unit})])
-		saveplot(gcf, [fn_out '_preproces.eps'], 'eps', [6 3]);
+		title(['auto-corr rate, unit ' num2str(unitnames{unit})])
+		saveplot(gcf, [fn_out '_preprocess.eps'], 'eps', [3 6]);
 
 	end
 	display('Printed preprocessing diagnostics.');
@@ -295,7 +290,7 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
   		title(['R^2 values for kernels of length ' num2str(i)])
    		colorbar
 	end
-	saveplot(gcf, [fn_out '_regress_R2_heatmap_maxR2_' num2str(maxR2) '_sumR2_' num2str(sumR2) '.eps'], 'eps', [3 10]);
+	saveplot(gcf, [fn_out '_regress_R2_heatmap_maxR2_' num2str(maxR2) '_sumR2_' num2str(sumR2) '.eps'], 'eps', [3 1.5*kernellength]);
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Plot filtered data%
@@ -309,7 +304,9 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 			xlabel('predicted lambda')
 			%Plot scatter plot of filtered data vs firing rate
 			subplot(1,3,2)
-			smoothhist2D([reshape(squeeze(fittedrates(i,j,:)),szRates,1), -rates(:,j)], 5, [100 100], 0.05);
+			%smoothhist2D([reshape(squeeze(fittedrates(i,j,:)),szRates,1), -rates(:,j)], 5, [100 100], 0.05);
+			smoothhist2D([reshape(squeeze(fittedrates(i,j,:)),szRates,1), rates(:,j)], 5, [100 100], 0.05);
+			axis xy;
 			xlabel('linear prediction (lambda)')
 			ylabel('estimated instantaneous rate (hat lambda)')
 			subplot(1,3,3)
