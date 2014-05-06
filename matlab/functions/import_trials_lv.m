@@ -55,6 +55,7 @@ function trials = import_trials(fn)
 		trial.electrodes = [];
 		trial.type = '';
 		trial.offset = 0;
+		trial.flank = 1;
 		for j = 1:length(data.nev)
 			nevdur = data.nev(j).DurationSec;
 			nevoffset = single(data.nev(j).Toffset(1))/60;
