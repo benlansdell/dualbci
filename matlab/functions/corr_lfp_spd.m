@@ -20,7 +20,7 @@ function corrbands = corr_lfp_spd(nevfiles, binsize, fn_out, movingwin, bands, o
 	%		Test code:
 	%			nevfiles = {'./testdata/20130117SpankyUtah001.nev'};
 	%			bs = 0.1;
-	%			fn = './worksheets/diagnostics/plots/test_corr_lfp_vel_20130117SpankyUtah001';
+	%			fn = './worksheets/diagnostics/plots/test_corr_lfp_spd_20130117SpankyUtah001';
 	%			corrbands = corr_lfp_spd(nevfiles, bs, fn);
 	
 	if (nargin < 2)
