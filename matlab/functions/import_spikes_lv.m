@@ -16,41 +16,44 @@ function trial_out = import_spikes(trial_in)
     %					trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%					trial = import_spikes(trials(117));
 
-	if length(trial_in.nevfile) > 0
+	if (length(trial_in.nevfile) > 0)
 		trial_in.nevfile;
-		NEV=openNEV(['./blackrock/' trial_in.nevfile]);
+		%NEV=openNEV(['./blackrock/' trial_in.nevfile]);
+		NEV=openNEV(['./testdata/' trial_in.nevfile]);
 	else
+		trial_out = trial_in;
 		return;
 	end
 
 	nevsamplerate = NEV.MetaTags.TimeRes;
 	labviewsamplerate = trial_in.samplerate;
-	span = 5;
 	nE = length(NEV.MetaTags.ChannelID);
+	flank = trial_in.flank;
 	
+	%get spike times in seconds
 	spiketimes = double(NEV.Data.Spikes.TimeStamp)/nevsamplerate + double(trial_in.offset);
-	%spikeelectrodes = NEV.Data.Spikes.Electrode;
-	%spikeunits = NEV.Data.Spikes.Unit;
 	nT = floor(trial_in.duration*labviewsamplerate)+1;
-	%trial_in.binnedspikes = zeros(nE, nT);
 	elecs = cell(1,nE);
 	trial_in.spikemuas = struct('times', elecs);
 	for idx=1:nE
 		trial_in.spikemuas(idx).times = [0];
+		trial_in.spikemuas_flank(idx).times = [0];
 	end
 	for i=1:length(spiketimes)
 		if (spiketimes(i) > trial_in.starttime) & (spiketimes(i) < trial_in.endtime)
-			%T = floor((spiketimes(i)-trial_in.starttime)*labviewsamplerate)+1;
 			E = NEV.Data.Spikes.Electrode(i);
-			%U = NEV.Data.Spikes.Unit(i);
-			%trial_in.binnedspikes(E,T) = trial_in.binnedspikes(E,T) + 1;
 			trial_in.spikemuas(E).times = [trial_in.spikemuas(E).times; spiketimes(i)];
 		end
+		%Import also flanking data for computing tunings with lag
+                if (spiketimes(i) > trial_in.starttime-flank) & (spiketimes(i) < trial_in.endtime+flank)
+                        E = NEV.Data.Spikes.Electrode(i);
+                        trial_in.spikemuas_flank(E).times = [trial_in.spikemuas_flank(E).times; spiketimes(i)];
+                end
 	end
 
 	%Bin spikes and estimate the firing rate
 	trial_in.binnedspikes = binspikes(trial_in.spikemuas, labviewsamplerate, [trial_in.starttime, trial_in.endtime]);
-	%trial_in = chr_rates(trial_in);
+	trial_in.binnedspikes_flank = binspikes(trial_in.spikemuas_flank, labviewsamplerate, [trial_in.starttime-flank,trial_in.endtime+flank]);
 	trial_in = gauss_rates(trial_in);
 	trial_out = trial_in;
 end
