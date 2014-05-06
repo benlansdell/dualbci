@@ -100,11 +100,16 @@ function corr = corr_mua_dir(nevfiles, binsize, fn_out, sigma, offset)
 		if t(1) < n(1)
 			torque = [torque; 0 0];
 		end
+
+		%Compute velocity:
+		vel = [torque(2:end,:) - torque(1:(end-1),:); 0,0];
+		%Compute speed:
+		spd = sqrt(vel(:,1).^2 + vel(:,2).^2);
 	
 		%Compute torque direction
-		dir = atan(nsxtorque(2,:)./nsxtorque(1,:));
+		dir = atan(vel(:,2)./vel(:,1));
 		%Add pi to angles in second quadrant, subtract pi from angles in 3rd quadrant
-		dir = dir + pi*(nsxtorque(1,:)<0).*((nsxtorque(2,:)>0)-(nsxtorque(2,:))<0);
+		dir = dir + pi*(vel(:,1)<0).*((vel(:,2)>0)-(vel(:,2))<0);
 
 		%Concatenate to previously loaded files
 		totaltime = totaltime + duration;
