@@ -21,6 +21,6 @@ automatically add the ./function directories
 Version history:
 
 0.1 -- contains a whole bunch of functions to compute correlation bw firing
-rate and torque(cursor) position/speed/accel. corr_*.m Not needed, as supersceded
+rate and torque(cursor) position/speed/accel. corr_*.m Not needed, as superceded
 by correlation_nev.m => To be dropped from future versions.
 
