@@ -1,0 +1,97 @@
+Cheat sheet for accessing Charlie’s data:
+
+################################################################################
+################################################################################
+
+All the data from a single day is first broken down into sessions. For example, one session might be manual control, another brain control, etc.
+Each session is broken down into trials. Each trial corresponds to the monkey performing one task (e.g., using brain control to move the cursor to a target -> when the target position changes, a new trial starts).
+
+The data for a single session is split among three types of files:
+
+    .mat file → contains data recorded with labview
+    	 in /labview/Moritz Primate MAT Files 2012-2013
+	 Unlike the .nev and .ns3 files, all data for a single day is contained in a single file.
+	 Each data file contains a struct called data. In most of the .mat files, this struct will have a field called .nev: this tells you whether each .nev and .ns3 file was manual, brain control, velocity, position, etc.
+	 The .mat file only contains spike data for the four neurons selected to record from during the day.
+
+    .nev file: contains all raw spike data from all neurons (recorded with blackrock)
+    	 in /blackrock directory
+	 open with openNEV(‘fullpathfilename.nev’,‘read’)
+	 NEV.Data.Spikes contains time and electrode of each spike
+     	 The data for a single day is split up into multiple files. Roughly, each file corresponds to a change in the experimental paradigm.
+
+    .ns3 file → contains all raw LFP from all neurons and torque data (recored with blackrock)
+    	 in /blackrock directory
+	 Everything in NS3.Data
+	 1-96 contra
+	 97-128 ipsi
+	 138-139 torque channels
+         The files for a single day are organized in the same way the .nev files are. There should be the same number of ns3 files as nev files for a given day.
+
+
+	 
+################################################################################
+
+All meta data about trials (target positions, start positions, times of trials, etc.) contained in Spanky_LogMetaData-test.mat, which contains a struct called metaData.
+
+################################################################################
+################################################################################
+
+Details of what each field in each file means, and how to use them
+
+.mat file
+
+     - All data in specific file, e.g., Spanky_2013-01-17-1325.mat, is stored in struct called data.
+     - Sample rate = 60 Hz (time stamps in units of 1/60s)
+
+     data.stateHist: contains data for entire day sampled as lab-view sampling rate (60Hz)
+
+         data.stateHist.spikes: near-binary (sometimes there is more than one) spike-time vector; first 4 columns are spikes from the
+	 data.stateHist.time: time-vector (in seconds)
+	 data.stateHist.lag: lag
+	 data.stateHist.cursor: cursor position (the thing the monkey's moving)
+	 data.stateHist.error: displacement between target and cursor
+	 data.stateHist.valid: binary vector indicating whether each trial was valid
+
+    data.filters: some kind of filters
+
+    data.messages: contains all messages associated with trials (including marking what kind of task is being done)
+
+    data.trials: parameters for each trial of the day
+        
+        data.trials.time: end time of each trial
+        data.trials.index: index of each trial
+	data.trials.start_pos: starting cursor position for each trial
+	data.trials.duration: duration of each trial
+	data.trials.targ: where target was for each trial
+	data.trials.threshold: how close cursor had to get to target to count as success
+	data.trials.success: whether monkey moved cursor to target successfully or not
+	data.trials.valid: whether trial was valid or not
+
+    data.nev: info about how to line up .nev and .mat file, parameters of each session (brain control, manual control, etc.)
+
+        data.nev.Toffset: offset between .mat file and .nev file time-stamps (in units of 1/60s); to get offset in seconds: data.nev(idx).Toffset/60. Add this to spike-times in .nev file.
+	data.nev.chans: which channels were used during each session; integer component: which channel; decimal: code indicating algorithm for spike-sorting, etc.
+	data.nev.idxSet: indices of trials associated with each session
+	data.nev.map: whether manual, brain, position, velocity, etc.
+
+################################################################################
+
+.nev file:
+     
+     - To open as MATLAB struct called NEV, use openNEV(filename,'read'); make sure to use full path for filename
+     - Sample rate 30KHz (timestamps in units of 1/30k s)
+     - Channels 1-96: contra electrodes
+     - Channels 97-128: ipsi electrodes
+     - Channels 138-139: torque
+
+################################################################################
+
+.ns3 file:
+     
+     - To open as MATLAB struct called NS3, use openNSX(filename,'read'); make sure to use full path for filename
+     - Sample rate 2KHz (timestamps in units of 1/2k s)
+     - Channels 1-96: contra electrodes
+     - Channels 97-128: ipsi electrodes
+     - Channels 138-139: torque
+
