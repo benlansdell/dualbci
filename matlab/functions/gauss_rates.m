@@ -29,6 +29,7 @@ function trial_out = gauss_rates(trial_in, sigma, sz)
 	nE = length(trial_in.spikemuas);
 	%Bin spikes into small bins
 	binnedspikes = binspikes(trial_in.spikemuas, trial_in.samplerate, [trial_in.starttime, trial_in.endtime]);
+	binnedspikes_flank = binspikes(trial_in.spikemuas_flank, trial_in.samplerate, [trial_in.starttime-trial_in.flank, trial_in.endtime+trial_in.flank]);
 	%From this apply gaussian filter to spike train for each electrode
 	x = linspace(-sz/2, sz/2, sz);
 	gaussFilter = exp(-x.^2/(2*sigma^2));
@@ -36,7 +37,9 @@ function trial_out = gauss_rates(trial_in, sigma, sz)
 
 	for idx=1:nE
 		gf = conv(binnedspikes(:,idx), gaussFilter, 'same');
+		gf_flank = conv(binnedspikes_flank(:,idx), gaussFilter, 'same');
 		trial_in.nevrates(:,idx) = gf*trial_in.samplerate;
+		trial_in.nevrates_flank(:,idx) = gf_flank*trial_in.samplerate;
 	end
 
 	trial_out = trial_in;
