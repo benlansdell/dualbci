@@ -1,9 +1,11 @@
-global metaData matpath nevpath
-matpath = '/home/lansdell/projects/bci/matlab/labview';
-nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
-metaData = '/home/lansdell/projects/bci/matlab/labview';
+%Charlie's scripts uses these global variables...
+%global metaData matpath nevpath
+%matpath = '/home/lansdell/projects/bci/matlab/labview';
+%nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
+%metaData = '/home/lansdell/projects/bci/matlab/labview';
 
 addpath('./functions', './LogProcess', './NPMK', './testdata/');
+addpath_recurse('./functions');
 addpath_recurse('./worksheets');
 addpath_recurse('~/matlab/chronux');
 %Add extra color
