@@ -1,39 +1,46 @@
-function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, binsize, sigma_fr, sigma_trq, offset, verbosity)
-	%preprocess_nev	Function to fit the following model to spike and torque data:
-	%			lambda_i(t) = \lambda_0 + \sum_j^N k_j^1 . x_i^1(t+\tau+jh) + \sum_j^N k_j^2 . x_i^2(t+\tau+jh)
+function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, fn_out, binsize, sigma_fr, sigma_trq, threshold, offset, verbosity)
+	%preprocess_nev	Preprocess both torque data and firing rate data from an .nev file and a corresponding .ns3 file.
+	%				Will do the following:
+	%					- resample spikes and torque data into units of binsize (seconds)
+	%					- apply a Guassian filter of width sigma_fr to the binned spikes to compute a firing rate
+	%					- apply a Gaussian filter of width sigma_trq to the torque channels to smooth torque input
+	%					- apply a temporal offset between the two
+	%					- apply a threshold on average firing rate, below which, unit is not returned
+	%					- plot some diagnostics if verbosity == 1
 	%
 	% 		Input:
 	%			nevfile = file to process
-	%			fn_out = base name for output plots
+	%			fn_out = file to output diagnostic plots to, if desired
 	%			binsize = (optional, default = 0.05) size of timebins over which to compute regression
 	%			sigma_fr = (optional, default = 0.25) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
 	%			sigma_trq = (optional, default = 0.25) width of gaussian filter to apply to torque. If 0 then no filter applied
 	%				Note: Note: both sigmas are in units of seconds, and then are scaled according to binsize
+	%			threshold = (optional, default = 5) threshold firing rate below which unit is ignored
 	%			offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
 	%			versbose = (optional, default = 0) verbosity level. If above 0 then plot/print extra info
 	%		
 	%		Output:
-	%			binnedspikes = [nB x nU] array with spikes from all channels binned according to binsize. nB = no. bins, 
-	%			rates = filtered (smoothed) binnedspikes data according to sigma_fr filter width
-	%			torque = 
-	%			unitnames = 
+	%			binnedspikes = [nB x nU] array with spikes from all channels binned according to binsize. nB = no. bins, nU = no. units.
+	%			rates = [nB x nU] array of filtered (smoothed) binnedspikes data according to sigma_fr filter width
+	%			torque = [nB x 2] array of filtered torque inputs
+	%			unitnames = String of the format Electrode.SortCode used to distinguish individual units from multi-unit electrode activity
 	%
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
 	%			binsize = 0.05;
-	%			kernellength = 6;
 	%			sigma_fr = 0.25;
 	%			sigma_trq = 0.25;
 	%			offset = 0;
 	%			verbosity = 1;
-	%			fn_out = './worksheets/tuning/01172013/20130117SpankyUtah001';
-	%			regression_nev(nevfile, fn_out, kernellength, binsize, sigma_fr, sigma_trq, offset, verbosity);
+	%			threshold = 5;
+	%			fn_out = './worksheets/diagnostics/plots/20130117SpankyUtah001';
+	%			[binnedspikes rates torque unitnames] = preprocess_nev(nevfile, fn_out, binsize, sigma_fr, sigma_trq, threshold, offset, verbosity);
 	
 	%Optional arguments
-	if (nargin < 3)	kernellength = 6; end
-	if (nargin < 4) binsize = 0.05; end
-	if (nargin < 5) sigma_fr = 0.25; end
-	if (nargin < 6) sigma_trq = 0.25; end
+	if (nargin < 3) binsize = 0.05; end
+	if (nargin < 4) sigma_fr = 0.25; end
+	if (nargin < 5) sigma_trq = 0.25; end
+	if (nargin < 6) threshold = 5; end		
 	if (nargin < 7) offset = 0; end
 	if (nargin < 8) verbosity = 0; end
 	%Set this to above 0 if want debug info/plots
@@ -42,13 +49,10 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, binsize
 	nE = 128;
 	nunits = 5; 
 	nU = nE*nunits;
-	%Threshold firing reate below which we ignore that unit
-	threshold = 5;
 	samplerate = 1/binsize;
 	%Make sure we can perform the sample rate conversion easily
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');
 	ns3file = [nevfile(1:end-3) 'ns3'];
-
 	%Filters
     if sigma_fr > 0
     	sigma_fr = sigma_fr*samplerate;
@@ -110,7 +114,6 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, binsize
     		rates(:,idx) = binnedspikes(:,idx)*samplerate;
     	end
     end
-
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
@@ -120,7 +123,6 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, binsize
 	nsxtorque = double(NS3.Data);
 	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 	%Switch sign of FE axis for coordinate consistency
-
 	nsxtorque(2,:)=-nsxtorque(2,:);
     for j=1:2
         %Scale from uint16 value to proportion
@@ -146,7 +148,6 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, binsize
 	    rates = rates(1:end+delaysamples,:);
     	torque = torque(1-delaysamples:end,:);
     end
-
     if (verbosity == 1)
     	%Plot a bunch of preprocessing diagnostics
     	figure
@@ -185,8 +186,5 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, binsize
 		plot(tt, autorate);
 		title(['auto-corr rate, unit ' num2str(unitnames{unit})])
 		saveplot(gcf, [fn_out '_preprocess.eps'], 'eps', [3 6]);
-
 	end
 	display('Printed preprocessing diagnostics.');
-
-    
