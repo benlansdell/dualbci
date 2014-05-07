@@ -11,7 +11,7 @@ function plot_trial(trial, fn)
         % Examples:
         %                       %plot voltage and A fields
         %                       fn = './test_trial_animation.gif';
-        %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
+        %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
 	%			plot_trial(trials(117), fn);
 
         close all;
@@ -24,7 +24,8 @@ function plot_trial(trial, fn)
 	nsubplots=3;
 	%Plot animation of trial at 60Hz
         frames = 1:length(trial.cursor);
-        frames = 1:10;
+        %test case
+        %frames = 1:10;
 	framen = 1;
         for i=frames
         	clf(fig);
@@ -34,27 +35,28 @@ function plot_trial(trial, fn)
 		plot(trial.cursor(i,1), trial.cursor(i,2),'ro');
 		plot(trial.target(1), trial.target(2), 'bo');
 		plot(trial.cursorstart(1), trial.cursorstart(2), 'go');
-        	xlabel('x');
-        	ylabel('y');
+        xlabel('x');
+        ylabel('y');
 		%xlim([-0.5 0.5]); ylim([-0.5 0.5]);
 		xlim([-1 1]); ylim([-1 1]);
 		title(['Trial. time = ' num2str(trial.times(i))]);
 		legend('Cursor', 'Target', 'Start')
 		%Plot torque data
 		subplot(1,nsubplots, 2);
-		plot3(trial.torque(1:i,1), trial.torque(1:i,2), trial.torque(1:i,3))
-		xlim([min(trial.torque(:,1)) max(trial.torque(:,1))]); ylim([min(trial.torque(:,2)) max(trial.torque(:,2))]); zlim([min(trial.torque(:,3)) max(trial.torque(:,3))]);
-		xlabel('torque axes 1'); ylabel('torque axes 2'); zlabel('torque axes 3');
+		plot(trial.torque(1:i,1), trial.torque(1:i,2));
+		xlim([min(trial.torque(:,1)) max(trial.torque(:,1))]); ylim([min(trial.torque(:,2)) max(trial.torque(:,2))]); 
+		%zlim([min(trial.torque(:,3)) max(trial.torque(:,3))]);
+		xlabel('torque axes 1'); ylabel('torque axes 2'); %zlabel('torque axes 3');
 		title('Torque data')
 
 		%Plot electrode data
 		subplot(1,nsubplots, 3)
 		cm = hsv(100);
-		maxrate4 = max(trial.rates(:,4));
-		scatter3(trial.rates(1:i,1), trial.rates(1:i,2), trial.rates(1:i,3), [], cm(floor(100*trial.rates(1:i,4)/maxrate4),:), '.');
+		maxrate4 = max(trial.rates(:,4))+1;
+		scatter3(trial.rates(1:i,1), trial.rates(1:i,2), trial.rates(1:i,3), [], cm((trial.rates(1:i,4)>0).*floor(100*trial.rates(1:i,4)/maxrate4)+1,:), '.');
 		xlim([min(trial.rates(:,1)) max(trial.rates(:,1))]); ylim([min(trial.rates(:,2)) max(trial.rates(:,2))]); zlim([min(trial.rates(:,3)) max(trial.rates(:,3))]);
 		xlabel('electrode 1'); ylabel('electrode 2'); zlabel('electrode 3');
-		title('Electrode firing rates')
+		title('Electrode firing rates. (color=electrode 4)')
 
 		%Write file to temp png
 	        plotmult(gcf, [fn '_tmp.png'], nsubplots, 'png', [6 4]);

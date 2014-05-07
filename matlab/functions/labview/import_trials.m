@@ -19,7 +19,7 @@ function trials = import_trials(fn)
 	%				nev_files, nsx_files
         %
         % Examples:
-        %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
+        %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
 
 	load(fn);
 	n_trials = length(data.trials.time);
@@ -49,6 +49,7 @@ function trials = import_trials(fn)
 		trial.torque = trial.spikes(:,5:7);
 		trial.spikes = trial.spikes(:,1:4);
 		trial.rates = data.stateHist.rates(withintrial,:);
+		trial.lag = data.stateHist.lag(withintrial,:);
 
 		trial.nevfile = '';
 		trial.ns3file = '';

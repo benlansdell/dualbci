@@ -26,8 +26,9 @@ In functions/NPMK
   Matlab.
 
 If MATLAB is started in the ./matlab directory then startup.m will
-automatically add the above ./function directories. Looks for Chronux in 
-~/matlab/chronux
+automatically add the above ./function directories. It will try to add
+the Chronux functions by adding ~/matlab/chronux to the path, and will try to
+add the .nev and .ns3 files to the path by looking in ./matlab/blackrock.
 
 See ./matlab/accessing_data.txt for information on the format of matlab,
 labview and BlackRock files
@@ -36,7 +37,7 @@ labview and BlackRock files
 Version history
 ===============
 
-0.1 -- contains a whole bunch of functions to compute correlation bw firing
-rate and torque(cursor) position/speed/accel. corr_*.m Not needed, as superseded
+0.1 -- contains a whole bunch of functions to compute correlation (corr_*.m) bw
+firing rate and torque (cursor) position/vel/accel. Not needed, as superseded
 by correlation_nev.m. Will be dropped from future versions.
 

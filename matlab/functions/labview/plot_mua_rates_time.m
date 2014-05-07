@@ -12,7 +12,7 @@ function plot_mua_rates_time(trial, fn)
         % Examples:
         %                       fn = './worksheets/diagnostics/plots/test_mua_rates_time.eps';
         %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
-	%			plot_mua_rates_time(trials(117), fn);
+	      %                  			plot_mua_rates_time(trials(117), fn);
 
     close all;
 	%fig = figure('visible', 'off');

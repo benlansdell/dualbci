@@ -1,8 +1,8 @@
-function plot_lfp_trial(trial, chans, fn_out)
-    %plot_lfp_trial       Plot spectrogram of trial for specified channels. Output to eps file
+function plot_lfp(trial, chans, fn_out)
+    %plot_lfp       Plot spectrogram of trial for specified channels. Output to eps file
     %
     % Usage:
-    %                       plot_lfp_trial(trial,chans,fn_out)
+    %                       plot_lfp(trial,chans,fn_out)
     %
     % Input:
     %                       trial = trial structure output by import_trials.m
@@ -13,7 +13,7 @@ function plot_lfp_trial(trial, chans, fn_out)
     %                       fn_out = './worksheets/diagnostics/plots/test_lfp_trial';
     %                       chans = [55 59];
     %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
-    %		                plot_lfp_trial(trials(117), chans, fn_out);
+    %		                plot_lfp(trials(117), chans, fn_out);
 
     close all;
     fig = figure;

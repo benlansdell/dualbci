@@ -11,7 +11,6 @@ function plot_mua_heatmap(trial, fn)
 	%                       fn = output file name for plot
 	%
 	% Examples:
-	%                       %plot voltage and A fields
 	%                       fn = './worksheets/diagnostics/plots/test_mua_heatmap.gif';
 	%                       trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%						plot_mua_heatmap(trials(117), fn);

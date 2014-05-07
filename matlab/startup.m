@@ -7,7 +7,11 @@
 addpath('./functions');
 addpath_recurse('./functions');
 addpath_recurse('./worksheets');
+
+%nev files, labview files, respectively
+addpath('./blackrock', './labview');
 addpath_recurse('~/matlab/chronux');
+
 %Add extra color
 my_ColorOrder = [   0.00000   0.00000   1.00000;
    0.00000   0.50000   0.00000;

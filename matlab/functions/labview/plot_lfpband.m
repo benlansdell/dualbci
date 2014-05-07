@@ -1,8 +1,8 @@
-function plot_lfpband_trial(trial, bands, chans, fn_out)
-    %plot_lfpband_trial       Plot activity in specified bands for a trial. Output to eps file
+function plot_lfpband(trial, bands, chans, fn_out)
+    %plot_lfpband       Plot activity in specified bands for a trial. Output to eps file
     %
     % Usage:
-    %                       plot_lfpband_trial(trial,bands,chans,fn_out)
+    %                       plot_lfpband(trial,bands,chans,fn_out)
     %
     % Input:
     %                       trial = trial structure output by import_trials.m
@@ -15,7 +15,7 @@ function plot_lfpband_trial(trial, bands, chans, fn_out)
     %                       bands = {[0 5], [10 40], [45 65], [70 200], [200 400]};
     %                       chans = 1:2;
     %                       trials = import_trials('./testdata/Spanky_2013-01-17-1325.mat');
-    %		                plot_lfpband_trial(trials(117), bands, chans, fn_out);
+    %		                plot_lfpband(trials(117), bands, chans, fn_out);
     close all;
 
     if (nargin < 3)

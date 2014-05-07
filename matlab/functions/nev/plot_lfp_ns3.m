@@ -43,7 +43,7 @@ function [S, f] = plot_lfp_ns3(ns3s, chans, fn)
         [S, f] =  mtspectrumc(nsxlfps, params);
         for idx = 1:length(chans)
                plot_vector(S(:,idx),f);
-               title('Frequency content of channel ' num2str(chans(idx)))
+               title(['Frequency content of channel ' num2str(chans(idx))])
 	       %Write file
 	       saveplot(gcf, [fn '_ch_' num2str(chans(idx)) '.eps']);
         end
