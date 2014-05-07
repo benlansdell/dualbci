@@ -6,3 +6,6 @@ matlab/LogProcess
 matlab/NPMK
 matlab/worksheets
 matlab/tmp
+
+*.gif
+*.eps
