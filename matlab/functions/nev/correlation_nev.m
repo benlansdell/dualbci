@@ -6,6 +6,9 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%		Program fits all models with kernels of length between 1 and N, meaning that for each single-unit N models
 	%		will be fit.
 	%
+	%		Usage:
+	%			[scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsize, sigma_fr, sigma_trq)
+	%
 	% 		Input:
 	%			nevfile = file to process
 	%			fn_out = base name for output plots
@@ -21,7 +24,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
-	%			threshold = 5;
+	%			threshold = 1;
 	%			binsize = 0.002;
 	%			sigma_fr = 0; 
 	%			sigma_trq = 0.25;
@@ -29,7 +32,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	%			correlation_nev(nevfile, fn_out, threshold, binsize, sigma_fr, sigma_trq);
 	
 	%Optional arguments
-	if (nargin < 3)	threshold = 5; end
+	if (nargin < 3)	threshold = 1; end
 	if (nargin < 4) binsize = 0.002; end
 	if (nargin < 5) sigma_fr = 0; end
 	if (nargin < 6) sigma_trq = 0.25; end
@@ -56,6 +59,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	ddtorquex = [diff(dtorquex); 0]; ddtorquey = [diff(dtorquey); 0];
 	dtorquex(1:5) = 0; dtorquey(1:5) = 0;
 	ddtorquex(1:5) = 0; ddtorquey(1:5) = 0;
+	%Smooth vel and accel
 	figure 
 	subplot(2,2,1)
     [ctrs1,ctrs2,nc, priorF] = smoothhist2D([torque(:,1), torque(:,2)], 5, [100, 100], 0.05);
@@ -124,10 +128,12 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	subplot(1,2,1);
    	plot(tt,autotorqueFE);
    	xlim([-maxpeak*2 maxpeak*2])
+	xlabel('time (s)')
    	title('Auto-corr torque FE');
 	subplot(1,2,2);
    	plot(tt,autotorqueRU);
    	xlim([-maxpeak*2 maxpeak*2])
+	xlabel('time (s)')
    	title('Auto-corr torque RU');
 	saveplot(gcf, [fn_out '_auto-torque.eps'], 'eps', [4 2]);
 
@@ -237,7 +243,7 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
     	lagDRU(i) = tt((covDRU == peakDRU(i)) | (covDRU == -peakDRU(i)));
     	avg = mean(covDRU);
     	peakDRU(i) = peakDRU(i) - avg;
-    	scoreDRU(i) = peakDRU(i)/stdRU(i);
+    	scoreDRU(i) = peakDRU(i)/stdDRU(i);
     	%Plot cross- and auto-correlations
     	subplot(3,2,2);
     	plot(tt,covDRU,[-maxlag maxlag],[avg avg],...
@@ -254,6 +260,57 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 		saveplot(gcf, [fn_out '_unit_' unitnames{i} '_cross_vel_maxscore_' num2str(max(scoreDFE(i), scoreDRU(i))) '.eps'], 'eps', [6 6]);
 %		pause
     end
+
+        %Plot lag vs scores
+        figure
+        plot(abs(scoreFE), lagFE, '.b', abs(scoreRU), lagRU, '.r')
+        xlabel('|score|')
+        ylabel('lag (s)')
+        legend('FE', 'RU')
+        saveplot(gcf, [fn_out '_lag_vs_score.eps'])
+
+        %Plot lag vs scores
+        figure
+        plot(abs(scoreDFE), lagDFE, '.b', abs(scoreDRU), lagDRU, '.r')
+        xlabel('|score|')
+        ylabel('lag (s)')
+        legend('FE', 'RU')
+        saveplot(gcf, [fn_out '_vel_lag_vs_score.eps'])
+
+        %Plot lag vel vs lag
+        figure
+        plot(lagFE, lagDFE, '.b', lagRU, lagDRU, '.r')
+        xlabel('lag')
+        ylabel('lag vel')
+        legend('FE', 'RU')
+        saveplot(gcf, [fn_out '_lags.eps'])
+
+        %Plot score vel vs score
+        figure
+        plot(abs(scoreFE), abs(scoreDFE), '.b', abs(scoreRU), abs(scoreDRU), '.r')
+        xlabel('|score|')
+        ylabel('|score| (vel)')
+        legend('FE', 'RU')
+        saveplot(gcf, [fn_out '_scores.eps'])
+
+	%Threshold score above which to look at mean lags
+	thr = 4;
+	meanlFE = mean(lagFE);
+	meanlRU = mean(lagRU);
+	meanlDFE = mean(lagDFE);
+	meanlDRU = mean(lagDRU);
+	meanlFEthr = mean(lagFE(scoreFE>thr));
+	meanlRUthr = mean(lagRU(scoreRU>thr));
+	meanlDFEthr = mean(lagDFE(scoreDFE>thr));
+	meanlDRUthr = mean(lagDRU(scoreDRU>thr));
+	display(['mean lag FE: ' num2str(meanlFE)])
+	display(['mean lag RU: ' num2str(meanlRU)])
+	display(['mean lag vel FE: ' num2str(meanlDFE)])
+	display(['mean lag vel RU: ' num2str(meanlDRU)])
+	display(['mean lag FE (score > 4): ' num2str(meanlFEthr)])
+	display(['mean lag RU (score > 4): ' num2str(meanlRUthr)])
+	display(['mean lag vel FE (score > 4): ' num2str(meanlDFEthr)])
+	display(['mean lag vel RU (score > 4): ' num2str(meanlDRUthr)])
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Heat map of tau and xcov for all units%
@@ -319,27 +376,5 @@ function [scoreFE, scoreRU] = correlation_nev(nevfile, fn_out, threshold, binsiz
 	title(['Score RU cross-correlation' num2str(i)])
 	colorbar
 	saveplot(gcf, [fn_out '_summary.eps'], 'eps', [6 4]);	
-
-	%Plot lag vs scores
-	figure
-	plot(abs(scoreFE), lagFE, '.b', abs(scoreRU), lagRU, '.r')
-	xlabel('|score|')
-	ylabel('lag (s)')
-	legend('FE', 'RU')
-	saveplot(gcf, [fn_out '_lag_vs_score.eps'])
-
-	%Plot lag vs scores
-	figure
-	plot(abs(scoreDFE), lagDFE, '.b', abs(scoreDRU), lagDRU, '.r')
-	xlabel('|score|')
-	ylabel('lag (s)')
-	legend('FE', 'RU')
-	saveplot(gcf, [fn_out '_vel_lag_vs_score.eps'])
-
-	%figure
-	%plot(zeros(nU,2), [scoreFE'; scoreRU'], '.b')
-	%xlabel('score FE')
-	%ylabel('score RU')
-	%saveplot(gcf, [fn_out '_popvec.eps'])
 
 end
