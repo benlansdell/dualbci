@@ -8,6 +8,9 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, fn_out,
 	%					- apply a threshold on average firing rate, below which, unit is not returned
 	%					- plot some diagnostics if verbosity == 1
 	%
+	%		Usage:
+	%			[binnedspikes rates torque unitnames] = preprocess_nev(nevfile, fn_out, binsize, sigma_fr, sigma_trq, threshold, offset, verbosity)
+	%
 	% 		Input:
 	%			nevfile = file to process
 	%			fn_out = file to output diagnostic plots to, if desired
@@ -100,6 +103,7 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, fn_out,
     abovethresh = averate > threshold;
     %Update nU
     nU = sum(abovethresh);
+     display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
     unitnames = unitnames(abovethresh);
     spikemuas = spikemuas(abovethresh);
     averate = averate(abovethresh);
@@ -117,7 +121,6 @@ function [binnedspikes rates torque unitnames] = preprocess_nev(nevfile, fn_out,
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
-	sigma_trq = 0.5*samplerate;
 	clear torque;
 	NS3 = openNSx(ns3file, 'read', 'c:138:139');
 	nsxtorque = double(NS3.Data);
