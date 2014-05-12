@@ -59,11 +59,13 @@ function NeuralDataAnalyzer_nev(nevfile, fn_out, unit, torque_axis, time_range)
     end
     %Save
     spikes = spikemuas(nu).times;
+    %Remove the first zero
+    spikes = spikes(2:end);
     save([fn_out '_sptimes.mat'], 'spikes');
 
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
-	%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%% 
 	clear torque;
 	NS3 = openNSx(ns3file, 'read', 'c:138:139');
 	nsxtorque = double(NS3.Data);
