@@ -4,7 +4,7 @@ function [maxR2 sumR2] = regression_nev(nevfile, fn_out, kernellength, binsize, 
 	%		That is, it fits a linear filter to the torque data. In the above formula, time-step size h
 	%		is given by parameter binsize; max value of N is given by kernellength; \tau is given by offset.
 	%		Program fits all models with kernels of length between 1 and N, meaning that for each single-unit N models
-	%		will be fit. Both filters are applied before resampling
+	%		will be fit. Both smoothing filters are applied before resampling
 	%
 	% 		Input:
 	%			nevfile = file to process
