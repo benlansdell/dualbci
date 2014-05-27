@@ -21,8 +21,8 @@ function [scoreFE, scoreRU] = nonparam_shoahm_nev(nevfile, fn_out, threshold)
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
 	%			threshold = 5;
-	%			fn_out = './worksheets/tuning/crosscorr/20130117SpankyUtah001';
-	%			nonparam_shoahm_nev(nevfile, fn_out, threshold);
+	%			fn_out = './worksheets/shoham/plots/20130117SpankyUtah001';
+	%			nonparam_shoham_nev(nevfile, fn_out, threshold);
 	
 	%Optional arguments
 	if (nargin < 3)	threshold = 5; end
@@ -54,8 +54,8 @@ function [scoreFE, scoreRU] = nonparam_shoahm_nev(nevfile, fn_out, threshold)
   histaxy = zeros(nx);
 
   maxxy = (std(torque(:,1))+std(torque(:,2)));
-  maxvxy = (std(dtorque(:,1))+std(dtorque(:,2)));
-  maxaxy = (std(ddtorque(:,1))+std(ddtorque(:,2)));
+  maxvxy = (std(dtorque(:,1))+std(dtorque(:,2)))/2;
+  maxaxy = (std(ddtorque(:,1))+std(ddtorque(:,2)))/2;
 
   win = fspecial('gaussian',21,2);
   win = win ./ sum(sum(win));
@@ -111,7 +111,7 @@ function [scoreFE, scoreRU] = nonparam_shoahm_nev(nevfile, fn_out, threshold)
   set(gca,'Zlim',zaxis,'Ztick',zaxis, 'NextPlot', 'replacechildren');
   colorbar;
   title('Torque accel density')
-  saveplot(gcf, [fn_out '_torque_density.eps'], 'eps', [2 6]);
+  saveplot(gcf, [fn_out '_torque_density.eps'], 'eps', [6 6]);
   for i=1:nU
     histxy_sp = zeros(nx);
     histvxy_sp = zeros(nx);
