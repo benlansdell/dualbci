@@ -20,8 +20,8 @@ function [scoreFE, scoreRU] = correlation_shoham_nev(nevfile, fn_out, threshold)
 	%
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
-	%			threshold = 1;
-	%			fn_out = './worksheets/tuning/crosscorr/20130117SpankyUtah001';
+	%			threshold = 5;
+	%			fn_out = './worksheets/shoham/crosscorr/20130117SpankyUtah001';
 	%			correlation_shoham_nev(nevfile, fn_out, threshold);
 	
 	%Optional arguments
@@ -29,9 +29,9 @@ function [scoreFE, scoreRU] = correlation_shoham_nev(nevfile, fn_out, threshold)
 	%Set this to above 0 if want debug info/plots
 	verbosity = 1;
 	%Offset to apply
-	%offset = 0;
+	offset = 0;
 	%Put firing rate ahead of torque
-	offset = -0.125;
+	%offset = -0.125;
   sigma_fr = 0;
   binsize = 0.001;
 	%Size of gaussian filter to apply
@@ -41,7 +41,7 @@ function [scoreFE, scoreRU] = correlation_shoham_nev(nevfile, fn_out, threshold)
 	maxlag = round(maxlag*samplerate)/samplerate;
 	maxpeak = 3;
   %Preprocess spike and torque data
-  [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_shoham_nev(nevfile, fn_out, binsize, sigma_fr, threshold, offset, verbosity);
+  [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset);
   nU = length(unitnames);
 
      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,10 +147,10 @@ function [scoreFE, scoreRU] = correlation_shoham_nev(nevfile, fn_out, threshold)
 
     for i=1:nU
     	%Compute cross correlation
-	    covDFE = xcov(rates(:,i), dtorquex,samplerate*maxlag,'unbiased');
+	    covDFE = xcov(rates(:,i), dtorque(:,1),samplerate*maxlag,'unbiased');
     	% normalize against spikes auto-covariance
     	covDFE = covDFE / sqrt(xcov(rates(:,i),0));
-    	covDFE = covDFE / sqrt(xcov(dtorquex,0));
+    	covDFE = covDFE / sqrt(xcov(dtorque(:,1),0));
     	peakDFE(i) = covDFE(abs(covDFE) == max(abs(covDFE(peakrange))));
 	    stdDFE(i) = std(covDFE);
     	lagDFE(i) = tt((covDFE == peakDFE(i)) | (covDFE == -peakDFE(i)));
@@ -171,10 +171,10 @@ function [scoreFE, scoreRU] = correlation_shoham_nev(nevfile, fn_out, threshold)
                   [-maxlag maxlag],avg+[stdDFE(i) stdDFE(i)]*sign(peakDFE(i)));
 		xlim([-maxpeak maxpeak])
 
-	    covDRU = xcov(rates(:,i), dtorquey,samplerate*maxlag,'unbiased');
+	    covDRU = xcov(rates(:,i), dtorque(:,2),samplerate*maxlag,'unbiased');
     	% normalize against spikes auto-covariance
     	covDRU = covDRU / sqrt(xcov(rates(:,i),0));
-    	covDRU = covDRU / sqrt(xcov(dtorquey,0));
+    	covDRU = covDRU / sqrt(xcov(dtorque(:,2),0));
     	peakDRU(i) = covDRU(abs(covDRU) == max(abs(covDRU(peakrange))));
     	stdDRU(i) = std(covDRU);
     	lagDRU(i) = tt((covDRU == peakDRU(i)) | (covDRU == -peakDRU(i)));
@@ -249,6 +249,23 @@ function [scoreFE, scoreRU] = correlation_shoham_nev(nevfile, fn_out, threshold)
 	display(['mean lag vel FE (score > 4): ' num2str(meanlDFEthr)])
 	display(['mean lag vel RU (score > 4): ' num2str(meanlDRUthr)])
 
+	medianlFE = median(lagFE);
+	medianlRU = median(lagRU);
+	medianlDFE = median(lagDFE);
+	medianlDRU = median(lagDRU);
+	medianlFEthr = median(lagFE(scoreFE>thr));
+	medianlRUthr = median(lagRU(scoreRU>thr));
+	medianlDFEthr = median(lagDFE(scoreDFE>thr));
+	medianlDRUthr = median(lagDRU(scoreDRU>thr));
+	display(['median lag FE: ' num2str(medianlFE)])
+	display(['median lag RU: ' num2str(medianlRU)])
+	display(['median lag vel FE: ' num2str(medianlDFE)])
+	display(['median lag vel RU: ' num2str(medianlDRU)])
+	display(['median lag FE (score > 4): ' num2str(medianlFEthr)])
+	display(['median lag RU (score > 4): ' num2str(medianlRUthr)])
+	display(['median lag vel FE (score > 4): ' num2str(medianlDFEthr)])
+	display(['median lag vel RU (score > 4): ' num2str(medianlDRUthr)])
+	
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Heat map of tau and xcov for all units%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
