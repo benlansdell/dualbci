@@ -119,22 +119,21 @@ function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_sho
 
     %Check smoothness of spline smoothing
     clf
+	subplot(2,2,1)
     hold on
     t = 220;
+    unit = 18;
     dt = 2;
     plot(nsxtorque(1,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), nsxtorque(2,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), 'b');
     plot(torque((t*samplerate):(t*samplerate+dt*samplerate),1), torque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-    title('Smoothing of torque')
-    legend('Raw', 'Cubic spline smoothed')
     xlabel('x'); ylabel('y');
-    figure
+	subplot(2,2,2)
     plot(dtorque((t*samplerate):(t*samplerate+dt*samplerate),1), dtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
     xlabel('dx'); ylabel('dy');
-    figure
+	subplot(2,2,3)
     plot(ddtorque((t*samplerate):(t*samplerate+dt*samplerate),1), ddtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
     xlabel('d^2x'); ylabel('d^2y');
-    saveplot(gcf, [fn_out '_spline.eps'])
-    
+    saveplot(gcf, [fn_out '_spline.eps'], 'eps', [6 6])
 	%Check they're the same length, and trim
 	nsamp = min(size(torque,1), size(rates,1));
 	torque=torque(1:nsamp,:);
@@ -183,4 +182,4 @@ function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_sho
 	subplot(2,2,4)
 	plot(tt, autorate);
 	title(['auto-corr rate, unit ' num2str(unitnames{unit})])
-	saveplot(gcf, [fn_out '_preprocess.eps'], 'eps', [3 6]);
+	saveplot(gcf, [fn_out '_preprocess.eps'], 'eps', [6 6]);
