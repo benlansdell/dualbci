@@ -9,7 +9,7 @@ function NeuralDataAnalyzer_nev(nevfile, fn_out, unit, torque_axis, time_range)
 	%			nevfile = file to process
 	%			fn_out = file to output diagnostic plots to, if desired
 	%			unit = unit name to process. In the format 'Electrode.SortCode'
-	%			torque_axis = 1 or 2, 1 = FE, 2 = RU
+	%			torque_axis = 1 or 2; 1 = FE, 2 = RU
 	%			time_range = [tmin, tmax] range of times from which to extract spikes
 	%		
 	%		Output:
@@ -61,6 +61,8 @@ function NeuralDataAnalyzer_nev(nevfile, fn_out, unit, torque_axis, time_range)
     spikes = spikemuas(nu).times;
     %Remove the first zero
     spikes = spikes(2:end);
+    nspikes = length(spikes);
+    display(['Unit ' unit ' has ' num2str(nspikes) ' spikes within the specified time range.'])
     save([fn_out '_sptimes.mat'], 'spikes');
 
 	%%%%%%%%%%%%%%%%%%%%%
