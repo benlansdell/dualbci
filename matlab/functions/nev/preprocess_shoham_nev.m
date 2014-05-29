@@ -58,6 +58,7 @@ function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_sho
     spikemuas = struct('times', elecs);
     unitnames = cell(1,nU);
     averate = zeros(1,nU);
+    isvalid = zeros(1,nU);
     for idx=1:nU
         spikemuas(idx).times = [0];    
     end
@@ -71,10 +72,15 @@ function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_sho
     %Check which channels are doing stuff
     for idx=1:nU
     	averate(idx) = (length(spikemuas(idx).times)-1)/dur;
+    	if length(spikemuas(idx).times)>1
+    		if (spikemuas(idx).times(2)<20) & (spikemuas(idx).times(end)>(dur-20))
+				isvalid(idx)=1;
+			end
+		end
     	display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
     end
     %Set a threshold firing rate, below which we ignore that unit
-    abovethresh = averate > threshold;
+    abovethresh = (averate > threshold) & isvalid;
     %Update nU
     nU = sum(abovethresh);
      display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
