@@ -35,6 +35,7 @@ function [r2 LNr2 loglikelihoods, lp] = ln_model_shoham_intent_nev(nevfile, matf
 	%			fn_out = './worksheets/intent/20130117SpankyUtah001';
 	%			[r2 LNr2 ll lp] = ln_model_shoham_intent_nev(nevfile, matfile, fn_out, kernellength, polydeg);
 	
+	verbosity = 1;
 	%Threshold firing reate below which we ignore that unit
 	threshold = 5;
 	binsize = 0.05;
@@ -89,15 +90,19 @@ function [r2 LNr2 loglikelihoods, lp] = ln_model_shoham_intent_nev(nevfile, matf
   	  	  		end
   	  	  	end
   	  	  	%Plot to make sure things make sense
-  	  	  	figure
   	  	  	%Before rotation
-  	  	  	subplot(1,2,1)
-  	  	  	plot(torque(trialstart:trialend,1), torque(trialstart:trialend,2), trqstr(1), trqstr(2), 'or');
-  	  	  	title('Cursor position before rotation. red = start')
-  	  	  	xlim([-0.5 0.5])
-  	  	  	ylim([-0.5 0.5])
+  	  	  	if verbosity > 1
+	  	  	  	figure
+  	  	  		subplot(1,2,1)
+  	  	  		plot(torque(trialstart:trialend,1), torque(trialstart:trialend,2), trqstr(1), trqstr(2), 'or');
+  	  	  		title('Cursor position before rotation. red = start')
+  	  	  		xlim([-0.5 0.5])
+  	  	  		ylim([-0.5 0.5])
+  	  	  	end
   	  	  	%Place directly below torque end position (theta = pi/2)
   	  	  	theta = -theta - pi/2;
+  	  	  	%OR don't do any rotation
+  	  	  	%theta = 0;
   	  	  	%Rotate torque, dtorque and ddtorque
   	  	  	rotation = [cos(theta), -sin(theta); sin(theta), cos(theta)];
   	  	  	torque(trialstart:trialend,:) = (rotation*(torque(trialstart:trialend,:)'))';
@@ -105,11 +110,13 @@ function [r2 LNr2 loglikelihoods, lp] = ln_model_shoham_intent_nev(nevfile, matf
   	  	  	ddtorque(trialstart:trialend,:) = (rotation*(ddtorque(trialstart:trialend,:)'))';
   	  	  	trqstr = (rotation*trqstr')';
   	  	  	%Plot after rotation
-  	  	  	subplot(1,2,2)
-  	  	  	plot(torque(trialstart:trialend,1), torque(trialstart:trialend,2), trqstr(1), trqstr(2), 'or');
-  	  	  	title('Cursor position after rotation. red = start')
-  	  	  	xlim([-0.5 0.5])
-  	  	  	ylim([-0.5 0.5])
+  	  	  	if verbosity > 1
+  	  	  		subplot(1,2,2)
+  	  	  		plot(torque(trialstart:trialend,1), torque(trialstart:trialend,2), trqstr(1), trqstr(2), 'or');
+  	  	  		title('Cursor position after rotation. red = start')
+  	  	  		xlim([-0.5 0.5])
+  	  	  		ylim([-0.5 0.5])
+  	  	    end
   	  	  	display(['Trial ' num2str(idx) ' within nev file. t_start: ' num2str(trials(idx).starttime) ' t_end: ' num2str(trials(idx).endtime)]);
   	  	  	%pause
   	  	end
@@ -277,7 +284,6 @@ function [r2 LNr2 loglikelihoods, lp] = ln_model_shoham_intent_nev(nevfile, matf
 
     maxspks = max(max(bs));
     pn_given_lambda = zeros(nU, nbins, max(4,maxspks+1));
-
     loglikelihoods = zeros(nU);
 
 	for i=1:nU
