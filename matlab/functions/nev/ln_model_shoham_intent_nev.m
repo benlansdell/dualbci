@@ -33,7 +33,7 @@ function [r2 LNr2 loglikelihoods, lp] = ln_model_shoham_intent_nev(nevfile, matf
 	%			kernellength = 4;
 	%			polydeg = 4;
 	%			fn_out = './worksheets/intent/20130117SpankyUtah001';
-	%			[r2 LNr2 ll lp] = ln_model_shoham_intent_nev(nevfile, fn_out, kernellength, polydeg);
+	%			[r2 LNr2 ll lp] = ln_model_shoham_intent_nev(nevfile, matfile, fn_out, kernellength, polydeg);
 	
 	%Threshold firing reate below which we ignore that unit
 	threshold = 5;
