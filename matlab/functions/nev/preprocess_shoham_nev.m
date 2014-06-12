@@ -94,7 +94,7 @@ function [binnedspikes rates torque dtorque ddtorque unitnames tspks] = preproce
    		rates(:,idx) = binnedspikes(:,idx)*samplerate;
     end
     %Return spike times for each active channel
-    tsps = spikemuas;
+    tspks = spikemuas;
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
