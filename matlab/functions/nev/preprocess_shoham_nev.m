@@ -1,13 +1,12 @@
-function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset)
+function [binnedspikes rates torque dtorque ddtorque unitnames tspks] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset)
 	%preprocess_shoham_nev	Preprocess both torque data and firing rate data from an .nev file and a corresponding .ns3 file.
 	%				Will do the following:
 	%					- resample spikes and torque data into units of binsize (seconds)
 	%					- apply a temporal offset between the two
 	%					- apply a threshold on average firing rate, below which, unit is not returned
-	%					- plot some diagnostics if verbosity == 1
 	%
 	%		Usage:
-	%			[binnedspikes rates torque unitnames] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset)
+	%			[binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset)
 	%
 	% 		Input:
 	%			nevfile = file to process
@@ -23,6 +22,7 @@ function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_sho
 	%			dtorque = [nB x 2] array of analyticaly computed derivative of torque (velocity) according to spline fitted
 	%			ddtorque = [nB x 2] array of filtered torque inputs
 	%			unitnames = String of the format Electrode.SortCode used to distinguish individual units from multi-unit electrode activity
+	%			tspks = cell array containing spike times for each active channel
 	%
 	%		Test code:
 	%			nevfile = './testdata/20130117SpankyUtah001.nev';
@@ -30,7 +30,7 @@ function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_sho
 	%			offset = 0.125;
 	%			threshold = 5;
 	%			fn_out = './worksheets/shoham/plots/20130117SpankyUtah001';
-	%			[binnedspikes rates torque unitnames] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset);
+	%			[binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset);
 	
 	%Optional arguments
 	if (nargin < 3) binsize = 0.05; end
@@ -93,6 +93,8 @@ function [binnedspikes rates torque dtorque ddtorque unitnames] = preprocess_sho
     for idx=1:nU
    		rates(:,idx) = binnedspikes(:,idx)*samplerate;
     end
+    %Return spike times for each active channel
+    tsps = spikemuas;
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
