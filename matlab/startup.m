@@ -5,6 +5,7 @@
 %metaData = '/home/lansdell/projects/bci/matlab/labview';
 
 addpath('./functions');
+addpath_recurse('./code_GLM_v1');
 addpath_recurse('./functions');
 addpath_recurse('./worksheets');
 
