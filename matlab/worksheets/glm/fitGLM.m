@@ -94,7 +94,7 @@ end
 
 %Flip stim and spike times so that model becomes anti-causal...
 Stim = [torque, rtorque];
-%Stim = flipud(Stim);
+Stim = flipud(Stim);
 
 %Truncate everything so that only data within trial is included
 
@@ -103,7 +103,7 @@ for idx=1:nU
 
   %idx = 9;
 	tsp = tspks(idx).times;
-  %tsp = T-tsp;
+  tsp = T-tsp;
 	nsp = length(tsp);
 	% Compute STA and use as initial guess for k
 	sta0 = simpleSTC(Stim,tsp,nkt);
