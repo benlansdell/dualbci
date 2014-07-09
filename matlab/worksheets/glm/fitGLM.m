@@ -15,7 +15,7 @@ kt = ggsim.k;  % Temporal filter
 %Load spike times, and stimulus data for each unit
 nevfile = './testdata/20130117SpankyUtah001.nev';
 matfile = './testdata/Spanky_2013-01-17-1325.mat';
-binsize = 0.001;
+binsize = 0.004;
 global RefreshRate;  % Stimulus refresh rate (Stim frames per second)
 samplerate = 1/binsize;
 RefreshRate = samplerate; 
@@ -93,7 +93,8 @@ for idx=1:length(trials)
 end
 
 %Flip stim and spike times so that model becomes anti-causal...
-Stim = [torque, rtorque];
+%Stim = [torque, rtorque];
+Stim = torque(:,1);
 Stim = flipud(Stim);
 
 %Truncate everything so that only data within trial is included
@@ -124,30 +125,30 @@ for idx=1:nU
 	
 	
 	%% 4. Plot results ====================
-	
+	figure
 	subplot(141);  % sta % ------------------------
 	plot(sta(:,1));
 	title(['raw STA, unit' unitnames{idx} '. filter 1']);
 	xlabel('time (ms)');
   ylabel('filter k');
 	
-  subplot(142);  % sta % ------------------------
-  plot(sta(:,2));
-  title(['raw STA, unit' unitnames{idx} '. filter 2']);
-  xlabel('time (ms)');
-  ylabel('filter k');
-
-  subplot(143);  % sta % ------------------------
-  plot(sta(:,3));
-  title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
-  xlabel('time (ms)');
-  ylabel('filter k');
-
-  subplot(144);  % sta % ------------------------
-  plot(sta(:,4));
-  title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
-  xlabel('time (ms)');
-  ylabel('filter k');
+%  subplot(142);  % sta % ------------------------
+%  plot(sta(:,2));
+%  title(['raw STA, unit' unitnames{idx} '. filter 2']);
+%  xlabel('time (ms)');
+%  ylabel('filter k');
+%
+%  subplot(143);  % sta % ------------------------
+%  plot(sta(:,3));
+%  title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
+%  xlabel('time (ms)');
+%  ylabel('filter k');
+%
+%  subplot(144);  % sta % ------------------------
+%  plot(sta(:,4));
+%  title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
+%  xlabel('time (ms)');
+%  ylabel('filter k');
 
   saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,2]);
 
