@@ -15,7 +15,7 @@ kt = ggsim.k;  % Temporal filter
 %Load spike times, and stimulus data for each unit
 nevfile = './testdata/20130117SpankyUtah001.nev';
 matfile = './testdata/Spanky_2013-01-17-1325.mat';
-binsize = 0.004;
+binsize = 0.002;
 global RefreshRate;  % Stimulus refresh rate (Stim frames per second)
 samplerate = 1/binsize;
 RefreshRate = samplerate; 
@@ -93,8 +93,8 @@ for idx=1:length(trials)
 end
 
 %Flip stim and spike times so that model becomes anti-causal...
-%Stim = [torque, rtorque];
-Stim = torque(:,1);
+Stim = [torque, rtorque];
+%Stim = torque(:,1);
 Stim = flipud(Stim);
 
 %Truncate everything so that only data within trial is included
@@ -102,13 +102,50 @@ Stim = flipud(Stim);
 %For each unit, fit a GLM to the torque data
 for idx=1:nU 
 
-  %idx = 9;
-	tsp = tspks(idx).times;
-  tsp = T-tsp;
+  tsp = binnedspikes(:,idx);
+  tsp = flipud(tsp);
+
 	nsp = length(tsp);
-	% Compute STA and use as initial guess for k
-	sta0 = simpleSTC(Stim,tsp,nkt);
-	sta = reshape(sta0,nkt,[]);
+	%Compute STA and use as initial guess for k
+
+  %Fit a filter of different sizes (should observe the start not changing with size...)
+	nkts = [50 100 150 200 250 300];
+  figure
+  hold on
+  for idx = 1:length(nkts)
+    nkt = nkts(idx);
+    sta0 = simpleSTC(Stim,tsp,nkt);
+    sta = reshape(sta0,nkt,[]);
+    tt = (1:size(sta,1))*binsize*1000;
+    subplot(141);  % sta % ------------------------
+    hold on
+    plot(tt, sta(:,1)+idx*0.01);
+    title(['raw STA, unit' unitnames{idx} '. filter 1']);
+    xlabel('time (ms)');
+    ylabel('filter k');
+    
+    subplot(142);  % sta % ------------------------
+    hold on
+    plot(tt, sta(:,2)+idx*0.01);
+    title(['raw STA, unit' unitnames{idx} '. filter 2']);
+    xlabel('time (ms)');
+    ylabel('filter k');
+  
+    subplot(143);  % sta % ------------------------
+    hold on
+    plot(tt, sta(:,3)+idx*0.01);
+    title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
+    xlabel('time (ms)');
+    ylabel('filter k');
+  
+    subplot(144);  % sta % ------------------------
+    hold on
+    plot(tt, sta(:,4)+idx*0.01);
+    title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
+    xlabel('time (ms)');
+    ylabel('filter k');
+  end
+
 	
 	%% 3. Fit GLM (traditional version) via max likelihood
 	
@@ -126,31 +163,32 @@ for idx=1:nU
 	
 	%% 4. Plot results ====================
 	figure
+  tt = (1:size(sta,1))*binsize*1000;
 	subplot(141);  % sta % ------------------------
-	plot(sta(:,1));
+	plot(tt, sta(:,1));
 	title(['raw STA, unit' unitnames{idx} '. filter 1']);
 	xlabel('time (ms)');
   ylabel('filter k');
 	
-%  subplot(142);  % sta % ------------------------
-%  plot(sta(:,2));
-%  title(['raw STA, unit' unitnames{idx} '. filter 2']);
-%  xlabel('time (ms)');
-%  ylabel('filter k');
-%
-%  subplot(143);  % sta % ------------------------
-%  plot(sta(:,3));
-%  title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
-%  xlabel('time (ms)');
-%  ylabel('filter k');
-%
-%  subplot(144);  % sta % ------------------------
-%  plot(sta(:,4));
-%  title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
-%  xlabel('time (ms)');
-%  ylabel('filter k');
+  subplot(142);  % sta % ------------------------
+  plot(tt, sta(:,2));
+  title(['raw STA, unit' unitnames{idx} '. filter 2']);
+  xlabel('time (ms)');
+  ylabel('filter k');
 
-  saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,2]);
+  subplot(143);  % sta % ------------------------
+  plot(tt, sta(:,3));
+  title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
+  xlabel('time (ms)');
+  ylabel('filter k');
+
+  subplot(144);  % sta % ------------------------
+  plot(tt, sta(:,4));
+  title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
+  xlabel('time (ms)');
+  ylabel('filter k');
+
+  saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,3]);
 
 	%subplot(233); % sta-projection % ---------------
 	%imagesc(gg0.k)
