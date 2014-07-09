@@ -1,20 +1,20 @@
 % fitGLM.m
 
-%% 1.  Set parameters and display for GLM ============= % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set parameters and display for GLM % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DTsim = .001; % Bin size for simulating model & computing likelihood.
-nkt = 15;  % Number of time bins in filter;
+nkt = 300;  % Number of time bins in filter;
 ttk = [-nkt+1:0]';
 ggsim = makeSimStruct_GLM(nkt,DTsim);  % Create GLM struct with default params
 kt = ggsim.k;  % Temporal filter
 
-%Do for each interesting channel
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Load some training data %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% 2. Load some training data ========================================
-
-%Load spike times, and stimulus data
-%Load spike times for each unit
-
+%Load spike times, and stimulus data for each unit
 nevfile = './testdata/20130117SpankyUtah001.nev';
 matfile = './testdata/Spanky_2013-01-17-1325.mat';
 binsize = 0.001;
@@ -24,8 +24,8 @@ RefreshRate = samplerate;
 offset = 0;
 threshold = 5;
 verbosity = 1;
-fn_out = './worksheets/shoham/plots/20130117SpankyUtah001';
-[binnedspikes rates torque dtorque ddtorque unitnames tspks] = preprocess_shoham_nev(nevfile, fn_out, binsize, threshold, offset);
+fn_out = './worksheets/glm/20130117SpankyUtah001';
+[binnedspikes rates torque unitnames tspks] = preprocess_pillow_nev(nevfile, fn_out, binsize, threshold, offset);
 nU = length(unitnames);
 
 %Load 'stimulus' data
@@ -76,7 +76,7 @@ for idx=1:length(trials)
   	  	%theta = -theta - pi/2;
   	  	%OR don't do any rotation
   	  	theta = 0;
-  	  	%Rotate torque, dtorque and ddtorque
+  	  	%Rotate torque
   	  	rotation = [cos(theta), -sin(theta); sin(theta), cos(theta)];
   	  	rtorque(trialstart:trialend,:) = (rotation*(rtorque(trialstart:trialend,:)'))';
   	  	trqstr = (rotation*trqstr')';
@@ -93,12 +93,15 @@ for idx=1:length(trials)
   	end
 end
 
+%Flip stim and spike times so that model becomes anti-causal...
 Stim = [torque, rtorque];
+Stim = flipud(Stim);
 
 %For each unit, fit a GLM to the torque data
 for idx=1:nU 
 
 	tsp = tspks(idx).times;
+  tsp = flipud(tsp);
 	nsp = length(tsp);
 	% Compute STA and use as initial guess for k
 	sta0 = simpleSTC(Stim,tsp,nkt);
@@ -107,37 +110,41 @@ for idx=1:nU
 	%% 3. Fit GLM (traditional version) via max likelihood
 	
 	%  Initialize params for fitting --------------
-	Filter_rank = 1;
-	gg0 = makeFittingStruct_GLM(sta,DTsim);
-	gg0.tsp = tsp;
-	gg0.tspi = 1;
-	[logli0,rr0,tt] = neglogli_GLM(gg0,Stim); % Compute logli of initial params (if desired)
-	
-	% Do ML estimation of model params
-	opts = {'display', 'iter', 'maxiter', 100};
-	[gg1, negloglival] = MLfit_GLM(gg0,Stim,opts); % do ML (requires optimization toolbox)
+	%Filter_rank = 1;
+	%gg0 = makeFittingStruct_GLM(sta,DTsim);
+	%gg0.tsp = tsp;
+	%gg0.tspi = 1;
+	%[logli0,rr0,tt] = neglogli_GLM(gg0,Stim); % Compute logli of initial params (if desired)
+	%
+	%% Do ML estimation of model params
+	%opts = {'display', 'iter', 'maxiter', 100};
+	%[gg1, negloglival] = MLfit_GLM(gg0,Stim,opts); % do ML (requires optimization toolbox)
 	
 	
 	%% 4. Plot results ====================
 	figure(3);
 	
-	subplot(232);  % sta % ------------------------
+	%subplot(232);  % sta % ------------------------
 	imagesc(sta);
-	title('raw STA');
+  colorbar;
+	title(['raw STA, unit' unitnames(idx)]);
 	ylabel('time');
 	
-	subplot(233); % sta-projection % ---------------
-	imagesc(gg0.k)
-	title('projected STA');
-	
-	subplot(234); % estimated filter % ---------------
-	imagesc(gg1.k) 
-	title('ML estimate: full filter'); xlabel('space'); ylabel('time');
-	
-	subplot(236); % ----------------------------------
-	plot(ggsim.iht,exp(ggsim.ih),'k', gg1.iht,exp(gg1.ihbas*gg1.ih),'b',...
-	    gg2.iht, exp(gg2.ihbas*gg2.ih), 'r');
-	title('post-spike kernel');
-	axis tight;
+	%subplot(233); % sta-projection % ---------------
+	%imagesc(gg0.k)
+	%title('projected STA');
+	%
+	%subplot(234); % estimated filter % ---------------
+	%imagesc(gg1.k) 
+	%title('ML estimate: full filter'); xlabel('space'); ylabel('time');
+	%
+	%subplot(236); % ----------------------------------
+	%plot(ggsim.iht,exp(ggsim.ih),'k', gg1.iht,exp(gg1.ihbas*gg1.ih),'b',...
+	%    gg2.iht, exp(gg2.ihbas*gg2.ih), 'r');
+	%title('post-spike kernel');
+	%axis tight;
+  pause 
 
 end
+
+%Once fit model, test with some test data
