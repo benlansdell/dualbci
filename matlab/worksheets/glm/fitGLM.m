@@ -25,6 +25,7 @@ verbosity = 1;
 fn_out = './worksheets/glm/20130117SpankyUtah001';
 [binnedspikes rates torque unitnames tspks] = preprocess_pillow_nev(nevfile, fn_out, binsize, threshold, offset);
 nU = length(unitnames);
+T = size(binnedspikes, 1)*binsize;
 
 %Load 'stimulus' data
 withintrial = zeros(size(rates,1),1);
@@ -93,7 +94,7 @@ end
 
 %Flip stim and spike times so that model becomes anti-causal...
 Stim = [torque, rtorque];
-Stim = flipud(Stim);
+%Stim = flipud(Stim);
 
 %Truncate everything so that only data within trial is included
 
@@ -102,7 +103,7 @@ for idx=1:nU
 
   %idx = 9;
 	tsp = tspks(idx).times;
-  tsp = flipud(tsp);
+  %tsp = T-tsp;
 	nsp = length(tsp);
 	% Compute STA and use as initial guess for k
 	sta0 = simpleSTC(Stim,tsp,nkt);
@@ -123,33 +124,32 @@ for idx=1:nU
 	
 	
 	%% 4. Plot results ====================
-	figure(3);
 	
 	subplot(141);  % sta % ------------------------
 	plot(sta(:,1));
-	title(['raw STA, unit' unitnames(idx) '. filter 1']);
+	title(['raw STA, unit' unitnames{idx} '. filter 1']);
 	xlabel('time (ms)');
   ylabel('filter k');
 	
   subplot(142);  % sta % ------------------------
   plot(sta(:,2));
-  title(['raw STA, unit' unitnames(idx) '. filter 2']);
+  title(['raw STA, unit' unitnames{idx} '. filter 2']);
   xlabel('time (ms)');
   ylabel('filter k');
 
   subplot(143);  % sta % ------------------------
   plot(sta(:,3));
-  title(['raw STA, unit' unitnames(idx) '. rotated filter 1']);
+  title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
   xlabel('time (ms)');
   ylabel('filter k');
 
   subplot(144);  % sta % ------------------------
   plot(sta(:,4));
-  title(['raw STA, unit' unitnames(idx) '. rotated filter 2']);
+  title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
   xlabel('time (ms)');
   ylabel('filter k');
 
-  saveplot(gcf, [fn_out '_unit_' unitnames(idx) '_filters.eps'], 'eps');
+  saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,2]);
 
 	%subplot(233); % sta-projection % ---------------
 	%imagesc(gg0.k)
@@ -164,7 +164,6 @@ for idx=1:nU
 	%    gg2.iht, exp(gg2.ihbas*gg2.ih), 'r');
 	%title('post-spike kernel');
 	%axis tight;
-  pause 
 
 end
 
