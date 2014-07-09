@@ -1,5 +1,3 @@
-% fitGLM.m
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set parameters and display for GLM % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -97,9 +95,12 @@ end
 Stim = [torque, rtorque];
 Stim = flipud(Stim);
 
+%Truncate everything so that only data within trial is included
+
 %For each unit, fit a GLM to the torque data
 for idx=1:nU 
 
+  %idx = 9;
 	tsp = tspks(idx).times;
   tsp = flipud(tsp);
 	nsp = length(tsp);
@@ -124,12 +125,32 @@ for idx=1:nU
 	%% 4. Plot results ====================
 	figure(3);
 	
-	%subplot(232);  % sta % ------------------------
-	imagesc(sta);
-  colorbar;
-	title(['raw STA, unit' unitnames(idx)]);
-	ylabel('time');
+	subplot(141);  % sta % ------------------------
+	plot(sta(:,1));
+	title(['raw STA, unit' unitnames(idx) '. filter 1']);
+	xlabel('time (ms)');
+  ylabel('filter k');
 	
+  subplot(142);  % sta % ------------------------
+  plot(sta(:,2));
+  title(['raw STA, unit' unitnames(idx) '. filter 2']);
+  xlabel('time (ms)');
+  ylabel('filter k');
+
+  subplot(143);  % sta % ------------------------
+  plot(sta(:,3));
+  title(['raw STA, unit' unitnames(idx) '. rotated filter 1']);
+  xlabel('time (ms)');
+  ylabel('filter k');
+
+  subplot(144);  % sta % ------------------------
+  plot(sta(:,4));
+  title(['raw STA, unit' unitnames(idx) '. rotated filter 2']);
+  xlabel('time (ms)');
+  ylabel('filter k');
+
+  saveplot(gcf, [fn_out '_unit_' unitnames(idx) '_filters.eps'], 'eps');
+
 	%subplot(233); % sta-projection % ---------------
 	%imagesc(gg0.k)
 	%title('projected STA');
