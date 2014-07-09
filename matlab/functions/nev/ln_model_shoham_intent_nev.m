@@ -63,7 +63,7 @@ function [r2 LNr2 loglikelihoods, lp] = ln_model_shoham_intent_nev(nevfile, matf
   	%Load trial info
   	trials = import_trials(matfile);
   	for idx=1:length(trials)
-  	  	%For each trial, use only those corresponding to the given nev file
+  	  	%Use only those within the corresponding nev file
   	  	[path1, name1, ext1] = fileparts(nevfile);
   	  	[path2, name2, ext2] = fileparts(trials(idx).nevfile);
   	  	if strcmp(name1, name2)
