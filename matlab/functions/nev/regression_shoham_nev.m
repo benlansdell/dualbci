@@ -175,7 +175,7 @@ function [r2 LNr2 loglikelihoods, lp] = regression_shoham_nev(nevfile, fn_out, k
 		xlabel('linear prediction');
 		ylabel('spikes/s');
 		subplot(2,4,6);
-	   	t = 100;
+	   	t = 50;
 	   	dt = 30;
     	times = ((t*samplerate):((t+dt)*samplerate))*binsize;
 		%plot(times, rates((t*samplerate):((t+dt)*samplerate), i), times, smthfittedrates(i,(t*samplerate):((t+dt)*samplerate)));
