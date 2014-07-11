@@ -15,7 +15,7 @@ kt = ggsim.k;  % Temporal filter
 %Load spike times, and stimulus data for each unit
 nevfile = './testdata/20130117SpankyUtah001.nev';
 matfile = './testdata/Spanky_2013-01-17-1325.mat';
-binsize = 0.004;
+binsize = 0.002;
 global RefreshRate;  % Stimulus refresh rate (Stim frames per second)
 samplerate = 1/binsize;
 RefreshRate = samplerate; 
