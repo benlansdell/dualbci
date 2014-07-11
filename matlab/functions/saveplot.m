@@ -75,7 +75,7 @@ function saveplot(h, filename, format, dimensions, journal)
 		dev = '-depsc';
 	elseif strcmp(format, 'png')
 		dev = '-dpng';
-		%renderer = '-opengl';
+		renderer = '-zbuffer';
 	elseif strcmp(format, 'pdf')
 		dev = '-dpdf';
 	elseif strcmp(format, 'jpg')
