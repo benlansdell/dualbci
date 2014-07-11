@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DTsim = .001; % Bin size for simulating model & computing likelihood.
-nkt = 300;  % Number of time bins in filter;
+nkt = 500;  % Number of time bins in filter;
 ttk = [-nkt+1:0]';
 ggsim = makeSimStruct_GLM(nkt,DTsim);  % Create GLM struct with default params
 kt = ggsim.k;  % Temporal filter
@@ -15,7 +15,7 @@ kt = ggsim.k;  % Temporal filter
 %Load spike times, and stimulus data for each unit
 nevfile = './testdata/20130117SpankyUtah001.nev';
 matfile = './testdata/Spanky_2013-01-17-1325.mat';
-binsize = 0.002;
+binsize = 0.004;
 global RefreshRate;  % Stimulus refresh rate (Stim frames per second)
 samplerate = 1/binsize;
 RefreshRate = samplerate; 
@@ -108,55 +108,21 @@ for idx=1:nU
 	nsp = length(tsp);
 	%Compute STA and use as initial guess for k
 
-  %Fit a filter of different sizes (should observe the start not changing with size...)
-	nkts = [50 100 150 200 250 300];
-  figure
-  hold on
-  for idx = 1:length(nkts)
-    nkt = nkts(idx);
-    sta0 = simpleSTC(Stim,tsp,nkt);
-    sta = reshape(sta0,nkt,[]);
-    tt = (1:size(sta,1))*binsize*1000;
-    subplot(141);  % sta % ------------------------
-    hold on
-    plot(tt, sta(:,1)+idx*0.01);
-    title(['raw STA, unit' unitnames{idx} '. filter 1']);
-    xlabel('time (ms)');
-    ylabel('filter k');
-    
-    subplot(142);  % sta % ------------------------
-    hold on
-    plot(tt, sta(:,2)+idx*0.01);
-    title(['raw STA, unit' unitnames{idx} '. filter 2']);
-    xlabel('time (ms)');
-    ylabel('filter k');
-  
-    subplot(143);  % sta % ------------------------
-    hold on
-    plot(tt, sta(:,3)+idx*0.01);
-    title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
-    xlabel('time (ms)');
-    ylabel('filter k');
-  
-    subplot(144);  % sta % ------------------------
-    hold on
-    plot(tt, sta(:,4)+idx*0.01);
-    title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
-    xlabel('time (ms)');
-    ylabel('filter k');
-  end
+  %[sta0, stc0] = simpleSTC(Stim,tsp,nkt);
+  sta0 = simpleSTC(Stim,tsp,nkt);
+  sta = reshape(sta0,nkt,[]);
+	%[u, s, v] = svd(stc0);
 
-	
 	%% 3. Fit GLM (traditional version) via max likelihood
 	
-	%  Initialize params for fitting --------------
+	%%  Initialize params for fitting --------------
 	%Filter_rank = 1;
 	%gg0 = makeFittingStruct_GLM(sta,DTsim);
 	%gg0.tsp = tsp;
 	%gg0.tspi = 1;
 	%[logli0,rr0,tt] = neglogli_GLM(gg0,Stim); % Compute logli of initial params (if desired)
-	%
-	%% Do ML estimation of model params
+	%%
+	%%% Do ML estimation of model params
 	%opts = {'display', 'iter', 'maxiter', 100};
 	%[gg1, negloglival] = MLfit_GLM(gg0,Stim,opts); % do ML (requires optimization toolbox)
 	
@@ -164,31 +130,43 @@ for idx=1:nU
 	%% 4. Plot results ====================
 	figure
   tt = (1:size(sta,1))*binsize*1000;
-	subplot(141);  % sta % ------------------------
+	subplot(241);  % sta % ------------------------
 	plot(tt, sta(:,1));
-	title(['raw STA, unit' unitnames{idx} '. filter 1']);
+	title(['unit ' unitnames{idx} '. filter FE']);
 	xlabel('time (ms)');
-  ylabel('filter k');
+  ylabel('STA');
 	
-  subplot(142);  % sta % ------------------------
+  subplot(242);  % sta % ------------------------
   plot(tt, sta(:,2));
-  title(['raw STA, unit' unitnames{idx} '. filter 2']);
+  title(['unit ' unitnames{idx} '. filter RU']);
   xlabel('time (ms)');
-  ylabel('filter k');
+  ylabel('STA');
 
-  subplot(143);  % sta % ------------------------
+  subplot(243);  % sta % ------------------------
   plot(tt, sta(:,3));
-  title(['raw STA, unit' unitnames{idx} '. rotated filter 1']);
+  title(['unit ' unitnames{idx} '. target centric filter FE']);
   xlabel('time (ms)');
-  ylabel('filter k');
+  ylabel('STA');
 
-  subplot(144);  % sta % ------------------------
+  subplot(244);  % sta % ------------------------
   plot(tt, sta(:,4));
-  title(['raw STA, unit' unitnames{idx} '. rotated filter 2']);
+  title(['unit ' unitnames{idx} '. target centric filter RU']);
   xlabel('time (ms)');
-  ylabel('filter k');
+  ylabel('STA');
 
-  saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,3]);
+  %subplot(245)
+  %%Plot stc
+  %title('STC')
+  %imagesc(stc0)
+  %subplot(246)
+  %%Plot singular values of stc
+  %for j = 1:size(stc0,1)
+  %  svals(j) = s(j,j);
+  %end
+  %plot(log(svals(1:100)))
+  %ylabel('log|singular values|')
+
+  saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,6]);
 
 	%subplot(233); % sta-projection % ---------------
 	%imagesc(gg0.k)
