@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DTsim = .001; % Bin size for simulating model & computing likelihood.
-nkt = 1000;  % Number of time bins in filter;
+nkt = 500;  % Number of time bins in filter;
 ttk = [-nkt+1:0]';
 ggsim = makeSimStruct_GLM(nkt,DTsim);  % Create GLM struct with default params
 kt = ggsim.k;  % Temporal filter
@@ -95,7 +95,7 @@ end
 %Flip stim and spike times so that model becomes anti-causal...
 Stim = [torque, rtorque];
 %Stim = torque(:,1);
-Stim = flipud(Stim);
+%Stim = flipud(Stim);
 
 %Truncate everything so that only data within trial is included
 
@@ -103,7 +103,7 @@ Stim = flipud(Stim);
 for idx=1:nU 
 
   tsp = binnedspikes(:,idx);
-  tsp = flipud(tsp);
+  %tsp = flipud(tsp);
 
 	nsp = length(tsp);
 	%Compute STA and use as initial guess for k
