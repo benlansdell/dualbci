@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DTsim = .001; % Bin size for simulating model & computing likelihood.
-nkt = 500;  % Number of time bins in filter;
+nkt = 1000;  % Number of time bins in filter;
 ttk = [-nkt+1:0]';
 ggsim = makeSimStruct_GLM(nkt,DTsim);  % Create GLM struct with default params
 kt = ggsim.k;  % Temporal filter
