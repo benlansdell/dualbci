@@ -22,7 +22,8 @@ RefreshRate = samplerate;
 offset = 0;
 threshold = 5;
 verbosity = 1;
-fn_out = './worksheets/glm/20130117SpankyUtah001';
+flip = false; %Flip causality
+fn_out = './worksheets/glm/20130117SpankyUtah001_causal';
 [binnedspikes rates torque unitnames tspks] = preprocess_pillow_nev(nevfile, fn_out, binsize, threshold, offset);
 nU = length(unitnames);
 T = size(binnedspikes, 1)*binsize;
@@ -95,7 +96,9 @@ end
 %Flip stim and spike times so that model becomes anti-causal...
 Stim = [torque, rtorque];
 %Stim = torque(:,1);
-%Stim = flipud(Stim);
+if flip
+  Stim = flipud(Stim);
+end
 
 %Truncate everything so that only data within trial is included
 
@@ -103,15 +106,19 @@ Stim = [torque, rtorque];
 for idx=1:nU 
 
   tsp = binnedspikes(:,idx);
-  %tsp = flipud(tsp);
-
+  if flip 
+    tsp = flipud(tsp);
+  end
 	nsp = length(tsp);
 	%Compute STA and use as initial guess for k
 
   %[sta0, stc0] = simpleSTC(Stim,tsp,nkt);
   sta0 = simpleSTC(Stim,tsp,nkt);
   sta = reshape(sta0,nkt,[]);
-	%[u, s, v] = svd(stc0);
+  if flip
+    sta = flipud(sta);
+	end
+  %[u, s, v] = svd(stc0);
 
 	%% 3. Fit GLM (traditional version) via max likelihood
 	
@@ -130,6 +137,9 @@ for idx=1:nU
 	%% 4. Plot results ====================
 	figure
   tt = (1:size(sta,1))*binsize*1000;
+  if ~flip
+  tt = tt - size(sta,1)*binsize*1000;
+  end
 	subplot(241);  % sta % ------------------------
 	plot(tt, sta(:,1));
 	title(['unit ' unitnames{idx} '. filter FE']);
@@ -153,6 +163,8 @@ for idx=1:nU
   title(['unit ' unitnames{idx} '. target centric filter RU']);
   xlabel('time (ms)');
   ylabel('STA');
+
+
 
   %subplot(245)
   %%Plot stc
@@ -185,3 +197,5 @@ for idx=1:nU
 end
 
 %Once fit model, test with some test data
+
+%How do we compare performance?
