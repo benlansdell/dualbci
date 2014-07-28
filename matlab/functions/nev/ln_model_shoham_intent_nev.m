@@ -13,10 +13,11 @@ function [r2 LNr2 loglikelihoods, lp] = ln_model_shoham_intent_nev(nevfile, matf
 	%		directly below it. (A simple model of intentionality)
 	%		
 	%		Usage:
-	%			[r2 LNr2 loglikelihoods lp] = ln_model_shoham_intent_nev(nevfile, fn_out, kernlelength, polydeg)
+	%			[r2 LNr2 loglikelihoods lp] = ln_model_shoham_intent_nev(nevfile, matfile, fn_out, kernlelength, polydeg)
 	%
 	% 		Input:
 	%			nevfile = file to process
+	%			matfile = .mat file containing trial information
 	%			fn_out = base name for output plots
 	%			kernellength = number of points in linear filter to fit (recommend 4)
 	%			polydeg = degree of polynomial for N part of model (recommend 4)

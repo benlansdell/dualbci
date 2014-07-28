@@ -1,5 +1,5 @@
-function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
-	%nonparam_intent_shoham_new	Function to estimate the spike density
+function nonparam_intent_shoham_nev(nevfile, matfile, fn_out, threshold)
+	%nonparam_intent_shoham_nev	Function to estimate the spike density
   %
   %         p(spike| x,y) ~ p (x,y|spike) / p(x,y)
   %
@@ -7,7 +7,7 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
   %   won't affect velocity or accel encoding.
 	%
 	%		Usage:
-	%			nonparam_intent_shoham_new(nevfile, fn_out, threshold)
+	%			nonparam_intent_shoham_nev(nevfile, fn_out, threshold)
 	%
 	% 	Input:
 	%			nevfile = file to process
@@ -24,7 +24,7 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
   %     matfile = './testdata/Spanky_2013-01-17-1325.mat';
 	%			threshold = 5;
 	%			fn_out = './worksheets/glm/july';
-	%			nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold);
+	%			nonparam_intent_shoham_nev(nevfile, matfile, fn_out, threshold);
 	
 	%Optional arguments
 	if (nargin < 3)	threshold = 5; end
@@ -76,16 +76,7 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
                 theta = theta - pi;
               end
             end
-            %Plot to make sure things make sense
             %Before rotation
-            if verbosity > 1
-              figure
-              subplot(1,2,1)
-              plot(torque(trialstart:trialend,1), torque(trialstart:trialend,2), trqstr(1), trqstr(2), 'or');
-              title('Cursor position before rotation. red = start')
-              xlim([-0.5 0.5])
-              ylim([-0.5 0.5])
-            end
             %Place directly below torque end position (theta = pi/2)
             theta = -theta - pi/2;
             %OR don't do any rotation
@@ -96,14 +87,6 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
             dtorque(trialstart:trialend,:) = (rotation*(dtorque(trialstart:trialend,:)'))';
             ddtorque(trialstart:trialend,:) = (rotation*(ddtorque(trialstart:trialend,:)'))';
             trqstr = (rotation*trqstr')';
-            %Plot after rotation
-            if verbosity > 1
-              subplot(1,2,2)
-              plot(torque(trialstart:trialend,1), torque(trialstart:trialend,2), trqstr(1), trqstr(2), 'or');
-              title('Cursor position after rotation. red = start')
-              xlim([-0.5 0.5])
-              ylim([-0.5 0.5])
-            end
             display(['Trial ' num2str(idx) ' within nev file. t_start: ' num2str(trials(idx).starttime) ' t_end: ' num2str(trials(idx).endtime)]);
             %pause
         end
@@ -113,7 +96,7 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
     torque = torque(withintrial==1,:);
     dtorque = dtorque(withintrial==1,:);
     ddtorque = ddtorque(withintrial==1,:);
-    bs = bs(withintrial==1,:);
+    binnedspikes = binnedspikes(withintrial==1,:);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %Compute p(x,y|spike)/p(x,y) ~ p(spike|x,y)%
@@ -127,6 +110,10 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
   histxy = zeros(nx);
   histvxy = zeros(nx);
   histaxy = zeros(nx);
+
+  meansxy = zeros(nU, 2);
+  meansvxy = zeros(nU, 2);
+  meansaxy = zeros(nU, 2);
 
   maxxy = (std(torque(:,1))+std(torque(:,2)));
   maxvxy = (std(dtorque(:,1))+std(dtorque(:,2)))/2;
@@ -160,9 +147,9 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
 
   end
 
-  histxy = (histxy+1)/max(max(histxy));
-  histvxy = (histvxy+1)/max(max(histvxy));
-  histaxy = (histaxy+1)/max(max(histaxy));
+  histxy = (histxy+1)/sum(sum(histxy));
+  histvxy = (histvxy+1)/sum(sum(histvxy));
+  histaxy = (histaxy+1)/sum(sum(histaxy));
   zaxis = [0 1];
 
 	subplot(2,2,1)
@@ -217,9 +204,9 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
       end
     end
 
-    histxy_sp = histxy_sp/max(max(histxy_sp));
-    histvxy_sp = histvxy_sp/max(max(histvxy_sp));
-    histaxy_sp = histaxy_sp/max(max(histaxy_sp));
+    histxy_sp = histxy_sp/sum(sum(histxy_sp));
+    histvxy_sp = histvxy_sp/sum(sum(histvxy_sp));
+    histaxy_sp = histaxy_sp/sum(sum(histaxy_sp));
 
   	figure
   	%Position
@@ -254,5 +241,45 @@ function nonparam_intent_shoham_new(nevfile, matfile, fn_out, threshold)
 
   	saveplot(gcf, [fn_out '_spikedensity_unit_' unitnames{i} '.eps'], 'eps', [5 5]);
   	%pause
+
+    %For all of them plot a set of arrows for each one's mean 
+    a = histxy_sp./(histxy);
+    a = a / sum(sum(a));
+    b = histvxy_sp./(histvxy);
+    b = b / sum(sum(b));
+    c = histaxy_sp./(histaxy);
+    c = c / sum(sum(c));
+    for j = 1:nx
+      for k = 1:nx
+        meansxy(i, 1) = meansxy(i, 1) + j*a(j,k);
+        meansxy(i, 2) = meansxy(i, 2) + k*a(j,k);
+        meansvxy(i, 1) = meansvxy(i, 1) + j*b(j,k);
+        meansvxy(i, 2) = meansvxy(i, 2) + k*b(j,k);
+        meansaxy(i, 1) = meansaxy(i, 1) + j*c(j,k);
+        meansaxy(i, 2) = meansaxy(i, 2) + k*c(j,k);
+      end
+    end
   end
+
+  %Compute mean
+  meansxy = meansxy/nx - 0.5;
+  meansvxy = meansvxy/nx - 0.5;
+  meansaxy = meansaxy/nx - 0.5;
+
+  %Plot arrows
+  figure
+  for idx = 1:nU
+    subplot(131)
+    hold on
+    plot([0, meansxy(idx, 1)], [0, meansxy(idx, 2)])
+    subplot(132)
+    hold on
+    plot([0, meansvxy(idx, 1)], [0, meansvxy(idx, 2)])
+    subplot(133)
+    hold on
+    plot([0, meansaxy(idx, 1)], [0, meansaxy(idx, 2)])
+  end
+
+  saveplot(gcf, [fn_out '_mean_arrows.eps'], 'eps', [6 2])
+
 end
