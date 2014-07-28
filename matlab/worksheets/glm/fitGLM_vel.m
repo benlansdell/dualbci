@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DTsim = .001; % Bin size for simulating model & computing likelihood.
-nkt = 500;  % Number of time bins in filter;
+nkt = 100;  % Number of time bins in filter;
 ttk = [-nkt+1:0]';
 ggsim = makeSimStruct_GLM(nkt,DTsim);  % Create GLM struct with default params
 kt = ggsim.k;  % Temporal filter
@@ -95,7 +95,8 @@ for idx=1:length(trials)
 end
 
 %Flip stim and spike times so that model becomes anti-causal...
-Stim = [torque dtorque ddtorque];
+%Stim = [torque dtorque ddtorque];
+Stim = [dtorque];
 Stim = flipud(Stim);
 stas = zeros(nU, nkt, 6);
 %Truncate everything so that only data within trial is included
@@ -105,7 +106,6 @@ for idx=1:nU
 
   tsp = binnedspikes(:,idx);
   tsp = flipud(tsp);
-
 	nsp = length(tsp);
 	%Compute STA and use as initial guess for k
 
@@ -120,16 +120,16 @@ for idx=1:nU
 
 	%% 3. Fit GLM (traditional version) via max likelihood
 	
-	%%  Initialize params for fitting --------------
-	%Filter_rank = 1;
-	%gg0 = makeFittingStruct_GLM(sta,DTsim);
-	%gg0.tsp = tsp;
-	%gg0.tspi = 1;
-	%[logli0,rr0,tt] = neglogli_GLM(gg0,Stim); % Compute logli of initial params (if desired)
-	%%
-	%%% Do ML estimation of model params
-	%opts = {'display', 'iter', 'maxiter', 100};
-	%[gg1, negloglival] = MLfit_GLM(gg0,Stim,opts); % do ML (requires optimization toolbox)
+	%  Initialize params for fitting --------------
+	Filter_rank = 1;
+	gg0 = makeFittingStruct_GLM(sta,DTsim);
+	gg0.tsp = tsp;
+	gg0.tspi = 1;
+	[logli0,rr0,tt] = neglogli_GLM(gg0,Stim); % Compute logli of initial params (if desired)
+	%
+	%% Do ML estimation of model params
+	opts = {'display', 'iter', 'maxiter', 100};
+	[gg1, negloglival] = MLfit_GLM(gg0,Stim,opts); % do ML (requires optimization toolbox)
 	
 	
 	%% 4. Plot results ====================
