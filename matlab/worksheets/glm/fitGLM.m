@@ -2,7 +2,7 @@
 % Set parameters and display for GLM % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DTsim = .001; % Bin size for simulating model & computing likelihood.
+DTsim = .05; % Bin size for simulating model & computing likelihood.
 nkt = 500;  % Number of time bins in filter;
 ttk = [-nkt+1:0]';
 ggsim = makeSimStruct_GLM(nkt,DTsim);  % Create GLM struct with default params
@@ -23,7 +23,7 @@ offset = 0;
 threshold = 5;
 verbosity = 1;
 flip = true; %Flip causality
-fn_out = './worksheets/glm/20130117SpankyUtah001_causal';
+fn_out = './worksheets/glm/20130117SpankyUtah001_coarse';
 [binnedspikes rates torque unitnames tspks] = preprocess_pillow_nev(nevfile, fn_out, binsize, threshold, offset);
 nU = length(unitnames);
 T = size(binnedspikes, 1)*binsize;
@@ -123,15 +123,15 @@ for idx=1:nU
 	%% 3. Fit GLM (traditional version) via max likelihood
 	
 	%%  Initialize params for fitting --------------
-	%Filter_rank = 1;
-	%gg0 = makeFittingStruct_GLM(sta,DTsim);
-	%gg0.tsp = tsp;
-	%gg0.tspi = 1;
+	Filter_rank = 1;
+	gg0 = makeFittingStruct_GLM(sta,DTsim);
+	gg0.tsp = tsp;
+	gg0.tspi = 1;
 	%[logli0,rr0,tt] = neglogli_GLM(gg0,Stim); % Compute logli of initial params (if desired)
 	%%
 	%%% Do ML estimation of model params
-	%opts = {'display', 'iter', 'maxiter', 100};
-	%[gg1, negloglival] = MLfit_GLM(gg0,Stim,opts); % do ML (requires optimization toolbox)
+	opts = {'display', 'iter', 'maxiter', 100};
+	[gg1, negloglival] = MLfit_GLM(gg0,Stim,opts); % do ML (requires optimization toolbox)
 	
 	
 	%% 4. Plot results ====================
