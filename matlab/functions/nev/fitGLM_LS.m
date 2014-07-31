@@ -20,7 +20,7 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
   %   Test code:
   %     nevfile = './testdata/20130117SpankyUtah001.nev';
   %     matfile = './testdata/Spanky_2013-01-17-1325.mat';
-  %     binsize = 0.001;
+  %     binsize = 0.002;
   %     nkt = 100;
   %     threshold = 5;
   %     fn_out = './worksheets/glm_ls/plots/20130117SpankyUtah001';
@@ -109,14 +109,16 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
   %For each unit, fit a GLM to the torque data
   for idx=1:nU 
     display(['Fitting GLM for unit', unitnames{idx}])
-  
+    %Binned spikes for given unit
     tsp = binnedspikes(:,idx);
-    nsp = length(tsp);
+    sps = find(tsp);
+    lsp = length(tsp);
+    display(['Using ' sum(tsp) ' spikes.'])
   
     %Make stimulus vector
-    shist = zeros(nsp, nkt);
-    ex_torque = zeros(nsp, nkt*2);
-    for j = nkt:(nsp-nkt)
+    shist = zeros(lsp, nkt);
+    ex_torque = zeros(lsp, nkt*2);
+    for j = nkt:(lsp-nkt)
       shist(j,:) = tsp(j-nkt+1:j);
       ex_torque(j,1:nkt) = torque(j:(j+nkt-1),1);
       ex_torque(j,nkt+1:end) = torque(j:(j+nkt-1),2);
@@ -127,6 +129,9 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
     %Truncate to exclude start and end of recording
     Stim = Stim(nkt+1:end-nkt,:);
     tsp = tsp(nkt+1:end-nkt);
+    %Only focus on stimulus at spike times...
+    %Stim = Stim(sps);
+
     %If only running tests, then take a subsection of data
     tStim = Stim(1:50000,:);
     ttsp = tsp(1:50000);
@@ -158,38 +163,6 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
     xlabel('time (ms)');
     ylabel('STA');
   
-    %subplot(244);  % sta % ------------------------
-    %plot(tt, sta(:,4));
-    %title(['unit ' unitnames{idx} '. target centric filter RU']);
-    %xlabel('time (ms)');
-    %ylabel('STA');
-  
-    %subplot(245)
-    %%Plot stc
-    %title('STC')
-    %imagesc(stc0)
-    %subplot(246)
-    %%Plot singular values of stc
-    %for j = 1:size(stc0,1)
-    %  svals(j) = s(j,j);
-    %end
-    %plot(log(svals(1:100)))
-    %ylabel('log|singular values|')
-  
     saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,6]);
-  
-  	%subplot(233); % sta-projection % ---------------
-  	%imagesc(gg0.k)
-  	%title('projected STA');
-  	%
-  	%subplot(234); % estimated filter % ---------------
-  	%imagesc(gg1.k) 
-  	%title('ML estimate: full filter'); xlabel('space'); ylabel('time');
-  	%
-  	%subplot(236); % ----------------------------------
-  	%plot(ggsim.iht,exp(ggsim.ih),'k', gg1.iht,exp(gg1.ihbas*gg1.ih),'b',...
-  	%    gg2.iht, exp(gg2.ihbas*gg2.ih), 'r');
-  	%title('post-spike kernel');
-  	%axis tight;
   
   end
