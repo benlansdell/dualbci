@@ -5,9 +5,13 @@
 %metaData = '/home/lansdell/projects/bci/matlab/labview';
 
 addpath('./functions');
-addpath_recurse('./code_GLM_v1');
 addpath_recurse('./functions');
+addpath_recurse('./preprocess');
+addpath_recurse('./models');
+addpath_recurse('./fitting');
+addpath_recurse('./eval');
 addpath_recurse('./worksheets');
+addpath_recurse('./other');
 
 %nev files, labview files, respectively
 addpath('./blackrock', './labview');
