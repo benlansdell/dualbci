@@ -22,11 +22,11 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
   %     nevfile = './testdata/20130117SpankyUtah001.nev';
   %     matfile = './testdata/Spanky_2013-01-17-1325.mat';
   %     binsize = 0.002;
-  %     nkt = 200;
+  %     nkt = 100;
   %     threshold = 5;
   %     fn_out = './worksheets/glm_ls/plots/20130117SpankyUtah001';
   %     units = {'55.1'};
-  %     [b, dev, stats] = fitGLM(nevfile, matfile, fn_out, binsize, nkt, threshold, units);
+  %     [b, dev, stats] = fitGLM_lasso(nevfile, matfile, fn_out, binsize, nkt, threshold, units);
 
   assert(nargin >= 3, 'Need more than 2 input arguments.');
   if (nargin < 4) binsize = 0.002; end
@@ -39,7 +39,7 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
   coarsebs = 0.05;
   %Make a Gaussian filter to smooth
   coarseSR = 1/coarsebs; %Sample rate for which to smooth values (1/50ms = 20Hz)
-  sigma_fr = 0.5;
+  sigma_fr = 0.25;
   sz = 30;
   sigma_fr = sigma_fr*coarseSR;
   sz = sigma_fr*3*2;
@@ -155,31 +155,30 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
     %Truncate to exclude start and end of recording
     Stim = Stim(nkt+1:end-nkt,:);
     tsp = tsp(nkt+1:end-nkt);
-    %Truncate other data for comparison, too
-    binnedspikes = binnedspikes(nkt+1:end-nkt,:);
-    rates = rates(floor(nkt/2)+1:end-nkt,:);
-    torque = torque(nkt+1:end-nkt,:); 
-    dt = dt(nkt+1:end-nkt,:);
-    ddt = dt(nkt+1:end-nkt,:);
+    %Only focus on stimulus at spike times...
+    %Stim = Stim(sps);
 
     %If only running tests, then take a subsection of data
     tStim = double(Stim);
     ttsp = double(tsp);
-    tStim = Stim(1:min(50000, size(Stim, 1)),:);
+    %Add a column of ones for the constant term
+    tStim = [ones(size(tStim, 1),1), tStim];
+    tStim = tStim(1:min(50000, size(tStim, 1)),:);
     ttsp = tsp(1:min(50000, size(Stim, 1)));
-    [b, dev, stats] = glmfit(tStim,ttsp,'poisson');
-   
+    %[b, dev, stats] = glmfit(tStim,ttsp,'binomial');
+    %[b, dev, stats] = glmfit(tStim,ttsp,'poisson');
+    [b, fitinfo] = lassoglm(tStim, ttsp, 'poisson', 'Alpha',.25,'CV',3,'NumLambda',20,'LambdaRatio',10^-4)
+
+    selected_lambda=fitinfo.IndexMinDeviance % index of best model based on min deviance
+    % selected_lambda=1 % alternatively just pick a model by hand
+    bb=b(:,selected_lambda); % bb is [k1; k2; h]
+    bbb=[fitinfo.Intercept(selected_lambda); bb]; % bbb is [b; k1, k2; h] This is the vector with all of fit coefficients
+
     %Extract filters fitted...
-    const = b(1);
-    fil_shist = b(2:nkt+1);
-    fil_torque1 = b(nkt+2:2*nkt+1);
-    fil_torque2 = b(2*nkt+2:3*nkt+1);
-    
-    %Or use lassoglm and compare...
-    %[b, fitinfo] = lassoglm(tStim, ttsp, 'binomial', 'Alpha',.25,'CV',3,'NumLambda',20,'LambdaRatio',10^-4)
-  	%fil_shist = b(1:nkt);
-    %fil_torque1 = b(nkt+1:2*nkt);
-    %fil_torque2 = b(2*nkt+1:3*nkt);
+    const = bbb(1);
+    fil_shist = bbb(2:nkt+1);
+    fil_torque1 = bbb(nkt+2:2*nkt+1);
+    fil_torque2 = bbb(2*nkt+2:3*nkt+1);
     
   	%Plot results
   	figure
@@ -199,25 +198,50 @@ function [b, dev, stats] = fitGLM_LS(nevfile, matfile, fn_out, binsize, nkt, thr
     title(['unit ' unitnames{idx} '. FE filter']);
     xlabel('time (ms)');
 
-    t_i = 30;
-    t_f = 40; %three seconds worth of data
+    %subplot(244); %Prediction using model
+    %Smooth actual spikes and predicted model
+    %smthLNfittedrates(i,:) = conv(LNfittedrates(i,:), gaussFilter, 'same');
+    %smthfittedrates(i,:) = conv(fittedrates(i,:), gaussFilter, 'same');
+    %smthrates(i,:) = conv(squeeze(rates(:,i)), gaussFilter, 'same');
+
+    t_i = 60;
+    t_f = 66; %three seconds worth of data
     tt = t_i:binsize:t_f;
     ii = round(tt/binsize)+1;
-    rho_hat = glmval(b, tStim, 'log'); % Uses the fit coefficients and the original input data to generate the ouput rho
+    rho_hat = glmval(bbb, tStim, 'log'); % Uses the fit coefficients and the original input data to generate the ouput rho
+    %Resample for 50ms time bins
+    %rho_hat_RS = resample(rho_hat, coarseSR, samplerate);
+    %rho_hat_RS = rebin(rho_hat, binsize, coarsebs);
+    %hold on
+    %plot(tt, rho_hat(ii)*20);
+    %%Plot spikes per time bin, also
+    %%plot(sps, zeros(size(sps)), 'r.');
+    %%Plot smoothed firing rate
+    %%smoothedrates = conv(rates_coarse(:,idx), gaussFilter, 'same');
+    %%plot(ttt, smoothedrates(iii));
+    %plot(ttt, binnedspikes_coarse(iii,idx), 'r');
+    %xlim([min(ttt) max(ttt)])
+    %xlabel('time (s)')
+    %ylabel('estimated firing rate (Hz)')
 
     subplot(2,4,[5 6 7 8]); %Try the same spike plot but another way...
     hold on
-
-    %smthLNfittedrates(i,:) = conv(LNfittedrates(i,:), gaussFilter, 'same');
-    smthfittedrates = conv(rho_hat, gaussFilter, 'same')/binsize;
-    smthrates = conv(squeeze(rates(:,idx)), gaussFilter, 'same');
-    smthrates2 = conv(ttsp, gaussFilter, 'same')/binsize;
-    plot(tt, smthrates2(ii), tt, smthfittedrates(ii))
-    %plot(tt, smthrates(ii), tt, smthfittedrates(ii))
-    legend('Actual', 'GLM')
-    xlim([t_i, t_f])
+    %Place a bar every time there's a spike
+    for j=1:length(tspks(idx).times)
+    %for j=1:length(sps)
+      %Convert to seconds
+      %sp = sps(j)*binsize;
+      %Or just use the spike times computed above
+      sp = tspks(idx).times(j);
+      if (sp < max(tt) & sp > min(tt))
+        plot([sp sp], [0 1.2*max(rho_hat(ii))], 'Color', [0.66 0.66 0.66]);
+      end
+    end
+    plotyy(tt, rho_hat(ii), tt, [torque(ii,1), torque(ii,2)]);
+    xlim([min(tt) max(tt)])
+    ylim([0 1.2*max(rho_hat(ii))])
     xlabel('time (s)')
-    ylabel('estimated firing rate (Hz)')
+    %ylabel('estimated firing rate (Hz)')
 
     saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,5]);
   
