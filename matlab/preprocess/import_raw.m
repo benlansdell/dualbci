@@ -1,18 +1,18 @@
 function t_out = import_raw(t_in, chans)
-        %import_raw       Import raw extra-cellular recording data from ns3 file. Includes Blackrock electrode data, and torque data
-        %
-        % Usage:
-        %                       t_out = import_raw(t_in, chans)
-        %
-        % Input:
-        %                       t_in = a trial structure produced by import_trials().
+	%import_raw       Import raw extra-cellular recording data from ns3 file. Includes Blackrock electrode data, and torque data
+	%
+	% Usage:
+	%           t_out = import_raw(t_in, chans)
+	%
+	% Input:
+	%           t_in = a trial structure produced by import_trials().
 	%			chans = (optional, default = '') if specified will only import channels requested
 	%
 	% Output:
 	%			t_out = trial structure with channel data sampled at labview rate
-        %
-        % Examples:
-        %                       trials = import_trials('Spanky_2013-01-17-1325.mat');
+	%
+	% Examples:
+	%           trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%			t = trials(117);
 	%			%Read in torque channels only
 	%			t = import_raw(t, 'c:138:139');
@@ -21,20 +21,19 @@ function t_out = import_raw(t_in, chans)
 		chans = '';
 	end
 
-        if length(t_in.ns3file) > 0
+	if length(t_in.ns3file) > 0
 		if length(chans) > 0
-                	NS3=openNSx(t_in.ns3file, 'read', chans);
+			NS3=openNSx(t_in.ns3file, 'read', chans);
 		else
 			NS3 = openNSx(t_in.ns3file, 'read');
 		end
-        else
+	else
 		t_out = t_in;
-                return;
-        end
-
-
-        t_in.ns3samplerate = NS3.MetaTags.SamplingFreq;
-        labviewsamplerate = 60;
+		return;
+	end
+	
+	t_in.ns3samplerate = NS3.MetaTags.SamplingFreq;
+	labviewsamplerate = 60;
 	flank = t_in.flank;
 	ns3data_raw = double(NS3.Data);
 	ns3data = resample(double(NS3.Data'), labviewsamplerate, t_in.ns3samplerate)';
@@ -53,5 +52,5 @@ function t_out = import_raw(t_in, chans)
 	t_in.ns3data_raw = ns3data_raw(:,withintrial_raw);
 	t_in.ns3data_flank = ns3data(:,withintrial_flank);
 	t_in.ns3data_raw_flank = ns3data_raw(:,withintrial_raw_flank);
-        t_out = t_in;
+	t_out = t_in;
 end

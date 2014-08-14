@@ -1,19 +1,19 @@
 function trial_out = gauss_rates(trial_in, sigma, sz)
-    %gauss_rates		Compute a smoothed estimate of firing rate
-    %
-    % Usage:
-    %					gauss_rates(trial_in)
-    %
-    % Input:
-    %					trial_in = trial structure from import_trials
-    %					sigma = (optional, default = 5) width of Gaussian 
-    %					sz = (optional, default = 30) number of points in filter
+	%gauss_rates		Compute a smoothed estimate of firing rate
+	%
+	% Usage:
+	%					gauss_rates(trial_in)
+	%
+	% Input:
+	%					trial_in = trial structure from import_trials
+	%					sigma = (optional, default = 5) width of Gaussian 
+	%					sz = (optional, default = 30) number of points in filter
 	%
 	% Output:
 	%					trial_out = output trial structure with .nevrates field added
-    %
-    % Examples:
-    %					trials = import_trials('Spanky_2013-01-17-1325.mat');
+	%
+	% Examples:
+	%					trials = import_trials('Spanky_2013-01-17-1325.mat');
 	%					trial = import_spikes(trials(117));
 	%					
 	if nargin < 1

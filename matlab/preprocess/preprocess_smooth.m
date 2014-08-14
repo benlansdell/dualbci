@@ -59,20 +59,20 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');
 	ns3file = [nevfile(1:end-3) 'ns3'];
 	%Create Filters
-    if sigma_fr > 0
-    	sigma_fr = sigma_fr*samplerate;
-   		sz = sigma_fr*3*2;
-	    x = linspace(-sz/2, sz/2, sz);
-	    gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
-    	gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
-    end
-    if sigma_trq > 0
-    	sigma_trq = sigma_trq*samplerate;
-   		sz = sigma_trq*3*2;
-	    x = linspace(-sz/2, sz/2, sz);
-	    gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
-    	gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
-    end
+	if sigma_fr > 0
+		sigma_fr = sigma_fr*samplerate;
+		sz = sigma_fr*3*2;
+		x = linspace(-sz/2, sz/2, sz);
+		gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
+		gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
+	end
+	if sigma_trq > 0
+		sigma_trq = sigma_trq*samplerate;
+		sz = sigma_trq*3*2;
+		x = linspace(-sz/2, sz/2, sz);
+		gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
+		gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
+	end
 	%%%%%%%%%%%%%%%%%%%%%%
 	%Process spiking data%
 	%%%%%%%%%%%%%%%%%%%%%%
@@ -82,50 +82,50 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	dur = NEV.MetaTags.DataDuration/nevsamplerate;
 	%Convert spike times into array of binned spikes, one for each spike sorted channel
 	spiketimes = double(NEV.Data.Spikes.TimeStamp)/nevsamplerate;
-    elecs = cell(1,nU);
-    spikemuas = struct('times', elecs);
-    unitnames = cell(1,nU);
-    averate = zeros(1,nU);
-    isvalid = zeros(1,nU);
-    for idx=1:nU
-        spikemuas(idx).times = [0];    
-    end
-    for i=1:length(spiketimes)
-       	E = NEV.Data.Spikes.Electrode(i);
-       	unit = NEV.Data.Spikes.Unit(i);
-       	U = single((E-1)*nunits)+single(unit)+1;
-       	spikemuas(U).times = [spikemuas(U).times; spiketimes(i)];
-       	unitnames{U} = [num2str(E) '.' num2str(unit)];
-    end
-    %Check which channels are doing stuff
-    for idx=1:nU
-    	averate(idx) = (length(spikemuas(idx).times)-1)/dur;
-    	if length(spikemuas(idx).times)>1
-    		if (spikemuas(idx).times(2)<20) & (spikemuas(idx).times(end)>(dur-20))
+	elecs = cell(1,nU);
+	spikemuas = struct('times', elecs);
+	unitnames = cell(1,nU);
+	averate = zeros(1,nU);
+	isvalid = zeros(1,nU);
+	for idx=1:nU
+		spikemuas(idx).times = [0];    
+	end
+	for i=1:length(spiketimes)
+		E = NEV.Data.Spikes.Electrode(i);
+		unit = NEV.Data.Spikes.Unit(i);
+		U = single((E-1)*nunits)+single(unit)+1;
+		spikemuas(U).times = [spikemuas(U).times; spiketimes(i)];
+		unitnames{U} = [num2str(E) '.' num2str(unit)];
+	end
+	%Check which channels are doing stuff
+	for idx=1:nU
+		averate(idx) = (length(spikemuas(idx).times)-1)/dur;
+		if length(spikemuas(idx).times)>1
+			if (spikemuas(idx).times(2)<20) & (spikemuas(idx).times(end)>(dur-20))
 				isvalid(idx)=1;
 			end
 		end
-    	if (isstr(fn_out)) display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]); end
-    end
-    %Set a threshold firing rate, below which we ignore that unit
-    abovethresh = (averate > threshold) & isvalid;
-    %Update nU
-    nU = sum(abovethresh);
-     display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
-    unitnames = unitnames(abovethresh);
-    spikemuas = spikemuas(abovethresh);
-    averate = averate(abovethresh);
-   	%Bin spikes (chronux function)
-    binnedspikes = binspikes(spikemuas, samplerate);
-    %From this apply gaussian filter to spike train for each electrode
-    for idx=1:nU
-    	if sigma_fr > 0
-    		gf = conv(binnedspikes(:,idx), gaussFilter_fr, 'same');
-	        rates(:,idx)=gf*samplerate;
-    	else
-    		rates(:,idx) = binnedspikes(:,idx)*samplerate;
-    	end
-    end
+		if (isstr(fn_out)) display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]); end
+	end
+	%Set a threshold firing rate, below which we ignore that unit
+	abovethresh = (averate > threshold) & isvalid;
+	%Update nU
+	nU = sum(abovethresh);
+	 display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
+	unitnames = unitnames(abovethresh);
+	spikemuas = spikemuas(abovethresh);
+	averate = averate(abovethresh);
+	%Bin spikes (chronux function)
+	binnedspikes = binspikes(spikemuas, samplerate);
+	%From this apply gaussian filter to spike train for each electrode
+	for idx=1:nU
+		if sigma_fr > 0
+			gf = conv(binnedspikes(:,idx), gaussFilter_fr, 'same');
+			rates(:,idx)=gf*samplerate;
+		else
+			rates(:,idx) = binnedspikes(:,idx)*samplerate;
+		end
+	end
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
@@ -136,18 +136,18 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 	%Switch sign of FE axis for coordinate consistency
 	nsxtorque(2,:)=-nsxtorque(2,:);
-    for j=1:2
-        %Scale from uint16 value to proportion
-        nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
-        %Subtract mean
-        nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
-        %Smooth
-        torque(:,j) = conv(nsxtorque(j,:),gaussFilter_trq,'same');
-    end
-    %Resample at rate of binsize
-    torque=resample(torque,samplerate,nsxsamplerate);
-    if isstr(fn_out)
-	    plot(torque(1:100,1), torque(1:100,2));
+	for j=1:2
+		%Scale from uint16 value to proportion
+		nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
+		%Subtract mean
+		nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
+		%Smooth
+		torque(:,j) = conv(nsxtorque(j,:),gaussFilter_trq,'same');
+	end
+	%Resample at rate of binsize
+	torque=resample(torque,samplerate,nsxsamplerate);
+	if isstr(fn_out)
+		plot(torque(1:100,1), torque(1:100,2));
 	end
 	%Check they're the same length, and trim
 	nsamp = min(size(torque,1), size(rates,1));
@@ -156,46 +156,46 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	%Apply offset to data
 	delaysamples = round(offset*samplerate);
 	if (delaysamples > 0)
-    	rates = rates(1+delaysamples:end,:);
-    	torque = torque(1:end-delaysamples,:);
+		rates = rates(1+delaysamples:end,:);
+		torque = torque(1:end-delaysamples,:);
 	elseif (delaysamples < 0)
-	    rates = rates(1:end+delaysamples,:);
-    	torque = torque(1-delaysamples:end,:);
-    end
-    %Compute dtorque and ddtorque
-    dtorque = [diff(torque); 0 0];
-    ddtorque = [diff(diff(torque)); 0 0; 0 0];
-
-    if isstr(fn_out)
-    	%Plot a bunch of preprocessing diagnostics
-    	figure
-    	subplot(3,2,1)
-    	%Plot the kernel used
-    	plot((1:sz)/nsxsamplerate,gaussFilter_trq)
-    	title('Gaussian filter used torque')
-    	%And make a plot of smoothed data compared with binned spikes
-    	subplot(3,2,2);
-    	t = 50; unit = 18;
-    	times = (1:(t*samplerate))*binsize;
+		rates = rates(1:end+delaysamples,:);
+		torque = torque(1-delaysamples:end,:);
+	end
+	%Compute dtorque and ddtorque
+	dtorque = [diff(torque); 0 0];
+	ddtorque = [diff(diff(torque)); 0 0; 0 0];
+	
+	if isstr(fn_out)
+		%Plot a bunch of preprocessing diagnostics
+		figure
+		subplot(3,2,1)
+		%Plot the kernel used
+		plot((1:sz)/nsxsamplerate,gaussFilter_trq)
+		title('Gaussian filter used torque')
+		%And make a plot of smoothed data compared with binned spikes
+		subplot(3,2,2);
+		t = 50; unit = 18;
+		times = (1:(t*samplerate))*binsize;
 		plot(times, rates(1:(t*samplerate), unit)*binsize, times, binnedspikes(1:(t*samplerate),unit))
 		title('Smoothed rate vs binned spikes');
 		subplot(3,2,3)
-    	t = 10;
-    	times = (1:(t*samplerate))*binsize;
-    	plot(times, torque(1:(t*samplerate),1),times, torque(1:(t*samplerate),2))
+		t = 10;
+		times = (1:(t*samplerate))*binsize;
+		plot(times, torque(1:(t*samplerate),1),times, torque(1:(t*samplerate),2))
 		title('Smoothed torque');		
 		subplot(3,2,4)
 		%Compute auto- and cross-correlation in torque and example firing rate
 		maxlag = 90;
 		autotorqueFE = xcov(torque(:,1),samplerate*maxlag);%, 'coeff');
-   		autotorqueRU = xcov(torque(:,2),samplerate*maxlag);%, 'coeff');
+		autotorqueRU = xcov(torque(:,2),samplerate*maxlag);%, 'coeff');
 		covFE = xcov(rates(:,unit), torque(:,1),samplerate*maxlag,'unbiased');
-    	% normalize against spikes auto-covariance
-    	autorate = xcov(rates(:,unit),samplerate*maxlag);%, 'coeff');
-    	covFE = covFE / sqrt(xcov(rates(:,unit),0));
-    	covFE = covFE / sqrt(xcov(torque(:,1),0));
-   		tt = -maxlag:binsize:maxlag;
-    	plot(tt, covFE);
+		% normalize against spikes auto-covariance
+		autorate = xcov(rates(:,unit),samplerate*maxlag);%, 'coeff');
+		covFE = covFE / sqrt(xcov(rates(:,unit),0));
+		covFE = covFE / sqrt(xcov(torque(:,1),0));
+		tt = -maxlag:binsize:maxlag;
+		plot(tt, covFE);
 		title(['cross-corr FE, unit ' num2str(unitnames{unit})]);		
 		subplot(3,2,5)
 		plot(tt, autotorqueFE)

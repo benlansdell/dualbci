@@ -60,47 +60,47 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	dur = NEV.MetaTags.DataDuration/nevsamplerate;
 	%Convert spike times into array of binned spikes, one for each spike sorted channel
 	spiketimes = double(NEV.Data.Spikes.TimeStamp)/nevsamplerate;
-    elecs = cell(1,nU);
-    spikemuas = struct('times', elecs);
-    unitnames = cell(1,nU);
-    averate = zeros(1,nU);
-    isvalid = zeros(1,nU);
-    %Prepare spike time structure to bin spikes
-    for idx=1:nU
-        spikemuas(idx).times = [0];    
-    end
-    %Bin spikes according to unit identifier
-    for i=1:length(spiketimes)
-       	E = NEV.Data.Spikes.Electrode(i);
-       	unit = NEV.Data.Spikes.Unit(i);
-       	U = single((E-1)*nunits)+single(unit)+1;
-       	spikemuas(U).times = [spikemuas(U).times; spiketimes(i)];
-       	unitnames{U} = [num2str(E) '.' num2str(unit)];
-    end
-    %Check which channels are doing stuff
-    for idx=1:nU
-    	averate(idx) = (length(spikemuas(idx).times)-1)/dur;
-    	if length(spikemuas(idx).times)>1
-    		if (spikemuas(idx).times(2)<20) & (spikemuas(idx).times(end)>(dur-20))
+	elecs = cell(1,nU);
+	spikemuas = struct('times', elecs);
+	unitnames = cell(1,nU);
+	averate = zeros(1,nU);
+	isvalid = zeros(1,nU);
+	%Prepare spike time structure to bin spikes
+	for idx=1:nU
+		spikemuas(idx).times = [0];    
+	end
+	%Bin spikes according to unit identifier
+	for i=1:length(spiketimes)
+		E = NEV.Data.Spikes.Electrode(i);
+		unit = NEV.Data.Spikes.Unit(i);
+		U = single((E-1)*nunits)+single(unit)+1;
+		spikemuas(U).times = [spikemuas(U).times; spiketimes(i)];
+		unitnames{U} = [num2str(E) '.' num2str(unit)];
+	end
+	%Check which channels are doing stuff
+	for idx=1:nU
+		averate(idx) = (length(spikemuas(idx).times)-1)/dur;
+		if length(spikemuas(idx).times)>1
+			if (spikemuas(idx).times(2)<20) & (spikemuas(idx).times(end)>(dur-20))
 				isvalid(idx)=1;
 			end
 		end
-    	display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
-    end
-    %Set a threshold firing rate, below which we ignore that unit
-    abovethresh = (averate > threshold) & isvalid;
-    %Update nU
-    nU = sum(abovethresh);
-    display(['preprocess: Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
-    unitnames = unitnames(abovethresh);
-    spikemuas = spikemuas(abovethresh);
-    averate = averate(abovethresh);
-   	%Bin spikes (chronux function)
-    binnedspikes = binspikes(spikemuas, samplerate);
-    %Compute firing rate simply as spike count divided by binsize
-    for idx=1:nU
-   		rates(:,idx) = binnedspikes(:,idx)*samplerate;
-    end
+		display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
+	end
+	%Set a threshold firing rate, below which we ignore that unit
+	abovethresh = (averate > threshold) & isvalid;
+	%Update nU
+	nU = sum(abovethresh);
+	display(['preprocess: Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
+	unitnames = unitnames(abovethresh);
+	spikemuas = spikemuas(abovethresh);
+	averate = averate(abovethresh);
+	%Bin spikes (chronux function)
+	binnedspikes = binspikes(spikemuas, samplerate);
+	%Compute firing rate simply as spike count divided by binsize
+	for idx=1:nU
+		rates(:,idx) = binnedspikes(:,idx)*samplerate;
+	end
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
@@ -113,15 +113,15 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	nsxpts = ((1:size(nsxtorque,2))-1)/nsxsamplerate;
 	pts = ((1:size(binnedspikes,1))-1)/samplerate;
 	%Translate, scale and resample torque data
-    for j=1:2
-        %Scale from uint16 value to proportion
-        nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
-        %Subtract mean
-        nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
-        torque(:,j) = resample(nsxtorque(j,:)', samplerate, nsxsamplerate);
-    end
+	for j=1:2
+		%Scale from uint16 value to proportion
+		nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
+		%Subtract mean
+		nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
+		torque(:,j) = resample(nsxtorque(j,:)', samplerate, nsxsamplerate);
+	end
 
-   	%Check they're the same length, and trim
+	%Check they're the same length, and trim
 	nsamp = min(size(torque,1), size(rates,1));
 	torque=torque(1:nsamp,:);
 	rates = rates(1:nsamp,:);
@@ -129,38 +129,38 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	%Apply offset to data
 	delaysamples = round(offset*samplerate);
 	if (delaysamples > 0)
-    	binnedspikes = binnedspikes(1+delaysamples:end,:);
-    	rates = rates(1+delaysamples:end,:);
-    	torque = torque(1:end-delaysamples,:);
+		binnedspikes = binnedspikes(1+delaysamples:end,:);
+		rates = rates(1+delaysamples:end,:);
+		torque = torque(1:end-delaysamples,:);
 	elseif (delaysamples < 0)
-    	binnedspikes = binnedspikes(1:end+delaysamples,:);
-	    rates = rates(1:end+delaysamples,:);
-    	torque = torque(1-delaysamples:end,:);
-    end
-    %Compute dtorque and ddtorque
-    dtorque = [diff(torque); 0 0];
-    ddtorque = [diff(diff(torque)); 0 0; 0 0];
+		binnedspikes = binnedspikes(1:end+delaysamples,:);
+		rates = rates(1:end+delaysamples,:);
+		torque = torque(1-delaysamples:end,:);
+	end
+	%Compute dtorque and ddtorque
+	dtorque = [diff(torque); 0 0];
+	ddtorque = [diff(diff(torque)); 0 0; 0 0];
 
-    %Plot a bunch of preprocessing diagnostics, if desired
-    if isstr(fn_out)
-	    figure
+	%Plot a bunch of preprocessing diagnostics, if desired
+	if isstr(fn_out)
+		figure
 		subplot(2,2,1)
-    	t = 10;
-    	times = (1:(t*samplerate))*binsize;
-    	plot(times, torque(1:(t*samplerate),1),times, torque(1:(t*samplerate),2))
+		t = 10;
+		times = (1:(t*samplerate))*binsize;
+		plot(times, torque(1:(t*samplerate),1),times, torque(1:(t*samplerate),2))
 		title('Smoothed torque');		
 		subplot(2,2,2)
 		%Compute auto- and cross-correlation in torque and example firing rate
 		maxlag = 90;
 		autotorqueFE = xcov(torque(:,1),samplerate*maxlag);%, 'coeff');
-   		autotorqueRU = xcov(torque(:,2),samplerate*maxlag);%, 'coeff');
+		autotorqueRU = xcov(torque(:,2),samplerate*maxlag);%, 'coeff');
 		covFE = xcov(rates(:,unit), torque(:,1),samplerate*maxlag,'unbiased');
-    	% normalize against spikes auto-covariance
-    	autorate = xcov(rates(:,unit),samplerate*maxlag);%, 'coeff');
-    	covFE = covFE / sqrt(xcov(rates(:,unit),0));
-    	covFE = covFE / sqrt(xcov(torque(:,1),0));
-   		tt = -maxlag:binsize:maxlag;
-    	plot(tt, covFE);
+		% normalize against spikes auto-covariance
+		autorate = xcov(rates(:,unit),samplerate*maxlag);%, 'coeff');
+		covFE = covFE / sqrt(xcov(rates(:,unit),0));
+		covFE = covFE / sqrt(xcov(torque(:,1),0));
+		tt = -maxlag:binsize:maxlag;
+		plot(tt, covFE);
 		title(['cross-corr FE, unit ' num2str(unitnames{unit})]);		
 		subplot(2,2,3)
 		plot(tt, autotorqueFE)
