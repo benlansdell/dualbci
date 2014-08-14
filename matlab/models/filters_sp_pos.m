@@ -61,7 +61,7 @@ function data = filters_sp_pos(processed, nK_sp, nK_pos)
 	%Truncate to exclude start and end of recording where spike history 
 	%and cursor trajectory aren't well defined
 	data.X = data.X(:,nK_sp+1:end-nK_pos,:); %(nkt+1:end-nkt,:);
-	data.y = processed.binnedspikes(nK_sp+1:end-nK_pos, :);
+	data.y = processed.binnedspikes(nK_sp+1:end-nK_pos, :)';
 	%Truncate other data for comparison, too
 	data.torque = processed.torque(nK_sp+1:end-nK_pos,:); 
 	data.dtorque = processed.dtorque(nK_sp+1:end-nK_pos,:);

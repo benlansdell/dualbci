@@ -28,8 +28,8 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	%
 	%Test code:
 	%		nevfile = './testdata/20130117SpankyUtah001.nev';
-	%		binsize = 0.001;
-	%		offset = 0.125;
+	%		binsize = 0.002;
+	%		offset = 0.0;
 	%		threshold = 5;
 	%		fn_out = './worksheets/diagnostics/test_pre.eps';
 	%		processed = preprocess(nevfile, binsize, threshold, offset, fn_out);
