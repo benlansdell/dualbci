@@ -1,0 +1,73 @@
+ant:<br><ant&gt;<br>  &lt;mkdir dir="/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/distrib" /&gt;<br>  &lt;mkdir dir="/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src" /&gt;<br></ant&gt;
+mcc -o Untitled1 -W main:Untitled1 -T link:exe -d /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src -w enable:specified_file_mismatch -w enable:repeated_file -w enable:switch_ignored -w enable:missing_lib_sentinel -w enable:demo_license -v /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/RunNeuralDataAnalyzerVer2.m -a '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Documentation for NeuralDataAnalyzer version 2.docx' -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/NeuralDataAnalyzer_v2.fig -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/NeuralDataAnalyzer_v2.m -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Repeated_testSpt.mat -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Repeated_testStim.mat -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/TestSpt.mat -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/TestStim.mat -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/tools_newglm -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/tools_revcorrelations -a /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/tools_subfig 
+Compiler version: 4.15 (R2011a) 
+Processing /Applications/MATLAB_R2011a.app/toolbox/matlab/mcc.enc
+Processing /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/NeuralDataAnalyzer_v2.fig
+Processing /Applications/MATLAB_R2011a.app/toolbox/signal/mcc.enc
+Processing /Applications/MATLAB_R2011a.app/toolbox/stats/mcc.enc
+Processing /Applications/MATLAB_R2011a.app/toolbox/optim/mcc.enc
+Processing /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/tools_subfig/help_GLMadv.fig
+Processing /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/tools_subfig/help_ISIs.fig
+Processing /Applications/MATLAB_R2011a.app/toolbox/shared/spcuilib/mcc.enc
+Processing /Applications/MATLAB_R2011a.app/toolbox/shared/optimlib/mcc.enc
+Processing /Applications/MATLAB_R2011a.app/toolbox/matlab/guide/guideopts.fig
+Processing include files...
+2 item(s) added.
+Processing directories installed with MCR...
+The file /Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src/mccExcludedFiles.log contains a list of functions excluded from the CTF archive.
+0 item(s) added.
+Generating MATLAB path for the compiled application...
+Created 45 path items.
+Begin validation of MEX files: Tue Apr 29 19:00:06 2014 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/DNToMatrix.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/MatrixToDN.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/computeDN.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/convertToDouble.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/matrixBitXor.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/sobolIndexed.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/sobolNet.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/sobolPoint.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/@sobolset/private/sobolSequence.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/private/statsizechk.mexmaci64'. 
+Found MATLAB file '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/private/statsizechk.m'. 
+MEX file 
+    '/Applications/MATLAB_R2011a.app/toolbox/stats/stats/private/statsizechk.mexmaci64' 
+ is valid. It contains 'mexFunction.' 
+Validating '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/tools_newglm/fastinterp2.mexmaci64'. 
+No conflicting MATLAB file found. 
+Validating '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/tools_newglm/spikeconv_mex.mexmaci64'. 
+No conflicting MATLAB file found. 
+End validation of MEX files: Tue Apr 29 19:00:06 2014 
+Parsing file "/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/RunNeuralDataAnalyzerVer2.m"
+	(Referenced from: "Compiler Command Line"). 
+Parsing file "/Applications/MATLAB_R2011a.app/toolbox/compiler/deploy/deployprint.m"
+	(Referenced from: "Compiler Command Line"). 
+Parsing file "/Applications/MATLAB_R2011a.app/toolbox/compiler/deploy/printdlg.m"
+	(Referenced from: "Compiler Command Line"). 
+Deleting 12 temporary MEX authorization files. 
+Removing: '/tmp/0044fkiiB6Q_1103.auth'. 
+Removing: '/tmp/0044f4fPntJ_1103.auth'. 
+Removing: '/tmp/0044fUx55xV_1103.auth'. 
+Removing: '/tmp/0044f6fT4GA_1103.auth'. 
+Removing: '/tmp/0044f2aXPd4_1103.auth'. 
+Removing: '/tmp/0044fBNciuY_1103.auth'. 
+Removing: '/tmp/0044fjkDzil_1103.auth'. 
+Removing: '/tmp/0044fYaVABy_1103.auth'. 
+Removing: '/tmp/0044fUzl9s3_1103.auth'. 
+Removing: '/tmp/0044feDeZOn_1103.auth'. 
+Removing: '/tmp/0044feHlomY_1103.auth'. 
+Removing: '/tmp/0044fbl1nAz_1103.auth'. 
+Generating file "/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src/readme.txt". 
+Generating file "/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src/run_Untitled1.sh". 
+copy '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src/Untitled1.app' '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/distrib/Untitled1.app'
+copy '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src/readme.txt' '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/distrib/readme.txt'
+copy '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/src/run_Untitled1.sh' '/Users/Alex/Documents/Spring2012/Research/NeuralDataAnalyzer/NeuralDataAnalyzerThree/Untitled1/distrib/run_Untitled1.sh'
