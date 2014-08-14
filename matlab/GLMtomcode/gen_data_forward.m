@@ -30,7 +30,6 @@ x_mat(2,:)=ceil(rand(1,n_steps)*2).*(rand(1,n_steps)<.05); % this could be the s
 
 [n_input x_len]=size(x_mat); % get the number of input channels and the number of time steps.  x_len==n_steps
 
-
 rho=zeros(1,x_len); % preallocate the output lever press probability 
 y=zeros(1,x_len); % preallocate the output lever presses
 
@@ -43,8 +42,7 @@ for i=1:x_len % step through time
 
     h_ind = 1:min(h_len,(i-1)); % indexing the h filter, similar to indexing the k filter
     y_ind_h=max(1,i-h_len+1-1):(i-1); % indexing the history of the lever presses, note that it is (i-1) so that it doesn't have access to the current time step, which is defined to be in the future (i.e. the next time step).
-    
-    
+   
     sum_in_nonlin=0; % sum the stuff that goes into the nonlinearity
     sum_in_nonlin=sum_in_nonlin+b; % first, add the constant lever press probability term
     for i_input=1:n_input
@@ -54,9 +52,7 @@ for i=1:x_len % step through time
         else % at i<1, there is no lever history
             sum_in_nonlin=sum_in_nonlin+dot(fliplr(k_mat(i_input,k_ind)),x_mat(i_input,x_ind_k));
         end
-        
     end
-    
     rho(i)=1/(1+exp(-sum_in_nonlin)); % the output after the nonlinearity
     
     y(i) = binornd(1,rho(i)); % sample the distribution for the current time step to find out if the lever was pressed
