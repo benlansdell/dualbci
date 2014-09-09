@@ -133,9 +133,9 @@ end
 
 % Process optional name/value pairs.
 if newSyntax
-    paramNames = {     'link' 'estdisp' 'offset' 'weights' 'constant' 'rankwarn'};
-    paramDflts = {'canonical'     'off'      []        []        'on'       true};
-    [link,estdisp,offset,pwts,const,rankwarn] = ...
+    paramNames = {     'link' 'estdisp' 'offset' 'weights' 'constant' 'rankwarn'    'k'};
+    paramDflts = {'canonical'     'off'      []        []        'on'       true    0};
+    [link,estdisp,offset,pwts,const,rankwarn,k] = ...
                            internal.stats.parseArgs(paramNames, paramDflts, varargin{:});
 
 else % the old syntax glmfit(x,y,distr,link,estdisp,offset,pwts,const)
@@ -145,11 +145,13 @@ else % the old syntax glmfit(x,y,distr,link,estdisp,offset,pwts,const)
     pwts = [];
     const = 'on';
     rankwarn = true;
+    k = 0;
     if nargin > 3 && ~isempty(varargin{1}), link = varargin{1}; end
     if nargin > 4 && ~isempty(varargin{2}), estdisp = varargin{2}; end
     if nargin > 5 && ~isempty(varargin{3}), offset = varargin{3}; end
     if nargin > 6 && ~isempty(varargin{4}), pwts = varargin{4}; end
     if nargin > 7 && ~isempty(varargin{5}), const = varargin{5}; end
+    if nargin > 8 && ~isempty(varargin{6}), k = varargin{6}; end
 end
 
 estdisp = internal.stats.parseOnOff(estdisp,'''estdisp''');
@@ -285,6 +287,7 @@ iterLim = 100;
 warned = false;
 seps = sqrt(eps);
 convcrit = 1e-6;
+
 b = zeros(p,1,dataClass);
 
 % Enforce limits on mu to guard against an inverse link that doesn't map into
@@ -352,6 +355,15 @@ while iter <= iterLim
 
     % Check stopping conditions
     if (~any(abs(b-b_old) > convcrit * max(seps, abs(b_old)))), break; end
+
+    %Plot estimated filters and output deviance at each iterate
+    di = sum(devFun(mu, y));
+    display(['Deviance at iterate ' num2str(iter) ': ' num2str(di)])
+    if iscell(k)
+        plotFilters(b, k);
+        display('Press a key to continue')
+        pause
+    end
 end
 if iter > iterLim
     warning(message('stats:glmfit:IterationLimit'));
@@ -467,6 +479,8 @@ function mu = startingVals(distr,y,N)
 switch distr
 case 'poisson'
     mu = y + 0.25;
+%    mu = (N .* y + 0.5) ./ (N + 1);
+%    mu = ones(size(y))*0.01;
 case 'binomial'
     mu = (N .* y + 0.5) ./ (N + 1);
 case {'gamma' 'inverse gaussian'}
@@ -565,4 +579,13 @@ end
 
 warning(message('stats:glmfit:PerfectSeparation', explanation));
 
-
+function plotFilters(b_hat, k)
+    nK = size(k,1);
+    for j = 1:nK
+        name = k{j,1};
+        filt = b_hat(k{j,2}+1);
+        %Plot filter plus/minus SE
+        subplot(1, nK, j)
+        plot(filt);
+        title(name);
+    end

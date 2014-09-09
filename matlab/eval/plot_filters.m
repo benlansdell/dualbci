@@ -39,6 +39,11 @@ function plot_filters(model, data, processed, fn_out)
 			tstat = stats.t(k{j,2}+1);
 			pval = stats.p(k{j,2}+1);
 
+			%If filter length is zero skip this one
+			if length(k{j,2}) < 1
+				continue
+			end
+
 			%Plot filter plus/minus SE
 			subplot(nP, nK+1, j)
 			tt = (1:length(filt))*processed.binsize*1000;
@@ -49,7 +54,9 @@ function plot_filters(model, data, processed, fn_out)
 			area(tt, filt-se, ymin, 'FaceColor', [1 1 1])
 			plot(tt, filt);
 			ylim([ymin ymax]);
-			xlim([min(tt) max(tt)]);
+			if length(tt) > 1
+				xlim([min(tt) max(tt)]);
+			end
 			title(name);
 			xlabel('time (ms)');
 			%Plot tstats
@@ -90,7 +97,7 @@ function plot_filters(model, data, processed, fn_out)
 		axis off
 
 		%save eps
-		saveplot(gcf, [fn_out '_unit_' unitnames{idx} '_filters.eps'], 'eps', [10,5]);	
+		saveplot(gcf, [fn_out '_unit_' processed.unitnames{idx} '_filters.eps'], 'eps', [10,5]);	
 		%save fig
-		savefig(gcf, [fn_out '_unit_' unitnames{idx} '_filters.fig'])
+		saveas(gcf, [fn_out '_unit_' processed.unitnames{idx} '_filters.fig'])
 	end

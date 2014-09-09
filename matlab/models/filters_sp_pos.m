@@ -54,6 +54,9 @@ function data = filters_sp_pos(processed, nK_sp, nK_pos)
 			%(future) torque trajectory
 			torqueRU = processed.torque(j:(j+nK_pos-1),1);
 			torqueFE = processed.torque(j:(j+nK_pos-1),2);
+			%Add a small amount of normal noise to torque data to prevent rank deficient matrices...
+			%torqueRU = torqueRU + randn(size(torqueRU))/10;
+			%torqueFE = torqueFE + randn(size(torqueFE))/10;
 			%Form stim vector
 			data.X(idx,j,:) = [shist' torqueRU' torqueFE'];
 		end

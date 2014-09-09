@@ -30,7 +30,7 @@ function model = MLE_glmfit(data, const)
 	model.stats = cell(nU,1);
 	%For each unit, fit a GLM to the torque data
 	for idx=1:nU 
-		[b, dev, stats] = glmfit_matlab(squeeze(data.X(idx,:,:)),data.y(idx,:),'poisson', 'constant', const);
+		[b, dev, stats] = glmfit(squeeze(data.X(idx,:,:)),data.y(idx,:),'poisson', 'constant', const);
 		%Extract filters fitted...
 		model.b_hat(idx,:) = b;	
 		model.dev{idx} = dev;

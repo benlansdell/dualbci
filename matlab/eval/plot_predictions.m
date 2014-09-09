@@ -34,7 +34,7 @@ function plot_predictions(model, data, processed, fn_out)
 	gaussFilter = exp(-x.^2/(2*sigma^2));
 	gaussFilter = gaussFilter/sum(gaussFilter);
 
-	%plot ten seconds worth of data
+	%Plot ten seconds worth of data
 	t_i = 30;
 	t_f = 40; 
 	ii = 1:size(data.y,2);
