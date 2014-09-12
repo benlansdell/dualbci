@@ -1,4 +1,4 @@
-function data = filters_sp_pos(processed, nK_sp, nK_pos)
+function data = filters_sp_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	%Prepare spike and torque data for GLM which includes spike history and cursor position (x_1, x_2) filters:
 	%
 	%	y(i) ~ Pn(g(eta_i))
@@ -6,11 +6,18 @@ function data = filters_sp_pos(processed, nK_sp, nK_pos)
 	%where
 	%
 	%	eta_i = \sum y(i-j) k_sp(i) + \sum x_1(i+j) k_1(j) + \sum x_2(i+j) k_2(j)
+	%
+	%Usage:
+	%	data = filters_sp_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	%     
 	%Input:
 	%	processed = structure output from one of the preprocess functions.
 	%	nK_sp = number of timebins used for spike history filter
 	%	nK_pos = number of timebins used for cursor trajectory filters (on in x and y axis)
+	%	dt_sp = (optional, default = binsize in processed structure) step size of spike history filter
+	%		in seconds. Must be a multiple of the data's binsize.
+	%	dt_pos = (optional, default = binsize in processed structure) step size of position filter in
+	%		seconds. Must be a multiple of the data's binsize
 	%   
 	%Output:
 	%	data is a structure containing the following fields:
@@ -30,7 +37,18 @@ function data = filters_sp_pos(processed, nK_sp, nK_pos)
 	%	pre = load('./testdata/test_preprocess_spline_short.mat');
 	%	nK_sp = 50; 
 	%	nK_pos = 10;
-	%	data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
+	%	dt_sp = 0.002;
+	%	dt_pos = 0.05;
+	%	data = filters_sp_pos(pre.processed, nK_sp, nK_pos, dt_sp, dt_pos);
+
+	if (nargin < 4) dt_sp = processed.binsize; end
+	if (nargin < 5) dt_pos = processed.binsize; end
+
+	%Check dt's specified are valid
+	assert(rem(dt_sp,processed.binsize)==0, 'Invalid dt_sp. Must be a multiple of binsize');
+	assert(rem(dt_pos,processed.binsize)==0, 'Invalid dt_pos. Must be a multiple of binsize');
+	steps_sp = dt_sp/processed.binsize;
+	steps_pos = dt_pos/processed.binsize;
 
 	nU = size(processed.binnedspikes,2);
 	nB = size(processed.binnedspikes,1);
@@ -48,12 +66,12 @@ function data = filters_sp_pos(processed, nK_sp, nK_pos)
 	%For each unit, add data to X array
 	for idx=1:nU 
 		%Make stimulus vector at each timebin
-		for j = (nK_sp+1):(nB-nK_pos)
+		for j = (nK_sp*steps_sp+1):(nB-nK_pos*steps_pos)
 			%(past) spike history
-			shist = processed.binnedspikes(j-nK_sp:j-1, idx);
+			shist = processed.binnedspikes(j-nK_sp*steps_sp:steps_sp:j-steps_sp, idx);
 			%(future) torque trajectory
-			torqueRU = processed.torque(j:(j+nK_pos-1),1);
-			torqueFE = processed.torque(j:(j+nK_pos-1),2);
+			torqueRU = processed.torque(j:steps_pos:(j+(nK_pos-1)*steps_pos),1);
+			torqueFE = processed.torque(j:steps_pos:(j+(nK_pos-1)*steps_pos),2);
 			%Add a small amount of normal noise to torque data to prevent rank deficient matrices...
 			%torqueRU = torqueRU + randn(size(torqueRU))/10;
 			%torqueFE = torqueFE + randn(size(torqueFE))/10;
@@ -63,9 +81,9 @@ function data = filters_sp_pos(processed, nK_sp, nK_pos)
 	end
 	%Truncate to exclude start and end of recording where spike history 
 	%and cursor trajectory aren't well defined
-	data.X = data.X(:,nK_sp+1:end-nK_pos,:); %(nkt+1:end-nkt,:);
-	data.y = processed.binnedspikes(nK_sp+1:end-nK_pos, :)';
+	data.X = data.X(:,(nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:); %(nkt+1:end-nkt,:);
+	data.y = processed.binnedspikes((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos), :)';
 	%Truncate other data for comparison, too
-	data.torque = processed.torque(nK_sp+1:end-nK_pos,:); 
-	data.dtorque = processed.dtorque(nK_sp+1:end-nK_pos,:);
-	data.ddtorque = processed.ddtorque(nK_sp+1:end-nK_pos,:);
+	data.torque = processed.torque((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:); 
+	data.dtorque = processed.dtorque((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+	data.ddtorque = processed.ddtorque((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
