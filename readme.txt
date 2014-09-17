@@ -25,6 +25,12 @@ In eval:
 -Functions to plot filters of GLM
 -Other plotting functions
 
+In functions:
+-Functions to import blackrock files
+-Functions by Charlie to compute correlations, etc
+-Functions to save plots as .eps
+-Some other things
+
 In other: 
 -Other people's GLM code
 
