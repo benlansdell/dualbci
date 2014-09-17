@@ -28,6 +28,7 @@ function plot_predictions(model, data, processed, fn_out)
 
 	%Make a Gaussian filter to smooth estimates
 	sigma = 0.25;
+	%sigma = 0.001;
 	sigma = sigma/processed.binsize;
 	sz = sigma*3*3;
 	x = linspace(-sz/2, sz/2, sz);
@@ -36,6 +37,7 @@ function plot_predictions(model, data, processed, fn_out)
 
 	%Plot ten seconds worth of data
 	t_i = 30;
+	%t_f = 33;
 	t_f = 40; 
 	ii = 1:size(data.y,2);
 	tt = ii*processed.binsize;
@@ -43,7 +45,7 @@ function plot_predictions(model, data, processed, fn_out)
 	%For each unit, predicting firing rate, smooth and compare to actual smoothed firing rate
 	for idx=1:nU 
 		b_hat = model.b_hat(idx,:);
-		% Uses the fit coefficients and the original input data to generate the ouput rho
+		%Uses the fit coefficients and the original input data to generate the ouput rho
 		rho_hat = glmval(b_hat', squeeze(data.X(idx,:,:)), 'log');
 		%Smooth estimates for plotting
 		smthfittedrates = conv(rho_hat', gaussFilter, 'same')/processed.binsize;
@@ -74,8 +76,8 @@ function plot_predictions(model, data, processed, fn_out)
 		title('cross-correlation')
 
 		%save eps
-		saveplot(gcf, [fn_out '_unit_' processed.unitnames{idx} '_pred.eps'], 'eps', [15,3.5]);  
+		saveplot(gcf, [fn_out '_unit_' processed.unitnames{idx} '_fit.eps'], 'eps', [15,3.5]);  
 		%save fig
-		saveas(gcf, [fn_out '_unit_' processed.unitnames{idx} '_pred.fig'])
+		saveas(gcf, [fn_out '_unit_' processed.unitnames{idx} '_fit.fig'])
 	end
 end

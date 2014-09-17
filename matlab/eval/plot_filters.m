@@ -97,7 +97,7 @@ function plot_filters(model, data, processed, fn_out)
 		axis off
 
 		%save eps
-		saveplot(gcf, [fn_out '_unit_' processed.unitnames{idx} '_filters.eps'], 'eps', [10,5]);	
+		saveplot(gcf, [fn_out '_unit_' processed.unitnames{idx} '_filters.eps'], 'eps', [12,6]);	
 		%save fig
 		saveas(gcf, [fn_out '_unit_' processed.unitnames{idx} '_filters.fig'])
 	end

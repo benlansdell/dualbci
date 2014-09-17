@@ -62,6 +62,8 @@ function data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel)
 	data.k{2,2} = (1:nK_vel) + nK_sp;
 	data.k{3,1} = 'FE pos'; 
 	data.k{3,2} = (1:nK_vel) + nK_sp + nK_vel;
+	%Record specifically which indices are spike history indices for model simulation
+	data.sp_hist = data.k{1,2};
 
 	%For each unit, add data to X array
 	for idx=1:nU 
