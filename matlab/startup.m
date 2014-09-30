@@ -16,6 +16,7 @@ addpath_recurse('./other');
 %nev files, labview files, respectively
 addpath('./blackrock', './labview');
 addpath_recurse('~/matlab/chronux');
+addpath_recurse('~/matlab/arfit');
 
 %Add extra color
 %my_ColorOrder = [   0.00000   0.00000   1.00000;
