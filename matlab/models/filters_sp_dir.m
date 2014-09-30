@@ -55,13 +55,16 @@ function data = filters_sp_dir(processed, nK_sp, nK_dir, dt_sp, dt_dir)
 	nK = nK_sp + 2*nK_dir;
 
 	data.X = zeros(nU, nB, nK);
-	data.k = cell(3,2);
+	data.k = cell(3,3);
 	data.k{1,1} = 'spike history'; 
 	data.k{1,2} = 1:nK_sp;
+	data.k{1,3} = dt_sp;
 	data.k{2,1} = 'RU pos'; 
 	data.k{2,2} = (1:nK_dir) + nK_sp;
+	data.k{2,3} = dt_dir;
 	data.k{3,1} = 'FE pos'; 
 	data.k{3,2} = (1:nK_dir) + nK_sp + nK_dir;
+	data.k{3,3} = dt_dir;
 	%Record specifically which indices are spike history indices for model simulation
 	data.sp_hist = data.k{1,2};
 
