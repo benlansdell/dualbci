@@ -38,7 +38,7 @@ function plot_filters(model, data, processed, fn_out)
 			se = stats.se(k{j,2}+1)';
 			tstat = stats.t(k{j,2}+1);
 			pval = stats.p(k{j,2}+1);
-
+			dt_filt = k{j,3};
 			%If filter length is zero skip this one
 			if length(k{j,2}) < 1
 				continue
@@ -46,7 +46,7 @@ function plot_filters(model, data, processed, fn_out)
 
 			%Plot filter plus/minus SE
 			subplot(nP, nK+1, j)
-			tt = (1:length(filt))*processed.binsize*1000;
+			tt = (0:length(filt)-1)*dt_filt*1000;
 			hold on
 			ymin = min(filt-se)*1.2;
 			ymax = max(filt+se)*1.2;
@@ -58,12 +58,14 @@ function plot_filters(model, data, processed, fn_out)
 				xlim([min(tt) max(tt)]);
 			end
 			title(name);
-			xlabel('time (ms)');
+			%xlabel('time (ms)');
 			%Plot tstats
 			subplot(nP, nK+1, (nK+1)+j)
 			plot(tt, tstat);
-			title('t statistic');
-			xlabel('time (ms)');
+			if (j == 1)
+				ylabel('t statistic');
+			end
+			%xlabel('time (ms)');
 			%p-values
 			subplot(nP, nK+1, (nK+1)*2+j)
 			hold on
@@ -72,7 +74,9 @@ function plot_filters(model, data, processed, fn_out)
 			plot(tt(above), log(pval(above)), '.b');
 			plot(tt(below), log(pval(below)), '.r');
 			plot(tt, log(0.05)*ones(length(tt),1), 'k')
-			title('log(p-val)');
+			if (j == 1)
+				ylabel('log(p-val)');
+			end
 			xlabel('time (ms)');
 		end
 
