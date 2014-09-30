@@ -28,12 +28,22 @@ function [corrs, simTrain] = glm_predict(processed, data, model, fn_out)
 	%	corrs = glm_predict(pre.processed, data, model, fn_out);
 
 	nTrains = 20;
+	%Number of trains to simulate monte-carlo style and estimate distribution of probability
+	nTrainsMC = 100;
 	nU = size(data.X,1);
 	N = size(data.X,2);
 	nK_sp = length(data.sp_hist);
 	corrs = zeros(nU, 1);
 	actualTrain = data.y';
-	simTrain = zeros(N, nU);
+	%For keeping track of the mean
+	simTrains = zeros(nTrains, N, nU);
+	%MC sims
+	maxspks = 1;
+	devianceMC = zeros(nTrainsMC, nU);
+	devActual = deviance(model, data);
+	smthfittedrates = zeros(nTrains, N, nU);
+	%For keeping track of the square of activity (to compute the variance)
+	%simTrain2 = zeros(N, nU);
 	binsize = processed.binsize;
 
 	%Make a Gaussian filter to smooth estimates
@@ -47,47 +57,97 @@ function [corrs, simTrain] = glm_predict(processed, data, model, fn_out)
 
 	%Plot ten seconds worth of data
 	t_i = 30;
-	%t_f = 33;
+	%t_f = 40;
 	t_f = 50; 
 	ii = 1:N;
 	tt = ii*binsize;
+	ii = ii(tt > t_i & tt < t_f);
+	tt = tt(ii);
 
 	for i = 1:nTrains
 		i
-		simTrain = simTrain + glmsim(processed, model, data);
+		simt = glmsim(processed, model, data);
+		simTrains(i,:,:) = simt;
+		%simTrain2 = simTrain2 + simt.^2/(nTrains-1);
 	end
-	simTrain = simTrain/nTrains;
+	simTrain2 = std(simTrains, 1)';
+	simTrain = mean(simTrains, 1)';
+	%simTrain2 = sqrt(simTrain2-nTrains^2/(nTrains-1)^2*(simTrain).^2);
+
+	display('Running MC simulations');
+	for i = 1:nTrainsMC
+		i
+		[simt, tspks, rho, dev] = glmsim(processed, model, data, maxspks);
+		devianceMC(i,:) = dev;
+	end
 
 	%for each unit
 	for i = 1:nU
+		for j = 1:nTrains
+			smthfittedrates(j,:,i) = conv(simTrains(j,:,i), gaussFilter, 'same')/processed.binsize;
+		end
 		%Smooth this average train, and the original train
-		smthfittedrates = conv(simTrain(:,i), gaussFilter, 'same')/processed.binsize;
+		smthfittedratesM = conv(simTrain(:,i), gaussFilter, 'same')/processed.binsize;
 		smthrates = conv(actualTrain(:,i), gaussFilter, 'same')/processed.binsize;
+		%Smooth the standard deviation, too
+		smthfittedSD = conv(simTrain2(:,i), gaussFilter, 'same')/processed.binsize;
 		%Compute correlation coefficient between the two trains
-		actualSimCorr = corrcoef(smthfittedrates, smthrates);
+		actualSimCorr = corrcoef(smthfittedratesM, smthrates);
 		corrs(i) = actualSimCorr(1,2);
 		%Plot the simulated trains, the actual train, and the cursor data used to generate it
 		clf;
 		%Plot firing rate data
-		subplot(2,1,1);
+		%Plot rasters instead
+		subplot(4,1,1)
 		hold on
-		plot(tt, smthrates(ii), tt, smthfittedrates(ii))
+		spks = find(actualTrain(ii,i))*binsize+t_i;
+		for k = 1:length(spks)
+			plot([spks(k), spks(k)], [0 0.6], 'r', 'LineWidth', 0.1);
+		end
+		for j = 1:nTrains
+			spks = find(simTrains(j,ii,i))*binsize+t_i;
+			for k = 1:length(spks)
+				plot([spks(k), spks(k)], [j; (j+0.6)], 'k', 'LineWidth', 0.1)
+			end
+		end
+		ylim([0, nTrains+1])
+		ylabel('trial')
+		xlabel('time (s)')
+		title(['Unit: ' processed.unitnames{i} ' correlation: ' num2str(corrs(i))]);
+
+		subplot(4,1,2);
+		hold on
+		ymin = max(0,min(smthfittedratesM(ii)-smthfittedSD(ii))*1.2);
+		ymax = max(smthfittedratesM(ii)+smthfittedSD(ii))*1.2
+		%area(tt, smthfittedratesM(ii)+smthfittedSD(ii), ymin, 'FaceColor', [0.8 0.8 0.8])
+		%area(tt, smthfittedratesM(ii)-smthfittedSD(ii), ymin, 'FaceColor', [1 1 1])
+		plot(tt, smthfittedrates(:,ii,i), 'Color', [0.5 0.5 0.5])
+		plot(tt, smthrates(ii), tt, smthfittedratesM(ii), 'LineWidth', 2)
 		%plot(tt, data.y(idx,ii)/processed.binsize, tt, rho_hat(ii)/processed.binsize);
+		%ylim([ymin, ymax])
 		xlim([t_i, t_f])
 		legend('Actual', 'GLM')
 		xlabel('time (s)')
 		ylabel('estimated firing rate (Hz)')
-		title(['Unit: ' processed.unitnames{i} ' correlation: ' num2str(corrs(i))]);
 
 		%Plot cursor data
-		subplot(2,1,2);
+		subplot(4,1,3);
 		plot(tt, data.torque(ii,1), tt, data.torque(ii,2))
 		xlim([t_i, t_f])
 		legend('RU', 'FE')
 		xlabel('time (s)')		
 
+		%Plot the distribution of deviances, along with the deviance of the actual simulation
+		subplot(4,1,4);
+		hist(devianceMC(devianceMC~=0));
+		hold on
+		plot(devActual, 0, '.r');
+		pval = sum(devianceMC>devActual)/nTrainsMC;
+		title(['p-value: ' num2str(pval)])
+		xlabel('deviance');
+
 		%Save plot
-		saveplot(gcf, [fn_out '_unit_' processed.unitnames{i} '_pred.eps'], 'eps', [6 6]);
+		saveplot(gcf, [fn_out '_unit_' processed.unitnames{i} '_pred.eps'], 'eps', [12 6]);
 		%save fig
 		saveas(gcf, [fn_out '_unit_' processed.unitnames{i} '_pred.fig'])
 	end

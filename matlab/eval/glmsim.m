@@ -1,4 +1,4 @@
-function [y, tspks, rho] = glmsim(processed, model, data)
+function [y, tspks, rho, dev] = glmsim(processed, model, data, maxspks)
 	%Compute deviance of a set of data points given a set of fitted coefficients. The deviance is given by:
 	%
 	%	D(y,mu) = 2\sum y_i ln (y_i / \mu_i) - y_i + \mu_i
@@ -9,6 +9,8 @@ function [y, tspks, rho] = glmsim(processed, model, data)
 	%Input:
 	%	model = a structure of fit coefficients from MLE_glmfit
 	%	data = a structure of stimulus and spike history data from ./models
+	%	maxspks = (optional, default = 0) If set to 1 then will enforce a maximum number of spikes per timestep equal
+	%		to one spike per 2 milliseconds. 
 	%   
 	%Output:
 	%	y = a vector of a simulated spike train given cursor data for each unit
@@ -25,11 +27,21 @@ function [y, tspks, rho] = glmsim(processed, model, data)
 	%	model = MLE_glmfit(data, const);
 	%	trains = glmsim(model, data);
 
+	if (nargin < 4) maxspks = 0; end
+	bs = processed.binsize;
+	%Force there to be a maximum number of spikes per time bin equal to binsize/0.001
+	%meaning there is at most one spike per two milliseconds
+	if maxspks == 1
+		nMaxSpks = bs/0.002;
+	end
+
 	nU = size(data.X,1);
 	N = size(data.X,2);
 	nK_sp = length(data.sp_hist);
 	y = zeros(N, nU);
 	rho = zeros(N, nU);
+	dev = zeros(nU);
+
 	%indices of spike history filter
 	sp_indices = data.sp_hist+1;
 	%we're simulating new spikes, so we create a new spike history filter
@@ -40,7 +52,6 @@ function [y, tspks, rho] = glmsim(processed, model, data)
 	for idx=1:nU
 		spikemuas(idx).times = [0];    
 	end
-	bs = processed.binsize;
 	%for each unit
 	for i = 1:nU
 		%extract all the unit's filters
@@ -56,7 +67,11 @@ function [y, tspks, rho] = glmsim(processed, model, data)
 			%compute mu that incorporates the current spike history
 			mu_sp = mu(j)*exp(sp_hist*k_sp');
 			%then sample y ~ Pn(exp(eta)) to decide if we spike or not
-			yij = poissrnd(mu_sp);
+			if maxspks == 1
+				yij = min(poissrnd(mu_sp), nMaxSpks);
+			else
+				yij = poissrnd(mu_sp);
+			end
 			y(j,i) = yij;
 			rho(j,i) = mu_sp;
 			%If there's a spike, add the time(s) to spikemuas
@@ -65,7 +80,10 @@ function [y, tspks, rho] = glmsim(processed, model, data)
 				yij;
 				sptime = bs*(j+0.005*(1:yij)');
 				spikemuas(i).times = [spikemuas(i).times; sptime];
+				%Only add this if there is a spike, otherwise set it to zero
+				dev(i) = dev(i) + 2*yij*log(yij);
 			end
+			dev(i) = dev(i)-2*yij*log(mu_sp)-2*yij+2*mu_sp;
 			%then update the spike history filter
 			sp_hist = [sp_hist(2:end), yij];
 		end
