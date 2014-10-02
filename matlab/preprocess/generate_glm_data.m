@@ -1,4 +1,4 @@
-function processed = generate_glm_data(freqlow, freqhigh, k_const, k_sp, k_RU, k_FE, N, binsize)
+function processed = generate_glm_data(freqlow, freqhigh, k_const, k_sp, k_RU, k_FE, N, binsize, seed)
 	% Function to generate data according to a provided GLM. That is, given a set of filters, will simulate 
 	%	filtered Gaussian white noise torque data, run that through a GLM, and produce an output spike train.
 	%
@@ -14,6 +14,7 @@ function processed = generate_glm_data(freqlow, freqhigh, k_const, k_sp, k_RU, k
 	%	k_FE = FE cursor data filter
 	%	N = (optional, default = 10000) number of data points
 	%	binsize = (optional, default = 0.002) size of bins in seconds
+	%	seed = (optional) if provided will run rng(seed) to that torque data is reproducible
 	%		
 	%Output:
 	%	processed is a structure containing the following fields:
@@ -38,8 +39,9 @@ function processed = generate_glm_data(freqlow, freqhigh, k_const, k_sp, k_RU, k
 	%		processed = generate_glm_data(freqlow, freqhigh, k_sp, k_RU, k_FE, N, binsize);
 	
 	%Optional arguments
-	if (nargin < 6) N = 10000; end
-	if (nargin < 7) binsize = 0.002; end
+	if (nargin < 7) N = 10000; end
+	if (nargin < 8) binsize = 0.002; end
+	if (nargin == 9) rng(seed); end
 
 	nU = 1;
 	nK_sp = length(k_sp);
@@ -72,8 +74,8 @@ function processed = generate_glm_data(freqlow, freqhigh, k_const, k_sp, k_RU, k
 	torque = [filter(b, a, tRU), filter(b, a, tFE)];
 
 	%Plot
-	plot(cumsum(tRU)); hold on
-	plot(torque(:,1), 'r');
+	%plot(cumsum(tRU)); hold on
+	plot(torque(:,1), torque(:,2), 'r');
 
 	%Set up input structure
 	processed.binnedspikes = zeros(N, nU);
@@ -85,7 +87,7 @@ function processed = generate_glm_data(freqlow, freqhigh, k_const, k_sp, k_RU, k
 	processed.tspks = 0;
 	processed.binsize = binsize;
 	%Produce data ready to apply filter to
-	data = filters_sp_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
+	data = filters_sp_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos);
 	%Setup model structure
 	model.b_hat = [k_const, k_sp, k_RU, k_FE];
 	%Simulate GLM
