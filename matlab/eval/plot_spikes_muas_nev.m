@@ -34,8 +34,11 @@ function plot_spikes_muas_nev(nevfile, fn)
         xlabel('Unit')
         ylabel('time (s)')
         colorTitleHandle = get(hcb,'Title');
-        titleString = 'A title';
+        titleString = 'spikes/s';
         set(colorTitleHandle ,'String',titleString);
+        set(gca, 'XTick', 1:length(pre.unitnames));
+        set(gca, 'XTickLabel', pre.unitnames);
+        rotateXLabels(gca, 90)
 	%Write file
 	saveplot(gcf, fn);
 end
