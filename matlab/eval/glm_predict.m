@@ -1,4 +1,4 @@
-function [corrs, simTrain] = glm_predict(processed, data, model, fn_out)
+function [corrs, simTrain] = glm_predict(processed, data, model, fn_out, nTrains)
 	%Predict spike trains for GLM given a model and cursor data. Compare the spike trains to the actual spike train generated
 	%
 	%Usage:
@@ -9,10 +9,13 @@ function [corrs, simTrain] = glm_predict(processed, data, model, fn_out)
 	%	data = a structure of stimulus and spike history data from ./models
 	%	model = a structure of fit coefficients from MLE_glmfit
 	%	fn_out = base file name to write plots to
+	%	nTrains = (optional, default = 20) the number of trains to simulate for the same stimulus
 	%   
 	%Output:
 	%	corrs = a vector of correlation coefficients between simulated firing rate, and actual firing rate
 	%		 (a smoothed version of spike train)
+	%	simTrain = average firing rate of all simulated trains. unsmoothed
+	%	simTrains = all simulated trains
 	%  
 	%Test code:
 	%	%Load test preprocessed data

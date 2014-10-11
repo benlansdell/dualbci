@@ -38,6 +38,10 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 	output = zeros(size(data.torque));
 	nU = size(data.X,1);
 	N = size(data.X,2);
+	N_sub = 2000;
+	%Only decode a short sample...
+	N = 20000;
+
 
 	%Make a Gaussian filter to smooth estimates
 	sigma = 0.25;
@@ -65,9 +69,6 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 	Wk = Q;%eye(2);
 	gradloglambda = [kx, ky];
 	p = 0;
-	
-	%Only decode a short sample...
-	N = 10000;
 
 	%At each time step
 	for idx = 1:N
@@ -118,25 +119,28 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 	%Plot ten seconds worth of data
 	t_i = 0;
 	%t_f = 40;
-	t_f = 20; 
+	t_f = 40; 
 	ii = 1:N;
 	tt = ii*binsize;
 	ii = ii(tt > t_i & tt < t_f);
 	tt = tt(ii);
 
 	%Plot cursor data
-%	subplot(2,1,1);
-	plot(tt, output(ii,1), 'r--', tt, output(ii,2), 'k--', tt, data.torque(ii,1), 'r', tt, data.torque(ii,2), 'k')
+	subplot(2,1,1);
+	plot(tt, output(ii,1), 'r--', tt, data.torque(ii,1), 'r')
 	xlim([t_i, t_f])
-	legend('RU', 'FE')
-	xlabel('time (s)')		
-	corrRU = corr(output(ii,1), data.torque(ii,1))
-	corrFE = corr(output(ii,2), data.torque(ii,2))
+	ylabel('Pred. RU')
+	%Take a random sample... so it doesn't take forever...
+	ii_sub = datasample(ii, N_sub, 'Replace', false);
+	corrRU = corr(output(ii_sub,1), data.torque(ii_sub,1))
+	corrFE = corr(output(ii_sub,2), data.torque(ii_sub,2))
 	title(['Correlation RU:' num2str(corrRU) ' Correlation FE: ' num2str(corrFE)])
-	%subplot(2,1,2);
-	%plot(1,1)
-	%Plot firing rate, too
-
+	subplot(2,1,2);
+	plot(tt, output(ii,2), 'r--', tt, data.torque(ii,2), 'r')
+	xlim([t_i, t_f])
+	ylabel('Pred. FE')
+	xlabel('time (s)')		
+	
 	saveplot(gcf, fn_out, 'eps', [9 6]);
 	saveas(gcf, [fn_out])
 end

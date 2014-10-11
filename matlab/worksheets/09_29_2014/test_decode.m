@@ -135,7 +135,7 @@ decoded_torque = glm_decode(processed, data, model, F, Q, mu, fn_out);
 %Run the decoder on a manual control dataset...
 
 nevfile = './testdata/20130117SpankyUtah001.nev';
-fn_out = './worksheets/09_29_2014/testdecode_braincontrol.eps';
+fn_out = './worksheets/09_29_2014/testdecode_manualcontrol.eps';
 %fn_out_filters = './worksheets/09_29_2014/testdecode_filters';
 %Load the mat file with some info on the BCI
 %load('./testdata/Spanky_2013-01-17-1325.mat')
@@ -170,5 +170,5 @@ model = MLE_glmfit(data, const);
 %plot_filters(model, data, processed, fn_out_filters);
 %plot_predictions(model, data, processed, fn_out);
 [F, Q, mu] = fit_AR_LS(data.torque, order);
-figure;
+%figure;
 decoded_torque = glm_decode(processed, data, model, F, Q, mu, fn_out);
