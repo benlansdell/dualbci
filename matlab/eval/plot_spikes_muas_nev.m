@@ -24,21 +24,26 @@ function plot_spikes_muas_nev(nevfile, fn)
         pre = preprocess(nevfile, binsize, threshold, offset);
 
 	zaxis = [0 max(max(pre.binnedspikes))];
-        image(pre.binnedspikes, 'CDataMapping', 'scaled');
+        image(pre.binnedspikes', 'CDataMapping', 'scaled');
         caxis(zaxis);
         set(gca,'Zlim',zaxis,'Ztick',zaxis, 'NextPlot', 'replacechildren');
         %ylabel(names{1});
         hcb = colorbar;
         drawnow;
-	title(['Spikes for ' nevfile])
-        xlabel('Unit')
-        ylabel('time (s)')
+	title(['activity for ' nevfile])
+        ylabel('Unit #, total spikes')
+        xlabel('time (s)')
         colorTitleHandle = get(hcb,'Title');
         titleString = 'spikes/s';
         set(colorTitleHandle ,'String',titleString);
-        set(gca, 'XTick', 1:length(pre.unitnames));
-        set(gca, 'XTickLabel', pre.unitnames);
-        rotateXLabels(gca, 90)
+        set(gca, 'YTick', 1:length(pre.unitnames));
+        labels = {};
+        for idx=1:length(pre.unitnames)
+                nspikes = sum(pre.binnedspikes(:,idx));
+                labels{idx} = [pre.unitnames{idx} '(' num2str(nspikes) ')'];
+        end
+
+        set(gca, 'YTickLabel', labels);
 	%Write file
 	saveplot(gcf, fn);
 end
