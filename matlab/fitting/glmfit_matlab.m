@@ -287,6 +287,7 @@ iterLim = 100;
 warned = false;
 seps = sqrt(eps);
 convcrit = 1e-6;
+convcrit = 1e-10;
 
 b = zeros(p,1,dataClass);
 
@@ -304,7 +305,7 @@ case {'poisson' 'gamma' 'inverse gaussian'}
 end
 
 while iter <= iterLim
-    iter = iter+1;
+    iter = iter+1
 
     % Compute adjusted dependent variable for least squares fit
     deta = dlinkFun(mu);
@@ -334,6 +335,7 @@ while iter <= iterLim
     % Compute coefficient estimates for this iteration - the IRLS step
     b_old = b;
     [b,R] = wfit(z - offset, x, sqrtw);
+    b;
 
     % Form current linear predictor, including offset
     eta = offset + x * b;
@@ -358,12 +360,12 @@ while iter <= iterLim
 
     %Plot estimated filters and output deviance at each iterate
     di = sum(devFun(mu, y));
-    display(['Deviance at iterate ' num2str(iter) ': ' num2str(di)])
-    if iscell(k)
-        plotFilters(b, k);
-        display('Press a key to continue')
-        pause
-    end
+    %display(['Deviance at iterate ' num2str(iter) ': ' num2str(di)])
+    %if iscell(k)
+    %    plotFilters(b, k);
+    %    display('Press a key to continue')
+    %    pause
+    %end
 end
 if iter > iterLim
     warning(message('stats:glmfit:IterationLimit'));

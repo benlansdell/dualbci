@@ -25,7 +25,11 @@ function model = MLE_glmfit(data, const)
 
 	nU = size(data.y,1);
 	nK = size(data.X,3);
-	model.b_hat = zeros(nU, nK+1);
+	if strcmp(const, 'on')
+		model.b_hat = zeros(nU, nK+1);
+	else
+		model.b_hat = zeros(nU, nK);
+	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
 	%For each unit, fit a GLM to the torque data
@@ -36,6 +40,6 @@ function model = MLE_glmfit(data, const)
 		model.dev{idx} = dev;
 		model.stats{idx} = stats;
 	end
-	if const ~= 'on'
+	if ~strcmp(const, 'on')
 		model.b_hat = [zeros(nU, 1), model.b_hat]
 	end
