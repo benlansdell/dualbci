@@ -54,14 +54,14 @@ function [model, intermediates] = MLE_SD(data, const, fn_out)
 	end
 	intermediates = 0;
 
-	model2 = MLE_glmfit(data, const);
+	%model2 = MLE_glmfit(data, const);
 	%Plot the difference between them
-	b_hat1 = model.b_hat(1,:)
-	b_hat2 = model2.b_hat(1,:)
-	if length(fn_out) > 0
-		%find also the glmfit estimates...
-		validateFit(squeeze(data.X(1,:,:)),data.y(1,:),b0, b_hat1, b_hat2)
-	end
+	%b_hat1 = model.b_hat(1,:)
+	%b_hat2 = model2.b_hat(1,:)
+	%if length(fn_out) > 0
+	%	%find also the glmfit estimates...
+	%	validateFit(squeeze(data.X(1,:,:)),data.y(1,:),b0, b_hat1, b_hat2)
+	%end
 end
 
 function [b, dev] = glmfit_SD(X, y, const, b0)
