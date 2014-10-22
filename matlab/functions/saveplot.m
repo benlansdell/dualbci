@@ -24,9 +24,9 @@ function saveplot(h, filename, format, dimensions, journal)
 
 	if (nargin < 3)
 		format = 'eps';
-		dimensions = [3.27 2.18];
+		dimensions = [6 4];
 	elseif nargin < 4
-		dimensions = [3.27 2.18];
+		dimensions = [6 4];
 	elseif nargin == 4
 		if length(dimensions) == 1
 			throw(MException('Argument:Error', 'If specifying a scale dimension, must also specify journal. See help saveplot'));
