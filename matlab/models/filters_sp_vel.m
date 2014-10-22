@@ -59,10 +59,10 @@ function data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel)
 	data.k{1,1} = 'spike history'; 
 	data.k{1,2} = 1:nK_sp;
 	data.k{1,3} = dt_sp;
-	data.k{2,1} = 'RU pos'; 
+	data.k{2,1} = 'RU vel'; 
 	data.k{2,2} = (1:nK_vel) + nK_sp;
 	data.k{2,3} = dt_vel;
-	data.k{3,1} = 'FE pos'; 
+	data.k{3,1} = 'FE vel'; 
 	data.k{3,2} = (1:nK_vel) + nK_sp + nK_vel;
 	data.k{3,3} = dt_vel;
 	%Record specifically which indices are spike history indices for model simulation
