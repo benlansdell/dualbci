@@ -25,6 +25,7 @@ function plot_filters(model, data, processed, fn_out)
 	nK = size(k,1); %number of filters
 	nP = 3; %number of things to plot about each fitted filter
 	%For each unit, plot filters fit
+	h = figure;
 	for idx=1:nU 
 		clf;
 		b_hat = model.b_hat(idx,:);
@@ -35,9 +36,16 @@ function plot_filters(model, data, processed, fn_out)
 			%Extract data
 			name = k{j,1};
 			filt = b_hat(k{j,2}+1);
-			se = stats.se(k{j,2}+1)';
-			tstat = stats.t(k{j,2}+1);
-			pval = stats.p(k{j,2}+1);
+			%If available, find statistics of fit, otherwise set these to zero
+			if isfield(stats, 'se')	
+				se = stats.se(k{j,2}+1)';
+				tstat = stats.t(k{j,2}+1);
+				pval = stats.p(k{j,2}+1);
+			else
+				se = zeros(size(k{j,2}))';
+				tstat = zeros(size(k{j,2}));
+				pval = zeros(size(k{j,2}));
+			end
 			dt_filt = k{j,3};
 			%If filter length is zero skip this one
 			if length(k{j,2}) < 1
