@@ -116,6 +116,10 @@ load(fn_out);
 nK_poss = [2 5 10 20 50];
 dt_poss = binsize*100./nK_poss;
 
+maxlag = 4/dt_sp;
+autocorrRU = xcorr(pre.dtorque(:,1), maxlag);
+autocorrFE = xcorr(pre.dtorque(:,2), maxlag);
+
 devs_IRLS = zeros(nAlpha, length(nK_poss));
 devs_SD = zeros(nAlpha, length(nK_poss));
 
@@ -123,8 +127,8 @@ g = figure;
 h = figure;
 for i = 1:nAlpha
 	i
-	figure(g);
-	clf;
+	figure(g);clf;
+	figure(h);clf;
 	alpha = alphas(i)
 	for j = 1:length(nK_poss);
 		%set dt_pos accordingly
@@ -153,18 +157,24 @@ for i = 1:nAlpha
 				%rescale filter because of different time scales
 				dt = dt_pos;
 				filt = filt*dt_sp/dt_pos;
-				title(name);
 			end
 			figure(g);
 			subplot(3,1,k)
 			hold on
 			plot((0:length(filt)-1)*dt, filt, 'Color', [1 0.5 0.5])  
 			plot((0:length(filt)-1)*dt, filt, 'r.')  
+			title(name);
 			figure(h);
-			subplot(3,1,k)
+			subplot(3,4,(4*(k-1)+(1:3)))
 			hold on
-			plot((0:length(filt)-1)*dt, abs(fft(filt)), 'Color', [1 0.5 0.5])  
-			plot((0:length(filt)-1)*dt, abs(fft(filt)), 'r.')  			
+			NFFT = 2^nextpow2(length(filt)); % Next power of 2 from length of y
+			Fs = 1/dt;
+			Y = fft(filt,NFFT)/length(filt);
+			f = Fs/2*linspace(0,1,NFFT/2+1);
+			% Plot single-sided amplitude spectrum.
+			plot(f,2*abs(Y(1:NFFT/2+1)), 'Color', [1 0.5 0.5])
+			plot(f,2*abs(Y(1:NFFT/2+1)), 'r.')
+			title(name);
 		end
 	end
 	%Plot the actual filters
@@ -183,18 +193,36 @@ for i = 1:nAlpha
 	fn_out3 = ['./worksheets/10_18_2014/plots/filterstrengths_vel_alpha_' num2str(alphas(i)) '.eps'];
 	saveplot(gcf, fn_out3, 'eps', [9 6]);
 
+	%Plot the actual filters in fourier domain
 	figure(h);
-	subplot(3,1,1)
-	title({['Fit filters. \alpha = ' num2str(alpha) '. # spikes ' num2str(sum(processed{i}.binnedspikes))];['spike history filter']})
+	subplot(3,4,[1 2 3])
+	title({['Fourier transform of fit filters. \alpha = ' num2str(alpha)];['spike history filter']})
 	hold on
-	plot((0:length(k_sp)-1)*binsize, abs(fft(k_sp)), 'b', 'LineWidth', 1)
-	subplot(3,1,2)
+	NFFT = 2^nextpow2(length(k_sp)); % Next power of 2 from length of y
+	Fs = 1/dt_sp;
+	Y = fft(k_sp,NFFT)/length(k_sp);
+	f = Fs/2*linspace(0,1,NFFT/2+1);
+	plot(f,2*abs(Y(1:NFFT/2+1)), 'b')
+	ylabel('|\beta(k)|')
+	subplot(3,4,[5 6 7])
 	hold on
-	plot((0:length(k_RU)-1)*binsize, abs(fft(k_RU))*alpha, 'b', 'LineWidth', 1);
-	subplot(3,1,3)
+	Y = alpha*fft(k_RU,NFFT)/length(k_sp);
+	plot(f,2*abs(Y(1:NFFT/2+1)), 'b')
+	ylabel('|\beta(k)|')
+	subplot(3,4,[9 10 11])
 	hold on
-	plot((0:length(k_FE)-1)*binsize, abs(fft(k_FE))*alpha, 'b', 'LineWidth', 1);
-	xlabel('time (s)')
+	Y = alpha*fft(k_FE,NFFT)/length(k_sp);
+	plot(f,2*abs(Y(1:NFFT/2+1)), 'b')
+	ylabel('|\beta(k)|')
+	xlabel('Freq (Hz)')
+	subplot(3,4,8)
+	tt = ((1:length(autocorrRU))-length(autocorrRU)/2)*dt_sp;
+	plot(tt,autocorrRU)
+	title('Auto-correlation RU')
+	subplot(3,4,12)
+	plot(tt,autocorrFE)
+	title('Auto-correlation FE')
+	xlabel('time(s)')
 	fn_out3 = ['./worksheets/10_18_2014/plots/filterstrengths_vel_alpha_' num2str(alphas(i)) '_fourier.eps'];
 	saveplot(gcf, fn_out3, 'eps', [9 6]);
 end
