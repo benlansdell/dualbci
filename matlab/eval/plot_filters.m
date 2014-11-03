@@ -42,7 +42,7 @@ function plot_filters(model, data, processed, fn_out)
 				tstat = stats.t(k{j,2}+1);
 				pval = stats.p(k{j,2}+1);
 			else
-				se = zeros(size(k{j,2}))';
+				se = zeros(size(k{j,2}));
 				tstat = zeros(size(k{j,2}));
 				pval = zeros(size(k{j,2}));
 			end
@@ -90,15 +90,17 @@ function plot_filters(model, data, processed, fn_out)
 
 		%Plot information about each subplot
 		subplot(nP, nK+1, (nK+1))
-		str1(1) = {['Unit: ' processed.unitnames{idx}]};
-		str1(2) = {['Deviance: ' num2str(dev)]};
-		str1(3) = {['Degrees of freedom: ' num2str(stats.dfe)]};
-		str1(4) = {['Estimated dispersion: ' num2str(stats.sfit)]};
-		str1(5) = {['Binsize: ' num2str(processed.binsize)]};
-		str1(6) = {['Seconds of training: ' num2str(size(data.y,2)*processed.binsize)]};
-		str1(7) = {['Number of spikes: ' num2str(sum(data.y(idx,:)))]};
-		text(0.1,0.8,str1)
-		axis off
+		if isfield(stats, 'dfe')
+			str1(1) = {['Unit: ' processed.unitnames{idx}]};
+			str1(2) = {['Deviance: ' num2str(dev)]};
+			str1(3) = {['Degrees of freedom: ' num2str(stats.dfe)]};
+			str1(4) = {['Estimated dispersion: ' num2str(stats.sfit)]};
+			str1(5) = {['Binsize: ' num2str(processed.binsize)]};
+			str1(6) = {['Seconds of training: ' num2str(size(data.y,2)*processed.binsize)]};
+			str1(7) = {['Number of spikes: ' num2str(sum(data.y(idx,:)))]};
+			text(0.1,0.8,str1)
+			axis off
+		end
 		subplot(nP, nK+1, (nK+1)*2)
 		str2(1) = {'T-test'};
 		text(0.1,0.8,str2)

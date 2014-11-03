@@ -50,7 +50,7 @@ function [model, intermediates] = MLE_SD(data, const, fn_out)
 		model.stats{idx} = 0;
 	end
 	if ~strcmp(const, 'on')
-		model.b_hat = [zeros(nU, 1), model.b_hat]
+		model.b_hat = [zeros(nU, 1), model.b_hat];
 	end
 	intermediates = 0;
 
