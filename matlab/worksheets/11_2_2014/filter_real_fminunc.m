@@ -176,18 +176,25 @@ saveplot(gcf, './worksheets/10_27_2014/plots/filters_dev.eps')
 
 %Plot auto correlation in separate plot
 figure 
-subplot(3,1,1)
-tt = ((1:length(autocorrSH))-length(autocorrSH)/2)*dt_sp;
-plot(tt,autocorrSH)
-title('Auto-correlation spike history')
-subplot(3,1,2)
+subplot(2,2,1)
 tt = ((1:length(autocorrRU))-length(autocorrRU)/2)*dt_sp;
 plot(tt,autocorrRU)
-title('Auto-correlation RU')
-subplot(3,1,3)
-plot(tt,autocorrFE)
-title('Auto-correlation FE')
 xlabel('time(s)')
+title('Auto-correlation RU')
+subplot(2,2,2)
+tt = ((1:length(autocorrFE))-length(autocorrFE)/2)*dt_sp;
+plot(tt,autocorrFE)
+xlabel('time(s)')
+title('Auto-correlation FE')
+subplot(2,2,3)
+plot(tt,autocorrdFE)
+title('Auto-correlation vel RU')
+xlabel('time(s)')
+subplot(2,2,4)
+tt = ((1:length(autocorrdRU))-length(autocorrdRU)/2)*dt_sp;
+plot(tt,autocorrdRU)
+xlabel('time(s)')
+title('Auto-correlation vel FE')
 fn_out4 = ['./worksheets/11_2_2014/plots/filters_fminunc_autocorr.eps'];
 saveplot(gcf, fn_out4, 'eps', [9 6]);
 
