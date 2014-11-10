@@ -55,17 +55,17 @@ for j = 1:length(nK_poss);
 	%for each resolution generate the data structure
 	data = filters_sp_pos(pre, nK_sp, nK_pos, dt_sp, dt_pos);
 	%Takes a long time... will run later
-	model_SD = MLE_SD(data, const);
+	%model_SD = MLE_SD(data, const);
 	model_IRLS = MLE_glmfit(data, const);
 	%Compute the deviance
-	devs_SD(j) = deviance(model_SD, data);
+	%devs_SD(j) = deviance(model_SD, data);
 	devs_IRLS(j) = deviance(model_IRLS, data);
 	%Plot the filters estimated for each
 	fn_out2 = ['./worksheets/11_2_2014/plots/filters_dtpos_' num2str(dt_pos)];
-	plot_filters(model_SD, data, pre, [fn_out2 '_fminunc'])
+	%plot_filters(model_SD, data, pre, [fn_out2 '_fminunc'])
 	plot_filters(model_IRLS, data, pre, [fn_out2 '_IRLS'])
 	filt_IRLS{j} = model_IRLS.b_hat;
-	filt_SD{j} = model_SD.b_hat;
+	%filt_SD{j} = model_SD.b_hat;
 	for k = 1:size(data.k,1)
 		%Plot the estimated filters
 		name = data.k{k,1};
@@ -109,6 +109,8 @@ for j = 1:length(nK_poss);
 end
 autocorrRU = xcorr(pre.torque(:,1), maxlag);
 autocorrFE = xcorr(pre.torque(:,2), maxlag);
+autocorrdRU = xcorr(pre.dtorque(:,1), maxlag);
+autocorrdFE = xcorr(pre.dtorque(:,2), maxlag);
 %Plot the actual filters
 figure(g);
 subplot(3,1,1)
@@ -156,20 +158,20 @@ AIC_IRLS = devs_IRLS + 2*nK;
 AICc_IRLS = AIC_IRLS + 2*nK.*(nK+1)./(N-1-nK);
 BIC_IRLS = devs_IRLS + ([nK_poss]+nK_sp+1)*log(N);
 
-AIC_SD = devs_SD + 2*nK;
-AICc_SD = AIC_SD + 2*nK.*(nK+1)./(N-1-nK);
-BIC_SD = devs_SD + ([nK_poss]+nK_sp+1)*log(N);
+%AIC_SD = devs_SD + 2*nK;
+%AICc_SD = AIC_SD + 2*nK.*(nK+1)./(N-1-nK);
+%BIC_SD = devs_SD + ([nK_poss]+nK_sp+1)*log(N);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Make a plot of the deviance as a function of params
 clf
 plot(dt_poss, devs_IRLS, dt_poss, AIC_IRLS, dt_poss, AICc_IRLS, dt_poss, BIC_IRLS);
 legend('Deviance', 'AIC', 'AICc', 'BIC')
-hold on
-plot(dt_poss, devs_SD, '--', dt_poss, AIC_SD, '--', dt_poss, AICc_SD, '--', dt_poss, BIC_SD, '--');
+%hold on
+%plot(dt_poss, devs_SD, '--', dt_poss, AIC_SD, '--', dt_poss, AICc_SD, '--', dt_poss, BIC_SD, '--');
 xlabel('resolution (s)')
 ylabel('likelihood')
-title('Dotted line is fminunc, solid is IRLS')
+%title('Dotted line is fminunc, solid is IRLS')
 saveplot(gcf, './worksheets/10_27_2014/plots/filters_dev.eps')
 
 %Plot auto correlation in separate plot
