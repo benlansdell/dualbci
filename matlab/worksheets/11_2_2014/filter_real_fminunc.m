@@ -172,7 +172,7 @@ legend('Deviance', 'AIC', 'AICc', 'BIC')
 xlabel('resolution (s)')
 ylabel('likelihood')
 %title('Dotted line is fminunc, solid is IRLS')
-saveplot(gcf, './worksheets/10_27_2014/plots/filters_dev.eps')
+saveplot(gcf, './worksheets/11_2_2014/plots/filters_real_dev.eps')
 
 %Plot auto correlation in separate plot
 figure 
@@ -196,8 +196,40 @@ plot(tt,autocorrdRU)
 xlabel('time(s)')
 title('Auto-correlation vel FE')
 fn_out4 = ['./worksheets/11_2_2014/plots/filters_fminunc_autocorr.eps'];
-saveplot(gcf, fn_out4, 'eps', [9 6]);
+saveplot(gcf, fn_out4, 'eps', [6 4]);
 
 %Compute norms of fitted filters to each other and to actual
+inf_filts = [];
+rel_filts = [];
+max_filts_SD = [];
+max_filts_IRLS = [];
+FI_SD = {};
+FI_IRLS = {};
+kappa_SD = [];
+kappa_IRLS = [];
+for idx = 1:length(nK_poss)
+	idx
+	diff_filts = filt_IRLS{idx}-filt_SD{idx};
+	inf_filts(idx) = norm(diff_filts, Inf);
+	max_filts_SD(idx) = norm(filt_SD{idx}, Inf);
+	max_filts_IRLS(idx) = norm(filt_IRLS{idx}, Inf);
+	rel_filts(idx) = inf_filts(idx)/max_filts_IRLS(idx);
+	%Fisher information
+	%set dt_pos accordingly
+	dt_pos = dt_poss(idx);
+	nK_pos = nK_poss(idx);
+	%recompute data matrix structure for each resolution generate the data structure
+	data = filters_sp_pos(pre, nK_sp, nK_pos, dt_sp, dt_pos);
+	N = size(data.X,2);
+	X = [ones(N,1),squeeze(data.X)];
+	beta_IRLS = filt_IRLS{idx}';
+	beta_SD = filt_SD{idx}';
+	mu_IRLS = spdiags(exp(X*beta_IRLS), [0], N,N);
+	mu_SD = spdiags(exp(X*beta_SD), [0], N,N);
+	FI_SD{idx} = X'*mu_IRLS*X;
+	FI_IRLS{idx} = X'*mu_SD*X;
+	kappa_IRLS(idx) = cond(FI_IRLS{idx});
+	kappa_SD(idx) = cond(FI_SD{idx});
+end
 
-%Compute condition number of Fisher information matrix
+%Compute condition number of Fisher information matrices
