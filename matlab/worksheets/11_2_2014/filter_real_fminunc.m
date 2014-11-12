@@ -6,7 +6,7 @@
 %Plot spatial filters as a function of resolution (for IRLS and fminunc)
 %Plot likelihood (and AIC and BIC) as a function of resolution
 
-fn_out = './worksheets/11_2_2014/data.mat';
+fn_out = './worksheets/11_2_2014/data_real.mat';
 N = 200000;
 binsize = 0.002;
 dur = N*binsize;
@@ -233,3 +233,4 @@ for idx = 1:length(nK_poss)
 end
 
 %Compute condition number of Fisher information matrices
+save(fn_out);

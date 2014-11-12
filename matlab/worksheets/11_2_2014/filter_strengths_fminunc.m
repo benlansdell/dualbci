@@ -7,13 +7,6 @@
 %We compare the quality of the fit to the filter strength and the #of parameters of the fit model
 
 clear
-sigma = 0.25;
-%sigma = 0.001;
-sigma = sigma/processed.binsize;
-sz = sigma*3*3;
-x = linspace(-sz/2, sz/2, sz);
-gaussFilter = exp(-x.^2/(2*sigma^2));
-gaussFilter = gaussFilter/sum(gaussFilter);
 
 fn_out = './worksheets/11_2_2014/data.mat';
 N = 200000;
@@ -32,9 +25,9 @@ const = 'on';
 %Filters
 nK_sp = 100;
 nK_pos = 100;
-nAlpha = 1;
+nAlpha = 10;
 %Factors to scale stim filters by
-alphas = [1];
+alphas = [1 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1];
 k_const = zeros(nAlpha,1);
 target_nsp = 10000;
 k_const_guess = -5;
@@ -126,21 +119,21 @@ for i = 1:nAlpha
 	for j = 1:length(nK_poss);
 		%set dt_pos accordingly
 		dt_pos = dt_poss(j);
-		nK_pos = nK_poss(j)
+		nK_pos = nK_poss(j);
 		%for each resolution generate the data structure
 		data = filters_sp_pos(processed{i,j}, nK_sp, nK_pos, dt_sp, dt_pos);
 		%Takes a long time... will run later
-		model_SD = MLE_SD(data, const);
+		%model_SD = MLE_SD(data, const);
 		model_IRLS = MLE_glmfit(data, const);
 		%Compute the deviance
-		devs_SD(i,j) = deviance(model_SD, data);
+		%devs_SD(i,j) = deviance(model_SD, data);
 		devs_IRLS(i,j) = deviance(model_IRLS, data);
 		%Plot the filters estimated for each
 		fn_out2 = ['./worksheets/11_2_2014/plots/filterstrengths_alpha_' num2str(alphas(i)) '_dtpos_' num2str(dt_pos)];
-		plot_filters(model_SD, data, processed{i}, [fn_out2 '_fminunc'])
+		%plot_filters(model_SD, data, processed{i}, [fn_out2 '_fminunc'])
 		plot_filters(model_IRLS, data, processed{i,j}, [fn_out2 '_IRLS'])
-		filt_IRLS{j} = model_IRLS.b_hat;
-		filt_SD{j} = model_SD.b_hat;
+		filt_IRLS{i,j} = model_IRLS.b_hat;
+		%filt_SD{j} = model_SD.b_hat;
 		figure(g);
 		for k = 1:size(data.k,1)
 			%Plot the estimated filters
@@ -223,6 +216,12 @@ save(fn_out);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Make a plot of the deviance as a function of params
+
+nK = repmat([nK_poss]+nK_sp + 1, nAlpha, 1);
+AIC_IRLS = devs_IRLS + 2*nK;
+AICc_IRLS = AIC_IRLS + 2*nK.*(nK+1)./(N-1-nK);
+BIC_IRLS = devs_IRLS + nK.*log(N);
+
 clf
 imagesc(devs_IRLS)
 title('Deviance')
@@ -235,3 +234,26 @@ set(gca,'YTickLabel',alphas);
 colorbar
 saveplot(gcf, './worksheets/11_2_2014/plots/filterstrengths_dev.eps')
 
+clf
+imagesc(AIC_IRLS)
+title('AIC')
+xlabel('resolution (s)')
+ylabel('alpha')
+%set(gca,'XTick',1:size(S,1));
+set(gca,'XTickLabel',dt_poss);
+%set(gca,'YTick',1:size(S,2));
+set(gca,'YTickLabel',alphas);
+colorbar
+saveplot(gcf, './worksheets/11_2_2014/plots/filterstrengths_AIC.eps')
+
+clf
+imagesc(BIC_IRLS)
+title('BIC')
+xlabel('resolution (s)')
+ylabel('alpha')
+%set(gca,'XTick',1:size(S,1));
+set(gca,'XTickLabel',dt_poss);
+%set(gca,'YTick',1:size(S,2));
+set(gca,'YTickLabel',alphas);
+colorbar
+saveplot(gcf, './worksheets/11_2_2014/plots/filterstrengths_BIC.eps')
