@@ -14,7 +14,7 @@ function status = csvwrite_heading(fn, M, titles)
 	%			M = rand(3);
 	%			csvwrite_heading('test.dat', M, titles);
 
-	f_out = fopen(fn, 'w')
+	f_out = fopen(fn, 'w');
 	%Write headings
 	for idx = 1:length(titles)
 		fprintf(f_out, [titles{idx} ',']);
