@@ -211,8 +211,8 @@ for i = 1:nAlpha
 end
 %Save the outcome of all the above
 save(fn_out);
-%fn_out = './worksheets/11_2_2014/data.mat';
-%load(fn_out);
+fn_out = './worksheets/11_2_2014/data.mat';
+load(fn_out);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Make a plot of the deviance as a function of params
@@ -257,3 +257,30 @@ set(gca,'XTickLabel',dt_poss);
 set(gca,'YTickLabel',alphas);
 colorbar
 saveplot(gcf, './worksheets/11_2_2014/plots/filterstrengths_BIC.eps')
+
+%Compute dot product of fitted filters and actual filters and plot result
+%K{1,idx,j} = k_sp;
+%K{2,idx,j} = k_RU_sc;
+%K{3,idx,j} = k_FE_sc;
+%k_const(idx,j) = k_const_guess+log(target_nsp/nspikes1);
+
+%Fitted 
+%filt_IRLS
+dp = [];
+for i = 1:nAlpha
+	for j = 1:length(nK_poss)
+			act_filt = [k_const(i,j), K{1,i,j},K{2,i,j},K{3,i,j}];
+			dp(i,j) = act_filt*filt_IRLS{i,j}'/norm(act_filt)/norm(filt_IRLS{i,j});
+	end
+end
+clf
+imagesc(dp)
+title('k.k_{IRLS}/|k||k_{IRLS}|')
+xlabel('resolution (s)')
+ylabel('alpha')
+%set(gca,'XTick',1:size(S,1));
+set(gca,'XTickLabel',dt_poss);
+%set(gca,'YTick',1:size(S,2));
+set(gca,'YTickLabel',alphas);
+colorbar
+saveplot(gcf, './worksheets/11_2_2014/plots/filterstrengths_DP.eps')
