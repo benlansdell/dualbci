@@ -38,6 +38,8 @@ function model = MLE_glmfit(data, const)
 		%Extract filters fitted...
 		model.b_hat(idx,:) = b;	
 		model.dev{idx} = dev;
+		%Remove residual components since these take up a lot of memory
+		stats = rmfield(stats, {'resid', 'residp', 'residd', 'resida', 'wts'});
 		model.stats{idx} = stats;
 	end
 	if ~strcmp(const, 'on')
