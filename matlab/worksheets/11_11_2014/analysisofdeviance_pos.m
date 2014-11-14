@@ -6,6 +6,7 @@ nevfile = './testdata/20130117SpankyUtah001.nev';
 binsize = 0.002;
 dt_sp = binsize;
 dt_pos = 0.2;
+dt_vel = 0.05;
 offset = 0.0;
 threshold = 5;
 processed = preprocess_spline(nevfile, binsize, threshold, offset);
@@ -63,7 +64,7 @@ nK_vels = [1 2 3 4 5 6 7 8 9 10];
 models_MSV = {};
 for idx = 1:length(nK_vels)
 	nK_vel = nK_vels(idx);
-	data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_pos);
+	data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel);
 	%Fit each of the above GLMs
 	models_MSV{idx} = MLE_glmfit(data, const);
 	%Make plots of each filter fitted, predictions of each unit, and record the deviance
@@ -72,29 +73,16 @@ for idx = 1:length(nK_vels)
 	plot_predictions(models_MSV{idx}, data, processed, fn_out);
 end
 
-%- MSD mean, spike history and direction and speed
-%const = 'on';
-%nK_sp = 100; 
-%nK_dirs = [1 2 3 4 5 6 7 8 9 10];
-%models_MSD = {};
-%for idx = 1:length(nK_dirs)
-%	nK_dir = nK_dirs(idx);
-%	data = filters_sp_dir(processed, nK_sp, nK_dir, dt_sp, dt_pos);
-%	%Fit each of the above GLMs
-%	models_MSD{idx} = MLE_glmfit(data, const);
-%	%Make plots of each filter fitted, predictions of each unit, and record the deviance
-%	fn_out = ['./worksheets/11_11_2014/plots/AOD_MSD_nK_' num2str(nK_vel)];
-%	plot_filters(models_MSD{idx}, data, processed, fn_out);
-%	plot_predictions(models_MSD{idx}, data, processed, fn_out);
-%end
-
 %save fitted models for later use
-save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP', 'models_MSV', 'models_MSD')
+save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP', 'models_MSV')
 
 L = length(nK_poss);
 csvMSP = zeros(nU, 5+6*L);
+blank = cell(1,L-1);
 %Fields to save (nested model MS vs MSP)
 %Delta AIC (MSP), Delta BIC (MSP), correlation
+
+MSP_headings = {'Name', 'Dev M', 'nM', 'Dev MS', 'nMS', 'Dev MSP', blank{:}, 'nMSP', blank{:}, 'chi2', blank{:}, 'p-val', blank{:}, 'AIC', blank{:}, 'BIC'};
 for idx = 1:nU
 	%Unit name
 	csvMSP(idx, 1) = str2num(processed.unitnames{idx});
@@ -106,11 +94,16 @@ for idx = 1:nU
 	csvMSP(idx, 4) = model_MS.dev{idx};
 	%nMS
 	csvMSP(idx, 5) = size(model_MS.b_hat, 2);
+	%Number of data points in MS model
+	NMS = size(model_MS.stats{idx}.resid,1);
 	for j = 1:L
-		%Dev MSP 6
-		csvMSP(idx, 5+j) = model_MSP.dev{idx};
+		%Adj Dev MSP 6
+		%Adjusted since the number of data points in the MSP fits is different to the number of data points in the MS fits, which
+		%Fewer data points means fewer deviances... which can make MSP fits better than they seem
+		NMSP = size(models_MSP{j}.stats{idx}.resid,1);
+		csvMSP(idx, 5+j) = models_MSP{j}.dev{idx}*NMS/NMSP;
 		%nMSP 7
-		csvMSP(idx, 5+L+j) = size(model_MSP.b_hat, 2);
+		csvMSP(idx, 5+L+j) = size(models_MSP{j}.b_hat, 2);
 		%Compute chi^2 value 8
 		csvMSP(idx, 5+2*L+j) = csvMSP(idx,4)-csvMSP(idx,5+j);
 		%p-value 9
@@ -129,8 +122,7 @@ end
 csvwrite_heading('./worksheets/11_11_2014/AOD_MSP.csv', csvMSP, MSP_headings);
 
 csvMSV = zeros(nU, 11);
-%Fields to save (nested model MS vs MSV)
-%Delta AIC (MSV), Delta BIC (MSV), correlation
+MSV_headings = {'Name', 'Dev M', 'nM', 'Dev MS', 'nMS', 'Dev MSV', blank{:}, 'nMSV', blank{:}, 'chi2', blank{:}, 'p-val', blank{:}, 'AIC', blank{:}, 'BIC'};
 for idx = 1:nU
 	%Unit name
 	csvMSV(idx, 1) = str2num(processed.unitnames{idx});
@@ -142,52 +134,40 @@ for idx = 1:nU
 	csvMSV(idx, 4) = model_MS.dev{idx};
 	%nMS
 	csvMSV(idx, 5) = size(model_MS.b_hat, 2);
-	%Dev MSV
-	csvMSV(idx, 6) = model_MSV.dev{idx};
-	%nMSV
-	csvMSV(idx, 7) = size(model_MSV.b_hat, 2);
-	%Compute chi^2 value
-	csvMSV(idx, 8) = csvMSV(idx,4)-csvMSV(idx,6);
-	%p-value
-	csvMSV(idx, 9) = 1-chi2cdf(csvMSV(idx, 8), csvMSV(idx, 7) - csvMSV(idx, 5));
-	%Report change in AIC and change in BIC for each unit when different covariates are added
-	%Change in AIC is the twice the change in number of parameters, minus twice the change in the maximized likelihood (deviance)
-	csvMSV(idx, 10) = 2*csvMSV(idx, 7) - 2*csvMSV(idx, 5) + csvMSV(idx, 6) - csvMSV(idx, 4);
-	%Change in BIC
-	csvMSV(idx, 11) = (csvMSV(idx, 7) - csvMSV(idx, 5))*log(N) + csvMSV(idx, 6) - csvMSV(idx, 4);
+	%Number of data points in MS model
+	NMS = size(model_MS.stats{idx}.resid,1);
+	for j = 1:L
+		%Adj Dev MSP 6
+		%Adjusted since the number of data points in the MSV fits is different to the number of data points in the MS fits, which
+		%Fewer data points means fewer deviances... which can make MSV fits better than they seem
+		NMSV = size(models_MSV{j}.stats{idx}.resid,1);
+		csvMSV(idx, 5+j) = models_MSV{j}.dev{idx}*NMS/NMSV;
+		%nMSP 7
+		csvMSV(idx, 5+L+j) = size(models_MSV{j}.b_hat, 2);
+		%Compute chi^2 value 8
+		csvMSV(idx, 5+2*L+j) = csvMSV(idx,4)-csvMSV(idx,5+j);
+		%p-value 9
+		csvMSV(idx, 5+3*L+j) = 1-chi2cdf(csvMSV(idx, 5+2*L+j), csvMSV(idx, 5+L+j) - csvMSV(idx, 5));
+		%Report change in AIC and change in BIC for each unit when different covariates are added
+		%Change in AIC is the twice the change in number of parameters, minus twice the change in the maximized likelihood (deviance)
+		%10
+		csvMSV(idx, 5+4*L+j) = 2*csvMSV(idx, 5+L+j) - 2*csvMSV(idx, 5) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
+		%Change in BIC
+		%11
+		csvMSV(idx, 5+5*L+j) = (csvMSV(idx, 5+L+j) - csvMSV(idx, 5))*log(N) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
+	end
 end
 
 %Save all data as a csv for analysis in excel or similar
 csvwrite_heading('./worksheets/11_11_2014/AOD_MSV.csv', csvMSV, MSV_headings);
 
-%csvMSD = zeros(nU, 11);
-%%Fields to save (nested model MS vs MSA)
-%%Delta AIC (MSA), Delta BIC (MSA), correlation
+%Clear current structures of model stats like residuals that take up memory
 %for idx = 1:nU
-%	%Unit name
-%	csvMSD(idx, 1) = str2num(processed.unitnames{idx});
-%	%Dev M
-%	csvMSD(idx, 2) = model_M.dev{idx};
-%	%nM
-%	csvMSD(idx, 3) = size(model_M.b_hat,2);
-%	%Dev MS
-%	csvMSD(idx, 4) = model_MS.dev{idx};
-%	%nMS
-%	csvMSD(idx, 5) = size(model_MS.b_hat, 2);
-%	%Dev MSD
-%	csvMSD(idx, 6) = model_MSD.dev{idx};
-%	%nMSD
-%	csvMSD(idx, 7) = size(model_MSD.b_hat, 2);
-%	%Compute chi^2 value
-%	csvMSD(idx, 8) = csvMSD(idx,4)-csvMSD(idx,6);
-%	%p-value
-%	csvMSD(idx, 9) = 1-chi2cdf(csvMSD(idx, 8), csvMSD(idx, 7) - csvMSD(idx, 5));
-%	%Report change in AIC and change in BIC for each unit when different covariates are added
-%	%Change in AIC is the twice the change in number of parameters, minus twice the change in the maximized likelihood (deviance)
-%	csvMSD(idx, 10) = 2*csvMSD(idx, 7) - 2*csvMSD(idx, 5) + csvMSD(idx, 6) - csvMSD(idx, 4);
-%	%Change in BIC
-%	csvMSD(idx, 11) = (csvMSD(idx, 7) - csvMSD(idx, 5))*log(N) + csvMSD(idx, 6) - csvMSD(idx, 4);
+%	for j = 1:L
+%		models_MSP{j}.stats{idx} = rmfield(models_MSP{j}.stats{idx}, {'resid', 'residp', 'residd', 'resida', 'wts'});
+%	end
 %end
-%
-%%Save all data as a csv for analysis in excel or similar
-%csvwrite('./worksheets/11_11_2014/AOD_MSD.csv', csvMSD);
+
+%for idx = 1:nU
+%	model_M.stats{idx} = rmfield(model_M.stats{idx}, {'resid', 'residp', 'residd', 'resida', 'wts'});
+%end
