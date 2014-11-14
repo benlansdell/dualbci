@@ -132,7 +132,7 @@ load(fn_out);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Make a plot of the deviance as a function of params
 
-nK = repmat([nK_poss]+nK_sp + 1, nAlpha, 1);
+nK = repmat([nK_poss]+nK_sp + 1, length(nK_poss), 1);
 AIC_IRLS = devs_IRLS + 2*nK;
 AICc_IRLS = AIC_IRLS + 2*nK.*(nK+1)./(N-1-nK);
 BIC_IRLS = devs_IRLS + nK.*log(N);
@@ -140,8 +140,8 @@ BIC_IRLS = devs_IRLS + nK.*log(N);
 clf
 imagesc(devs_IRLS)
 title('Deviance')
-xlabel('resolution (s)')
-ylabel('alpha')
+xlabel('resolution fitted (s)')
+ylabel('res actual (s)')
 %set(gca,'XTick',1:size(S,1));
 set(gca,'XTickLabel',dt_poss);
 %set(gca,'YTick',1:size(S,2));
@@ -153,7 +153,7 @@ clf
 imagesc(AIC_IRLS)
 title('AIC')
 xlabel('resolution (s)')
-ylabel('alpha')
+ylabel('res actual (s)')
 %set(gca,'XTick',1:size(S,1));
 set(gca,'XTickLabel',dt_poss);
 %set(gca,'YTick',1:size(S,2));
@@ -165,7 +165,7 @@ clf
 imagesc(BIC_IRLS)
 title('BIC')
 xlabel('resolution (s)')
-ylabel('alpha')
+ylabel('res actual (s)')
 %set(gca,'XTick',1:size(S,1));
 set(gca,'XTickLabel',dt_poss);
 %set(gca,'YTick',1:size(S,2));
@@ -174,36 +174,39 @@ colorbar
 saveplot(gcf, './worksheets/11_12_2014/plots/filterstrengths_BIC.eps')
 
 %Compute dot product of fitted filters and actual filters and plot result
-%K{1,idx,j} = k_sp;
-%K{2,idx,j} = k_RU_sc;
-%K{3,idx,j} = k_FE_sc;
-%k_const(idx,j) = k_const_guess+log(target_nsp/nspikes1);
-
-%Must interpolate so that all filters are the same length
-
-%Fitted 
-%filt_IRLS
 dp = [];
-for i = 1:nAlpha
+ll = dt_poss(end)*(0:(nK_poss(end)-1));
+for i = 1:length(nK_poss)
 	dt_pos_act = dt_poss(i);
-	act_filt = [k_const(i), K{1,i},K{2,i},K{3,i}];
 	%Fit spline to cursor filters and resample at binsize to get high res filter
-
+	Ksp = K{1,i};
+	l = dt_poss(i)*(0:(nK_poss(i)-1));
+	Kru = spline(l,K{2,i}, ll);
+	Kfe = spline(l,K{3,i}, ll);
+	act_filt = [k_const(i), Ksp, Kru, Kfe];
 	for j = 1:length(nK_poss)
 			dt_pos = dt_poss(j);
 			fit_filt = filt_IRLS{i,j};
-			asdf
-			dp(i,j) = act_filt*filt_IRLS{i,j}'/norm(act_filt)/norm(filt_IRLS{i,j});
+			Kconst = fit_filt(1);
+			Ksp = fit_filt(2:101);
+			midpt = 101+((length(fit_filt)-101)/2);
+			Kru = fit_filt(102:midpt);
+			Kfe = fit_filt(midpt+1:end);
+			l = dt_poss(j)*(0:(nK_poss(j)-1));
+			Kru = spline(l,Kru,ll);
+			Kfe = spline(l,Kfe,ll);
+			fit_filt_resampled = [Kconst, Ksp, Kru, Kfe];
+			dp(i,j) = act_filt*fit_filt_resampled'/norm(act_filt)/norm(fit_filt_resampled);
 	end
 end
 clf
 imagesc(dp)
-title('k.k_{IRLS}/|k||k_{IRLS}|')
+title('(k.k_{IRLS})/|k||k_{IRLS}|')
 xlabel('resolution fitted (s)')
 ylabel('resolution actual (s)')
 %set(gca,'XTick',1:size(S,1));
 set(gca,'XTickLabel',dt_poss);
 %set(gca,'YTick',1:size(S,2));
-set(gca,'YTickLabel',alphas);
+set(gca,'YTickLabel',dt_poss);
 colorbar
 saveplot(gcf, './worksheets/11_12_2014/plots/filterstrengths_DP.eps')
