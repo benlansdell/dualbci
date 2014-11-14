@@ -9,7 +9,7 @@
 clear
 
 fn_out = './worksheets/11_13_2014/data.mat';
-N = 200000;
+N = 100000;
 binsize = 0.002;
 dur = N*binsize;
 dt_sp = binsize;
@@ -35,13 +35,8 @@ k_const_guess = -5;
 
 %Spike history filter
 t_sp = linspace(0,1,nK_sp);
-k_sp = -0.1*exp(-50*t_sp);
+k_sp = -1*exp(-50*t_sp);
 k_sp = fliplr(k_sp);
-
-t_pos = linspace(0,1,nK_pos);
-k_RU = -1.0*exp(-6*t_pos);
-k_FE = 0.5*exp(-5*t_pos);
-
 
 nevfile = './testdata/20130117SpankyUtah001.nev';
 threshold = 5; offset = 0;
@@ -66,8 +61,8 @@ for j = 1:length(nK_poss)
 	dt_pos = dt_poss(j);
 	%Base stim filter that will be scaled below
 	t_pos = linspace(0,1,nK_pos);
-	k_RU_sc = -1.0*exp(-6*t_pos);
-	k_FE_sc = 0.5*exp(-5*t_pos);
+	k_RU_sc = -0.1*exp(-6*t_pos);
+	k_FE_sc = 0.05*exp(-5*t_pos);
 	%Rescale since binsize is changing
 	k_RU_sc = k_RU_sc*dt_pos/dt_sp;
 	k_FE_sc = k_FE_sc*dt_pos/dt_sp;
@@ -81,7 +76,7 @@ for j = 1:length(nK_poss)
 	%Estimate constant to produce wanted average firing rates
 	k_const(j) = k_const_guess+log(target_nsp/nspikes1);
 	%Redo with estimated constant values
-	processed{j} = generate_glm_data_torque(pre, k_const(idx), k_sp, k_RU_sc, k_FE_sc, dt_sp, dt_pos, N, binsize);
+	processed{j} = generate_glm_data_torque(pre, k_const(j), k_sp, k_RU_sc, k_FE_sc, dt_sp, dt_pos, N, binsize);
 	%Check that total number of spikes is around the same...
 end
 
@@ -100,13 +95,11 @@ autocorrFE = xcorr(pre.torque(:,2), maxlag);
 
 devs_IRLS = zeros(length(nK_poss));
 filt_IRLS = {};
+devs_SD = zeros(length(nK_poss));
+filt_SD = {};
 
-g = figure;
-h = figure;
 for i = 1:length(nK_poss)
 	i
-	figure(g);
-	clf;
 	dt_pos_act = dt_poss(i);
 	for j = 1:length(nK_poss);
 		%set dt_pos accordingly
@@ -116,12 +109,14 @@ for i = 1:length(nK_poss)
 		data = filters_sp_pos(processed{i}, nK_sp, nK_pos, dt_sp, dt_pos);
 		%Takes a long time... will run later
 		model_IRLS = MLE_glmfit(data, const);
+		model_SD = MLE_SD(data, const);
 		%Compute the deviance
 		devs_IRLS(i,j) = deviance(model_IRLS, data);
+		devs_SD(i,j) = deviance(model_SD, data);
 		%Plot the filters estimated for each
 		fn_out2 = ['./worksheets/11_13_2014/plots/filterstrengths_dtposact_' num2str(dt_pos_act) '_dtpos_' num2str(dt_pos)];
 		filt_IRLS{i,j} = model_IRLS.b_hat;
-		figure(g);
+		filt_SD{i,j} = model_SD.b_hat;
 	end
 end
 %Save the outcome of all the above
@@ -137,9 +132,13 @@ AIC_IRLS = devs_IRLS + 2*nK;
 AICc_IRLS = AIC_IRLS + 2*nK.*(nK+1)./(N-1-nK);
 BIC_IRLS = devs_IRLS + nK.*log(N);
 
+AIC_SD = devs_SD + 2*nK;
+AICc_SD = AIC_SD + 2*nK.*(nK+1)./(N-1-nK);
+BIC_SD = devs_SD + nK.*log(N);
+
 clf
 imagesc(devs_IRLS)
-title('Deviance')
+title('Deviance IRLS')
 xlabel('resolution fitted (s)')
 ylabel('res actual (s)')
 %set(gca,'XTick',1:size(S,1));
@@ -151,7 +150,7 @@ saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_dev.eps')
 
 clf
 imagesc(AIC_IRLS)
-title('AIC')
+title('AIC IRLS')
 xlabel('resolution (s)')
 ylabel('res actual (s)')
 %set(gca,'XTick',1:size(S,1));
@@ -163,7 +162,7 @@ saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_AIC.eps')
 
 clf
 imagesc(BIC_IRLS)
-title('BIC')
+title('BIC IRLS')
 xlabel('resolution (s)')
 ylabel('res actual (s)')
 %set(gca,'XTick',1:size(S,1));
@@ -172,6 +171,45 @@ set(gca,'XTickLabel',dt_poss);
 set(gca,'YTickLabel',dt_poss);
 colorbar
 saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_BIC.eps')
+
+
+clf
+imagesc(devs_SD)
+title('Deviance SD')
+xlabel('resolution fitted (s)')
+ylabel('res actual (s)')
+%set(gca,'XTick',1:size(S,1));
+set(gca,'XTickLabel',dt_poss);
+%set(gca,'YTick',1:size(S,2));
+set(gca,'YTickLabel',dt_poss);
+colorbar
+saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_dev_SD.eps')
+
+clf
+imagesc(AIC_SD)
+title('AIC SD')
+xlabel('resolution (s)')
+ylabel('res actual (s)')
+%set(gca,'XTick',1:size(S,1));
+set(gca,'XTickLabel',dt_poss);
+%set(gca,'YTick',1:size(S,2));
+set(gca,'YTickLabel',dt_poss);
+colorbar
+saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_AIC_SD.eps')
+
+clf
+imagesc(BIC_SD)
+title('BIC SD')
+xlabel('resolution (s)')
+ylabel('res actual (s)')
+%set(gca,'XTick',1:size(S,1));
+set(gca,'XTickLabel',dt_poss);
+%set(gca,'YTick',1:size(S,2));
+set(gca,'YTickLabel',dt_poss);
+colorbar
+saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_BIC_SD.eps')
+
+
 
 %Compute dot product of fitted filters and actual filters and plot result
 dp = [];
@@ -210,3 +248,77 @@ set(gca,'XTickLabel',dt_poss);
 set(gca,'YTickLabel',dt_poss);
 colorbar
 saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_DP.eps')
+
+%Compute dot product of fitted filters and actual filters and plot result
+dp = [];
+ll = dt_poss(end)*(0:(nK_poss(end)-1));
+for i = 1:length(nK_poss)
+	dt_pos_act = dt_poss(i);
+	%Fit spline to cursor filters and resample at binsize to get high res filter
+	Ksp = K{1,i};
+	l = dt_poss(i)*(0:(nK_poss(i)-1));
+	Kru = spline(l,K{2,i}, ll);
+	Kfe = spline(l,K{3,i}, ll);
+	act_filt = [k_const(i), Ksp, Kru, Kfe];
+	for j = 1:length(nK_poss)
+			dt_pos = dt_poss(j);
+			fit_filt = filt_SD{i,j};
+			Kconst = fit_filt(1);
+			Ksp = fit_filt(2:101);
+			midpt = 101+((length(fit_filt)-101)/2);
+			Kru = fit_filt(102:midpt);
+			Kfe = fit_filt(midpt+1:end);
+			l = dt_poss(j)*(0:(nK_poss(j)-1));
+			Kru = spline(l,Kru,ll);
+			Kfe = spline(l,Kfe,ll);
+			fit_filt_resampled = [Kconst, Ksp, Kru, Kfe];
+			dp(i,j) = act_filt*fit_filt_resampled'/norm(act_filt)/norm(fit_filt_resampled);
+	end
+end
+clf
+imagesc(dp)
+title('(k.k_{SD})/|k||k_{SD}|')
+xlabel('resolution fitted (s)')
+ylabel('resolution actual (s)')
+%set(gca,'XTick',1:size(S,1));
+set(gca,'XTickLabel',dt_poss);
+%set(gca,'YTick',1:size(S,2));
+set(gca,'YTickLabel',dt_poss);
+colorbar
+saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_DP_SD.eps')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+%Update here to compute norms relative to actual filter used, as well as estimated filters
+%Compute norms of fitted filters to each other and to actual
+inf_filts = [];
+rel_filts = [];
+max_filts_SD = [];
+max_filts_IRLS = [];
+FI_SD = {};
+FI_IRLS = {};
+kappa_SD = [];
+kappa_IRLS = [];
+for idx = 1:length(nK_poss)
+	idx
+	diff_filts = filt_IRLS{idx}-filt_SD{idx};
+	inf_filts(idx) = norm(diff_filts, Inf);
+	max_filts_SD(idx) = norm(filt_SD{idx}, Inf);
+	max_filts_IRLS(idx) = norm(filt_IRLS{idx}, Inf);
+	rel_filts(idx) = inf_filts(idx)/max_filts_IRLS(idx);
+	%Fisher information
+	%set dt_pos accordingly
+	dt_pos = dt_poss(idx);
+	nK_pos = nK_poss(idx);
+	%recompute data matrix structure for each resolution generate the data structure
+	data = filters_sp_pos(pre, nK_sp, nK_pos, dt_sp, dt_pos);
+	N = size(data.X,2);
+	X = [ones(N,1),squeeze(data.X)];
+	beta_IRLS = filt_IRLS{idx}';
+	beta_SD = filt_SD{idx}';
+	mu_IRLS = spdiags(exp(X*beta_IRLS), [0], N,N);
+	mu_SD = spdiags(exp(X*beta_SD), [0], N,N);
+	FI_SD{idx} = X'*mu_IRLS*X;
+	FI_IRLS{idx} = X'*mu_SD*X;
+	kappa_IRLS(idx) = cond(FI_IRLS{idx});
+	kappa_SD(idx) = cond(FI_SD{idx});
+end

@@ -6,7 +6,7 @@ nevfile = './testdata/20130117SpankyUtah001.nev';
 binsize = 0.002;
 dt_sp = binsize;
 dt_pos = 0.2;
-dt_vel = 0.05;
+dt_vel = 0.1;
 offset = 0.0;
 threshold = 5;
 processed = preprocess_spline(nevfile, binsize, threshold, offset);
@@ -74,7 +74,8 @@ for idx = 1:length(nK_vels)
 end
 
 %save fitted models for later use
-save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP', 'models_MSV')
+%save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP', 'models_MSV')
+save('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 'models_MSV')
 
 L = length(nK_poss);
 csvMSP = zeros(nU, 5+6*L);
@@ -117,7 +118,6 @@ for idx = 1:nU
 		csvMSP(idx, 5+5*L+j) = (csvMSP(idx, 5+L+j) - csvMSP(idx, 5))*log(N) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
 	end
 end
-
 %Save all data as a csv for analysis in excel or similar
 csvwrite_heading('./worksheets/11_11_2014/AOD_MSP.csv', csvMSP, MSP_headings);
 
@@ -157,7 +157,6 @@ for idx = 1:nU
 		csvMSV(idx, 5+5*L+j) = (csvMSV(idx, 5+L+j) - csvMSV(idx, 5))*log(N) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
 	end
 end
-
 %Save all data as a csv for analysis in excel or similar
 csvwrite_heading('./worksheets/11_11_2014/AOD_MSV.csv', csvMSV, MSV_headings);
 
