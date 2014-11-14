@@ -78,6 +78,9 @@ function [y, tspks, rho, dev] = glmsim(processed, model, data, maxspks)
 			if (yij > 0)
 				mu_sp;
 				yij;
+				if yij > 1e6
+					display(['too many spikes per time bin: bin #: ' num2str(j) ' n. spikes: ' num2str(yij)])
+				end
 				sptime = bs*(j+0.005*(1:yij)');
 				spikemuas(i).times = [spikemuas(i).times; sptime];
 				%Only add this if there is a spike, otherwise set it to zero
