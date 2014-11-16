@@ -74,10 +74,11 @@ for idx = 1:length(nK_vels)
 end
 
 %save fitted models for later use
-%save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP', 'models_MSV')
+%save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP')
 save('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 'models_MSV')
 
 L = length(nK_poss);
+L = length(nK_vels);
 csvMSP = zeros(nU, 5+6*L);
 blank = cell(1,L-1);
 %Fields to save (nested model MS vs MSP)
@@ -96,12 +97,12 @@ for idx = 1:nU
 	%nMS
 	csvMSP(idx, 5) = size(model_MS.b_hat, 2);
 	%Number of data points in MS model
-	NMS = size(model_MS.stats{idx}.resid,1);
+	NMS = model_MS.N;
 	for j = 1:L
 		%Adj Dev MSP 6
 		%Adjusted since the number of data points in the MSP fits is different to the number of data points in the MS fits, which
 		%Fewer data points means fewer deviances... which can make MSP fits better than they seem
-		NMSP = size(models_MSP{j}.stats{idx}.resid,1);
+		NMSP = models_MSP{j}.N;
 		csvMSP(idx, 5+j) = models_MSP{j}.dev{idx}*NMS/NMSP;
 		%nMSP 7
 		csvMSP(idx, 5+L+j) = size(models_MSP{j}.b_hat, 2);
@@ -135,12 +136,12 @@ for idx = 1:nU
 	%nMS
 	csvMSV(idx, 5) = size(model_MS.b_hat, 2);
 	%Number of data points in MS model
-	NMS = size(model_MS.stats{idx}.resid,1);
+	NMS = model_MS.N;
 	for j = 1:L
 		%Adj Dev MSP 6
 		%Adjusted since the number of data points in the MSV fits is different to the number of data points in the MS fits, which
 		%Fewer data points means fewer deviances... which can make MSV fits better than they seem
-		NMSV = size(models_MSV{j}.stats{idx}.resid,1);
+		NMSV = models_MSV{j}.N;
 		csvMSV(idx, 5+j) = models_MSV{j}.dev{idx}*NMS/NMSV;
 		%nMSP 7
 		csvMSV(idx, 5+L+j) = size(models_MSV{j}.b_hat, 2);
@@ -159,6 +160,15 @@ for idx = 1:nU
 end
 %Save all data as a csv for analysis in excel or similar
 csvwrite_heading('./worksheets/11_11_2014/AOD_MSV.csv', csvMSV, MSV_headings);
+
+
+%Populate model structures with number of data points used for model, N
+for j = 1:L
+	j
+	nK_vel = nK_vels(j);
+	data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel);
+	models_MSV{j}.N = size(data.y, 2);
+end
 
 %Clear current structures of model stats like residuals that take up memory
 %for idx = 1:nU
