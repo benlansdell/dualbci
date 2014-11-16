@@ -39,6 +39,7 @@ function model = MLE_glmfit(data, const)
 		model.b_hat(idx,:) = b;	
 		model.dev{idx} = dev;
 		%Remove residual components since these take up a lot of memory
+		model.N = size(stats.resid,1);
 		stats = rmfield(stats, {'resid', 'residp', 'residd', 'resida', 'wts'});
 		model.stats{idx} = stats;
 	end
