@@ -27,9 +27,9 @@ function output = glm_decode_multi(processed, data, model, F, Q, mu, R, P, d, fn
 	%	%pre = load('./testdata/test_preprocess_spline.mat');
 	%	const = 'on';
 	%	nK_sp = 50; 
-	%	nK_pos = 1;
+	%	nK_pos = 4;
 	%	dt_sp = 0.002;
-	%	dt_pos = 0.05;
+	%	dt_pos = 0.2;
 	%	R = 5;
 	%	P = nK_pos;
 	%	d = dt_pos/dt_sp;
@@ -43,7 +43,7 @@ function output = glm_decode_multi(processed, data, model, F, Q, mu, R, P, d, fn
 	output = zeros(size(data.torque));
 	nU = size(data.X,1);
 	N = size(data.X,2);
-	epsilon = 1e-10;
+	epsilon = 1e-7;
 	N_sub = 2000;
 	%Only decode a short sample...
 	N = 20000;
@@ -67,7 +67,8 @@ function output = glm_decode_multi(processed, data, model, F, Q, mu, R, P, d, fn
 	kx = model.b_hat(:,data.k{2,2}+1);
 	ky = model.b_hat(:,data.k{3,2}+1);
 
-	Q(2*P+1:end,2*P+1:end) = eye(2*d*(R-1))*epsilon;
+	Q = Q + epsilon*eye(size(Q));
+	%Q(2*P+1:end,2*P+1:end) = eye(2*d*(R-1))*epsilon;
 
 	%Our initial estimate
 	%xk = mu';
