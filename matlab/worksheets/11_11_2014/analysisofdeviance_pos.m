@@ -119,7 +119,7 @@ for idx = 1:nU
 		csvMSP(idx, 5+4*L+j) = 2*csvMSP(idx, 5+L+j) - 2*csvMSP(idx, 5) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
 		%Change in BIC
 		%11
-		csvMSP(idx, 5+5*L+j) = (csvMSP(idx, 5+L+j) - csvMSP(idx, 5))*log(N) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
+		csvMSP(idx, 5+5*L+j) = (csvMSP(idx, 5+L+j) - csvMSP(idx, 5))*log(NMSV) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
 	end
 end
 %Save all data as a csv for analysis in excel or similar
@@ -158,7 +158,7 @@ for idx = 1:nU
 		csvMSV(idx, 5+4*L+j) = 2*csvMSV(idx, 5+L+j) - 2*csvMSV(idx, 5) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
 		%Change in BIC
 		%11
-		csvMSV(idx, 5+5*L+j) = (csvMSV(idx, 5+L+j) - csvMSV(idx, 5))*log(N) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
+		csvMSV(idx, 5+5*L+j) = (csvMSV(idx, 5+L+j) - csvMSV(idx, 5))*log(NMSV) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
 	end
 end
 %Save all data as a csv for analysis in excel or similar
@@ -216,5 +216,53 @@ ylim([log(1e-10), 0])
 saveplot(gcf, './worksheets/11_11_2014/postuning_pvals.eps')
 
 %Plot heatmap of AIC and BIC values
+AIC = csvMSV(:, (5+4*L)+(1:L));
+imagesc(AIC)
+title('AIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_AIC_vel.eps')
+
+BIC = csvMSV(:, (5+5*L)+(1:L));
+imagesc(BIC)
+title('BIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_BIC_vel.eps')
+
+AIC = csvMSP(:, (5+4*L)+(1:L));
+imagesc(AIC)
+title('AIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_AIC_pos.eps')
+
+BIC = csvMSP(:, (5+5*L)+(1:L));
+imagesc(BIC)
+title('BIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_BIC_pos.eps')
+
 
 %Plot min AIC and min BIC values for each unit 
