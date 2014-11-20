@@ -216,6 +216,9 @@ ylim([log(1e-10), 0])
 saveplot(gcf, './worksheets/11_11_2014/postuning_pvals.eps')
 
 %Plot heatmap of AIC and BIC values
+
+%Change the colormap
+colormap(bone);
 AIC = csvMSV(:, (5+4*L)+(1:L));
 imagesc(AIC)
 title('AIC')
