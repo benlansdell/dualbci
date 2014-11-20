@@ -74,11 +74,14 @@ for idx = 1:length(nK_vels)
 end
 
 %save fitted models for later use
-%save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP')
+save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP')
+load('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP')
 save('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 'models_MSV')
+load('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 'models_MSV')
 
 L = length(nK_poss);
 L = length(nK_vels);
+nU = size(model_MS.b_hat,1);
 csvMSP = zeros(nU, 5+6*L);
 blank = cell(1,L-1);
 %Fields to save (nested model MS vs MSP)
@@ -163,12 +166,23 @@ csvwrite_heading('./worksheets/11_11_2014/AOD_MSV.csv', csvMSV, MSV_headings);
 
 
 %Populate model structures with number of data points used for model, N
-for j = 1:L
-	j
-	nK_vel = nK_vels(j);
-	data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel);
-	models_MSV{j}.N = size(data.y, 2);
-end
+%NL1 = 277954;
+%for j = 1:L
+%	j
+%	%nK_vel = nK_vels(j);
+%	%data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel);
+%	models_MSV{j}.N = NL1-50*(j-1);
+%	%models_MSP{j}.N = size(data.y,2);
+%end
+%
+%NL1 = 277904;
+%for j = 1:L
+%	j
+%	%nK_pos = nK_poss(j);
+%	%data = filters_sp_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos);
+%	models_MSP{j}.N = NL1-100*(j-1);
+%	%models_MSP{j}.N = size(data.y,2);
+%end
 
 %Clear current structures of model stats like residuals that take up memory
 %for idx = 1:nU
@@ -180,3 +194,27 @@ end
 %for idx = 1:nU
 %	model_M.stats{idx} = rmfield(model_M.stats{idx}, {'resid', 'residp', 'residd', 'resida', 'wts'});
 %end
+
+%Plot p-values for each unit for each filter length
+indices = 5+3*L+(1:L);
+sigp = 0.001;
+
+pvals = csvMSV(:,indices);
+pvals = max(pvals, 1e-10);
+plot(1:L, log(pvals), 1:L, log(sigp)*ones(L,1), 'k--');
+xlabel('Length of filter')
+ylabel('log(p-val)')
+ylim([log(1e-10), 0])
+saveplot(gcf, './worksheets/11_11_2014/veltuning_pvals.eps')
+
+pvals = csvMSP(:,indices);
+pvals = max(pvals, 1e-10);
+plot(1:L, log(pvals), 1:L, log(sigp)*ones(L,1), 'k--');
+xlabel('Length of filter')
+ylabel('log(p-val)')
+ylim([log(1e-10), 0])
+saveplot(gcf, './worksheets/11_11_2014/postuning_pvals.eps')
+
+%Plot heatmap of AIC and BIC values
+
+%Plot min AIC and min BIC values for each unit 
