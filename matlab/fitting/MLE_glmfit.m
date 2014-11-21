@@ -33,7 +33,9 @@ function model = MLE_glmfit(data, const)
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
 	%For each unit, fit a GLM to the torque data
+	display(['Fitting GLM by MLE with IRLS. Fitting ' num2str(nU) ' units.'])
 	for idx=1:nU 
+		display(['Fitting unit ' num2str(idx)])
 		[b, dev, stats] = glmfit(squeeze(data.X(idx,:,:)),data.y(idx,:),'poisson', 'constant', const);
 		%Extract filters fitted...
 		model.b_hat(idx,:) = b;	
@@ -45,3 +47,4 @@ function model = MLE_glmfit(data, const)
 	if ~strcmp(const, 'on')
 		model.b_hat = [zeros(nU, 1), model.b_hat]
 	end
+	display('Done')
