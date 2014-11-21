@@ -44,6 +44,6 @@ function dev = deviance(model, data)
 		%We assume ylog(y) = 0 for y = 0, so let's ignore values where y == 0
 		nz = y > 0;
 		%Return deviance
-		dev(idx) = 2*sum(y(nz).*log(y(nz)./mu(nz)))-2*sum(y-mu)
+		dev(idx) = 2*sum(y(nz).*log(y(nz)./mu(nz)))-2*sum(y-mu);
 	end
 
