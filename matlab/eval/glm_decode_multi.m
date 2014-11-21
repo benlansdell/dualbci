@@ -58,16 +58,16 @@ function output = glm_decode_multi(processed, data, model, F, Q, mu, R, P, d, fn
 	gaussFilter = gaussFilter/sum(gaussFilter);
 
 	%Raise error if filter lengths are greater than 1... not implemented yet :(
-	if length(data.k{2,2}) > 1 | length(data.k{3,2}) > 1
-		error('NotImplementedError: cursor filters must currently be of length 1')
-	end
+	%if length(data.k{2,2}) > 1 | length(data.k{3,2}) > 1
+	%	error('NotImplementedError: cursor filters must currently be of length 1')
+	%end
 
 	%GLM params
 	%Cursor filters
 	kx = model.b_hat(:,data.k{2,2}+1);
 	ky = model.b_hat(:,data.k{3,2}+1);
 
-	Q = Q + epsilon*eye(size(Q));
+	Q = sparse(Q + epsilon*eye(size(Q)));
 	%Q(2*P+1:end,2*P+1:end) = eye(2*d*(R-1))*epsilon;
 
 	%Our initial estimate
@@ -79,29 +79,32 @@ function output = glm_decode_multi(processed, data, model, F, Q, mu, R, P, d, fn
 	xk(2*P+(1:2:(2*d*(R-1)-1))) = data.torque((d*(R-1)):-1:1,1);
 	xk(2*P+(2:2:(2*d*(R-1)))) = data.torque((d*(R-1)):-1:1,2);
 	Wk = Q;
-
+	F = sparse(F);
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%X = reshape([X_RU;X_FE],1,[]);
 	%gradloglambda = [kx, ky];
-	gradloglambda = zeros(nU,2*P+2*d*(R-1));
+	gradloglambda = sparse(zeros(nU,2*P+2*d*(R-1)));
 	gradloglambda(:,1:(2*P)) = reshape([kx; ky], nU, []);
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	
-	%percentage indicator
+
+	%timing and percentage indicator
+	time_pu = 0;
+	time_inv = 0;
 	p = 0;
 	%At each time step
 	for idx = (d*(R-1)+1):N
-		if floor(idx*10/N) ~= p
+	%for idx = (d*(R-1)+2):(d*(R-1)+20)
+		if floor(idx*100/N) ~= p
 			display([num2str(floor(idx*100/N)) '% decoding completed'])
 			p = p + 1;
 		end
-
+		tic	
 		%Do prediction step 
 		xk_p = mu+F*xk;
 		Wk_p = F*Wk*F'+Q;
 		%Wk_p = f*Wk*f+Q;
 		%Do update of covariance
-		updateW = 0;
+		updateW = sparse(size(Wk,1),size(Wk,2));
 		updateX = 0;
 		for j = 1:nU
 			%j=9;
@@ -121,16 +124,21 @@ function output = glm_decode_multi(processed, data, model, F, Q, mu, R, P, d, fn
 			updateW = updateW + lambda*gradloglambda(j,:)'*gradloglambda(j,:);
 			updateX = updateX + gradloglambda(j,:)'*(data.y(j,idx)-lambda);
 		end
+		time_pu = time_pu + toc;
 		%Don't let updateW get too big... or Wkinv will get too small...
-		if updateW > 1e10
-			display('Very large W')
-		end
-		updateW = min(updateW, 1e10);
+		%if updateW > 1e10
+		%	display('Very large W')
+		%end
+		%updateW = min(updateW, 1e10);
 
+		tic
 		Wkinv = inv(Wk_p)+updateW;
 		Wk = inv(Wkinv);
 		%Update position
 		xk = xk_p+Wk*updateX;
+		time_inv = time_inv + toc;
+		%display(['At bin=' num2str(idx) ' cond(Wk)=' num2str(condest(Wk))]);
+		display(['At bin=' num2str(idx)]);
 		%Save result
 		output(idx,:) = xk(1:2);
 		%display(['idx=' num2str(idx) ', time=' num2str(idx*binsize) ', lambda=' num2str(lambda)])

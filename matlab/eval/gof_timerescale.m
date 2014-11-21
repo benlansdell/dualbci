@@ -42,12 +42,13 @@ function gof_timerescale(model, data, processed, alpha, fn_out)
 		ylim([0 1])
 		above = n' > (Lambda{i}/Ti+pm)*Ni;
 		below = n' < (Lambda{i}/Ti-pm)*Ni;
-		if any(above) or any(below)
+		display(['Unit' num2str(i)])
+		if any(above) | any(below)
 			result = 'significant';
 		else
 			result = 'insignificant';
 		end
-		title(['Unit ' processed.unitnames{i} '. \alpha=' num2str(alpha) ' test ' result])
-		saveplot(gcf, [fn_out '_unit_' processed.unitnames{i} '.eps']);
+		title(['Unit ' processed.unitnames{i} '. \alpha=' num2str(alpha) ' test result: ' result])
+		saveplot(gcf, [fn_out '_unit_' processed.unitnames{i} '_test_' result '.eps']);
 	end
 end
