@@ -74,10 +74,14 @@ for idx = 1:length(nK_vels)
 end
 
 %save fitted models for later use
-%save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP', 'models_MSV')
+save('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP')
+load('./worksheets/11_11_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP')
 save('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 'models_MSV')
+load('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 'models_MSV')
 
 L = length(nK_poss);
+L = length(nK_vels);
+nU = size(model_MS.b_hat,1);
 csvMSP = zeros(nU, 5+6*L);
 blank = cell(1,L-1);
 %Fields to save (nested model MS vs MSP)
@@ -96,12 +100,12 @@ for idx = 1:nU
 	%nMS
 	csvMSP(idx, 5) = size(model_MS.b_hat, 2);
 	%Number of data points in MS model
-	NMS = size(model_MS.stats{idx}.resid,1);
+	NMS = model_MS.N;
 	for j = 1:L
 		%Adj Dev MSP 6
 		%Adjusted since the number of data points in the MSP fits is different to the number of data points in the MS fits, which
 		%Fewer data points means fewer deviances... which can make MSP fits better than they seem
-		NMSP = size(models_MSP{j}.stats{idx}.resid,1);
+		NMSP = models_MSP{j}.N;
 		csvMSP(idx, 5+j) = models_MSP{j}.dev{idx}*NMS/NMSP;
 		%nMSP 7
 		csvMSP(idx, 5+L+j) = size(models_MSP{j}.b_hat, 2);
@@ -115,7 +119,7 @@ for idx = 1:nU
 		csvMSP(idx, 5+4*L+j) = 2*csvMSP(idx, 5+L+j) - 2*csvMSP(idx, 5) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
 		%Change in BIC
 		%11
-		csvMSP(idx, 5+5*L+j) = (csvMSP(idx, 5+L+j) - csvMSP(idx, 5))*log(N) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
+		csvMSP(idx, 5+5*L+j) = (csvMSP(idx, 5+L+j) - csvMSP(idx, 5))*log(NMSV) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
 	end
 end
 %Save all data as a csv for analysis in excel or similar
@@ -135,12 +139,12 @@ for idx = 1:nU
 	%nMS
 	csvMSV(idx, 5) = size(model_MS.b_hat, 2);
 	%Number of data points in MS model
-	NMS = size(model_MS.stats{idx}.resid,1);
+	NMS = model_MS.N;
 	for j = 1:L
 		%Adj Dev MSP 6
 		%Adjusted since the number of data points in the MSV fits is different to the number of data points in the MS fits, which
 		%Fewer data points means fewer deviances... which can make MSV fits better than they seem
-		NMSV = size(models_MSV{j}.stats{idx}.resid,1);
+		NMSV = models_MSV{j}.N;
 		csvMSV(idx, 5+j) = models_MSV{j}.dev{idx}*NMS/NMSV;
 		%nMSP 7
 		csvMSV(idx, 5+L+j) = size(models_MSV{j}.b_hat, 2);
@@ -154,11 +158,31 @@ for idx = 1:nU
 		csvMSV(idx, 5+4*L+j) = 2*csvMSV(idx, 5+L+j) - 2*csvMSV(idx, 5) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
 		%Change in BIC
 		%11
-		csvMSV(idx, 5+5*L+j) = (csvMSV(idx, 5+L+j) - csvMSV(idx, 5))*log(N) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
+		csvMSV(idx, 5+5*L+j) = (csvMSV(idx, 5+L+j) - csvMSV(idx, 5))*log(NMSV) + csvMSV(idx, 5+j) - csvMSV(idx, 4);
 	end
 end
 %Save all data as a csv for analysis in excel or similar
 csvwrite_heading('./worksheets/11_11_2014/AOD_MSV.csv', csvMSV, MSV_headings);
+
+
+%Populate model structures with number of data points used for model, N
+%NL1 = 277954;
+%for j = 1:L
+%	j
+%	%nK_vel = nK_vels(j);
+%	%data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel);
+%	models_MSV{j}.N = NL1-50*(j-1);
+%	%models_MSP{j}.N = size(data.y,2);
+%end
+%
+%NL1 = 277904;
+%for j = 1:L
+%	j
+%	%nK_pos = nK_poss(j);
+%	%data = filters_sp_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos);
+%	models_MSP{j}.N = NL1-100*(j-1);
+%	%models_MSP{j}.N = size(data.y,2);
+%end
 
 %Clear current structures of model stats like residuals that take up memory
 %for idx = 1:nU
@@ -170,3 +194,78 @@ csvwrite_heading('./worksheets/11_11_2014/AOD_MSV.csv', csvMSV, MSV_headings);
 %for idx = 1:nU
 %	model_M.stats{idx} = rmfield(model_M.stats{idx}, {'resid', 'residp', 'residd', 'resida', 'wts'});
 %end
+
+%Plot p-values for each unit for each filter length
+indices = 5+3*L+(1:L);
+sigp = 0.001;
+
+pvals = csvMSV(:,indices);
+pvals = max(pvals, 1e-10);
+plot(1:L, log(pvals), 1:L, log(sigp)*ones(L,1), 'k--');
+xlabel('Length of filter')
+ylabel('log(p-val)')
+ylim([log(1e-10), 0])
+saveplot(gcf, './worksheets/11_11_2014/veltuning_pvals.eps')
+
+pvals = csvMSP(:,indices);
+pvals = max(pvals, 1e-10);
+plot(1:L, log(pvals), 1:L, log(sigp)*ones(L,1), 'k--');
+xlabel('Length of filter')
+ylabel('log(p-val)')
+ylim([log(1e-10), 0])
+saveplot(gcf, './worksheets/11_11_2014/postuning_pvals.eps')
+
+%Plot heatmap of AIC and BIC values
+
+%Change the colormap
+colormap(bone);
+AIC = csvMSV(:, (5+4*L)+(1:L));
+imagesc(AIC)
+title('AIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_AIC_vel.eps')
+
+BIC = csvMSV(:, (5+5*L)+(1:L));
+imagesc(BIC)
+title('BIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_BIC_vel.eps')
+
+AIC = csvMSP(:, (5+4*L)+(1:L));
+imagesc(AIC)
+title('AIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_AIC_pos.eps')
+
+BIC = csvMSP(:, (5+5*L)+(1:L));
+imagesc(BIC)
+title('BIC')
+ylabel('Unit')
+xlabel('Filter length')
+set(gca,'XTick',1:L);
+set(gca,'YTick',1:length(processed.unitnames));
+set(gca,'XTickLabel',1:L);
+set(gca,'YTickLabel',processed.unitnames);
+colorbar
+saveplot(gcf, './worksheets/11_11_2014/filterlength_BIC_pos.eps')
+
+
+%Plot min AIC and min BIC values for each unit 
