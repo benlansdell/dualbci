@@ -29,7 +29,7 @@ function [F, Q, mu] = fit_AR(data, order, horizon, every)
 	%	order = 1;
 	%	every = 1;
 	%	data = pre.processed.torque;
-	%	[F, Q, mu] = fit_AR(data, order);
+	%	[F, Q, mu] = fit_AR_LS(data, order);
 
 	if (nargin < 2) order = 1; end
 	if (nargin < 3) horizon = 1; end
