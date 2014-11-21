@@ -11,7 +11,8 @@ nK_vel = 1;
 nK_sp = 100;
 threshold = 5;
 const = 'on';
-offsets = linspace(-0.5, 0.5, 10);
+L = 10;
+offsets = linspace(-0.5, 0.5, L);
 
 nK_pos = 0;
 processed = preprocess_spline(nevfile, binsize, threshold, offsets(1));
@@ -42,7 +43,6 @@ ylabel('\Delta D')
 title('Position tuning')
 saveplot(gcf, './worksheets/11_15_2014/plots/lags_pos.eps')
 
-%Find max lag for each
 
 %Redo for velocity based tuning
 %Fit different filters for different timebin sizes
@@ -64,3 +64,23 @@ ylabel('\Delta D')
 title('Velocity tuning')
 saveplot(gcf, './worksheets/11_15_2014/plots/lags_vel.eps')
 save('./worksheets/11_15_2014/data.mat', 'devs', 'dev_MS', 'dev_MS1', 'devs_vel', 'offsets');
+
+%Probably a heat map is more informative...
+
+%Find max lag for each
+[row,col]=find(devs == repmat(min(devs), L, 1));
+plot([offsets(row);zeros(1,nU)], repmat((1:nU),2,1), '-')
+set(gca,'YTick',1:nU);
+set(gca,'YTickLabel',processed.unitnames);
+xlabel('Offset (s)')
+ylabel('Unit name')
+saveplot(gcf, './worksheets/11_15_2014/plots/maxoffset.eps')
+
+%Find max lag for each
+[row,col]=find(devs_vel == repmat(min(devs_vel), L, 1));
+plot([offsets(row);zeros(1,nU)], repmat((1:nU),2,1), '-')
+set(gca,'YTick',1:nU);
+set(gca,'YTickLabel',processed.unitnames);
+xlabel('Offset (s)')
+ylabel('Unit name')
+saveplot(gcf, './worksheets/11_15_2014/plots/maxoffset_vel.eps')
