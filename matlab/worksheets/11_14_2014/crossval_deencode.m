@@ -31,7 +31,7 @@ decodingccs = zeros(fold, nU);
 
 %Do training
 display(['Training ' num2str(fold) '-fold cross validation models on datasets'])
-for i = i:fold
+for i = 1:fold
 	display(['Generating data for fold: ' num2str(i)])
 	%Generate training and test data
 	[traindata, testd] = makefolds(data, i, fold);
