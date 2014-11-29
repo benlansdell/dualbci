@@ -1,9 +1,10 @@
 %k-fold cross validate models
-
 %Fit model to (k-1)/k of data, and compute deviance, encoding and decoding performance on other 1/k data
 fold = 10;
-fn_out = './worksheets/11_14_2014/data.mat';
+folds = 1:fold;
+lfolds = length(folds);
 
+fn_out = './worksheets/11_14_2014/data.mat';
 %Preprocess data (timebis of 2ms, smooth trajectories)
 %Apply no offset
 nevfile = './testdata/20130117SpankyUtah001.nev';
@@ -25,29 +26,31 @@ data = filters_sp_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos);
 
 models_MSP = {};
 testdata = {};
-devs_MSP = zeros(fold, nU);
-encodingccs = zeros(fold, nU);
-decodingccs = zeros(fold, nU);
+devs_MSP = zeros(lfolds, nU);
+encodingccs = zeros(lfolds, nU);
+decodingccs = zeros(lfolds, nU);
+
 
 %Do training
 display(['Training ' num2str(fold) '-fold cross validation models on datasets'])
-for i = 1:fold
+for idx = 1:lfolds
+	i = folds(idx);
 	display(['Generating data for fold: ' num2str(i)])
 	%Generate training and test data
 	[traindata, testd] = makefolds(data, i, fold);
-	testdata{i} = testd;
+	testdata{idx} = testd;
 	%Fit to training data
 	display('Fitting model')
-	models_MSP{i} = MLE_glmfit(traindata, const);
+	models_MSP{idx} = MLE_glmfit(traindata, const);
 end
 display('Done.')
 
 %mid way save
-save(fn_out, 'models_MSP', 'testdata', 'processed');
+save(fn_out, 'models_MSP', 'testdata', 'processed', 'fold', 'folds', 'lfolds');
 
 %Do testing
 display(['Testing ' num2str(fold) '-fold cross validation models on datasets'])
-for i = 1:fold
+for i = 1:lfolds
 	display(['Fold: ' num2str(i)])
 	order = 1;
 	[F, Q, mu] = fit_AR_LS(testdata{i}.torque, order);
@@ -67,7 +70,7 @@ display('Done.')
 %Summarize all runs
 %Plot deviance
 
-
+%If training was run on different computers then consolidate before running the test code
 
 %save fitted models for later use
 save('./worksheets/11_14_2014/crossval_fittedmodels.mat', 'models_MSP', 'devs_MSP', 'encodingccs', 'decodingccs');
