@@ -298,27 +298,59 @@ FI_SD = {};
 FI_IRLS = {};
 kappa_SD = [];
 kappa_IRLS = [];
-for idx = 1:length(nK_poss)
-	idx
-	diff_filts = filt_IRLS{idx}-filt_SD{idx};
-	inf_filts(idx) = norm(diff_filts, Inf);
-	max_filts_SD(idx) = norm(filt_SD{idx}, Inf);
-	max_filts_IRLS(idx) = norm(filt_IRLS{idx}, Inf);
-	rel_filts(idx) = inf_filts(idx)/max_filts_IRLS(idx);
-	%Fisher information
-	%set dt_pos accordingly
-	dt_pos = dt_poss(idx);
-	nK_pos = nK_poss(idx);
-	%recompute data matrix structure for each resolution generate the data structure
-	data = filters_sp_pos(pre, nK_sp, nK_pos, dt_sp, dt_pos);
-	N = size(data.X,2);
-	X = [ones(N,1),squeeze(data.X)];
-	beta_IRLS = filt_IRLS{idx}';
-	beta_SD = filt_SD{idx}';
-	mu_IRLS = spdiags(exp(X*beta_IRLS), [0], N,N);
-	mu_SD = spdiags(exp(X*beta_SD), [0], N,N);
-	FI_SD{idx} = X'*mu_IRLS*X;
-	FI_IRLS{idx} = X'*mu_SD*X;
-	kappa_IRLS(idx) = cond(FI_IRLS{idx});
-	kappa_SD(idx) = cond(FI_SD{idx});
+for i = 1:length(nK_poss)
+	i
+	for j = 1:length(nK_poss)
+		diff_filts = filt_IRLS{i,j}-filt_SD{i,j};
+		inf_filts(i,j) = norm(diff_filts, Inf);
+		max_filts_SD(i,j) = norm(filt_SD{i,j}, Inf);
+		max_filts_IRLS(i,j) = norm(filt_IRLS{i,j}, Inf);
+		rel_filts(i,j) = inf_filts(i,j)/max_filts_IRLS(i,j);
+		%Fisher information
+		%set dt_pos accordingly
+		dt_pos = dt_poss(j);
+		nK_pos = nK_poss(j);
+		%recompute data matrix structure for each resolution generate the data structure
+		data = filters_sp_pos(processed{i}, nK_sp, nK_pos, dt_sp, dt_pos);
+		N = size(data.X,2);
+		X = [ones(N,1),squeeze(data.X)];
+		beta_IRLS = filt_IRLS{i,j}';
+		beta_SD = filt_SD{i,j}';
+		mu_IRLS = spdiags(exp(X*beta_IRLS), [0], N,N);
+		mu_SD = spdiags(exp(X*beta_SD), [0], N,N);
+		FI_SD{i,j} = X'*mu_IRLS*X;
+		FI_IRLS{i,j} = X'*mu_SD*X;
+		kappa_IRLS(i,j) = cond(FI_IRLS{i,j});
+		kappa_SD(i,j) = cond(FI_SD{i,j});
+	end
 end
+
+clf
+imagesc(rel_filts)
+title('Relative difference in fitting methods (SD and IRLS): |k_{SD}-k_{IRLS}|/|k_{SD}|')
+xlabel('resolution fitted (s)')
+ylabel('resolution actual (s)')
+set(gca,'XTickLabel',dt_poss);
+set(gca,'YTickLabel',dt_poss);
+colorbar
+saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_rel_filts.eps')
+
+clf
+imagesc(kappa_IRLS)
+title('\kappa(I(y;\beta_{IRLS}))')
+xlabel('resolution fitted (s)')
+ylabel('resolution actual (s)')
+set(gca,'XTickLabel',dt_poss);
+set(gca,'YTickLabel',dt_poss);
+colorbar
+saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_kappa_IRLS.eps')
+
+clf
+imagesc(kappa_SD)
+title('\kappa(I(y;\beta_{SD}))')
+xlabel('resolution fitted (s)')
+ylabel('resolution actual (s)')
+set(gca,'XTickLabel',dt_poss);
+set(gca,'YTickLabel',dt_poss);
+colorbar
+saveplot(gcf, './worksheets/11_13_2014/plots/filterstrengths_kappa_SD.eps')
