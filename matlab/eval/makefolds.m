@@ -27,7 +27,7 @@ function [traindata, testdata] = makefolds(data, idx, fold)
 	%	[train, test] = makefolds(data, idx, fold);
 
 	N = size(data.y,2);
-	assert(idx < fold, 'Must set test data idx to be less than fold number');
+	assert(idx <= fold, 'Must set test data idx to be less than or equal to fold number');
 	blocksize = floor(N/fold);
 	preidx = 1:((idx-1)*blocksize);
 	testidx = ((idx-1)*blocksize+1):(idx*blocksize);
