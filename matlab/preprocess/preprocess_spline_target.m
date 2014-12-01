@@ -40,10 +40,10 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	%		processed = preprocess_spline_target(nevfile, labviewfile, binsize, threshold, offset, fn_out);
 	
 	%Optional arguments
-	if (nargin < 2) binsize = 0.05; end
-	if (nargin < 3) threshold = 5; end		
-	if (nargin < 4) offset = 0; end
-	if (nargin < 5) fn_out = 0; end
+	if (nargin < 3) binsize = 0.05; end
+	if (nargin < 4) threshold = 5; end		
+	if (nargin < 5) offset = 0; end
+	if (nargin < 6) fn_out = 0; end
 	%Total number of possible units recorded from
 	nE = 128;
 	nunits = 5; 
@@ -180,12 +180,12 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 
 	%Set the cursor value also from the labviewfile and compare to make sure we've done this right
 	data = load(labviewfile);
+	labviewsample = data.data.sampleRate;
 	cursor = data.data.stateHist.cursor;
 	bins = (1:size(cursor,1))';
 	lag = 4+ceil(data.data.stateHist.lag/1000*labviewsample);
 	bins = min(max(1,bins+lag), size(cursor,1));
 	cursor = cursor(bins,:);
-	labviewsample = data.data.sampleRate;
 	startbin = floor(nevoffset*labviewsample);
 	endbin = floor((nevoffset+dur)*labviewsample);
 	bins = startbin:endbin;
