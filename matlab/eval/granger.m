@@ -27,7 +27,7 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	%	fn_out = './worksheets/12_2_2014/plots/testgranger.eps';
 	%	processed = pre.processed;
 	%	data = filters_sp_pos_network(processed, nK_sp, nK_pos);
-	%	[GCdev, GVpval, GCsig] = granger(processed, data, fn_out, pval);
+	%	[GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval);
 
 	if (nargin < 4) pval = 0.001; end
 	nU = size(data.y,1);
@@ -68,13 +68,13 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	end
 
 	%Compute p-values of each GC measure
-	GCpval = 1-chi2cdf(GCdev, nK_sp)
+	GCpval = 1-chi2cdf(GCdev, nK_sp);
 	%Threshold to compute result of significance test
-	pval = 0.05;
+	%pval = 0.05;
 	GCsig = GCpval < pval;
 
-
 	%Plot results
+	clf
 	subplot(3,1,1)
 	colormap(bone);
 	imagesc(GCdev)
@@ -100,7 +100,7 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	rotateXLabels(gca, 90);
 	colorbar
 	subplot(3,1,3)
-	imagesc(-GCsig')
+	imagesc(GCsig)
 	title(['Significance test @ p<' num2str(pval)])
 	ylabel('Unit')
 	xlabel('Unit')
