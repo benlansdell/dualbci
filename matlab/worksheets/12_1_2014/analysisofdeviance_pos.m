@@ -85,6 +85,22 @@ for idx = 1:length(nK_vels)
 end
 
 %- MSPV, spike history, position and velocity!
+%- MSV mean, spike history and velocity
+const = 'on';
+nK_sp = 100; 
+nK_vels = [5];
+nK_pos = 5;
+models_MSPV = {};
+for idx = 1:length(nK_vels)
+	nK_vel = nK_vels(idx);
+	data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_pos, dt_vel);
+	%Fit each of the above GLMs
+	models_MSPV{idx} = MLE_glmfit(data, const);
+	%Make plots of each filter fitted, predictions of each unit, and record the deviance
+	fn_out = ['./worksheets/12_1_2014/plots/AOD_MSV_nK_' num2str(nK_vel)];
+	plot_filters(models_MSPV{idx}, data, processed, fn_out);
+	plot_predictions(models_MSPV{idx}, data, processed, fn_out);
+end
 
 %save fitted models for later use
 save('./worksheets/12_1_2014/AOD_fittedmodels.mat', 'model_M', 'model_MS', 'models_MSP')

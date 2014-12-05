@@ -80,7 +80,7 @@ save('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 
 load('./worksheets/11_11_2014/AOD_fittedmodels_vel.mat', 'model_M', 'model_MS', 'models_MSV')
 
 L = length(nK_poss);
-L = length(nK_vels);
+%L = length(nK_vels);
 nU = size(model_MS.b_hat,1);
 csvMSP = zeros(nU, 5+6*L);
 blank = cell(1,L-1);
