@@ -111,3 +111,7 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	rotateXLabels(gca, 90);
 	colorbar
 	saveplot(gcf, fn_out, 'eps', [6 18])
+
+	%Cluser the results and plot the clustered matrices
+	%fn_out_c = [fn_out '.cluster'];
+	%granger_cluster(GCdev, GCpval, GCsig, processed.unitnames, fn_out_c);
