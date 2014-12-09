@@ -119,14 +119,25 @@ xlabel('F-stat')
 ylabel('chi2 statistic')
 saveplot(gcf, './worksheets/12_2_2014/plots/fstatvschi2stat.eps')
 
+%Find the units used for the BCI mapping
+labview = load('./testdata/Spanky_2013-01-17-1325.mat');
+manualunits = {};
+%for i = 1:length(labview.data.nev(1).chans)
+%	manualunits{i} = num2str(labview.data.nev(1).chans(i));
+%end
+brainunits = {};
+for i = 1:length(labview.data.nev(5).chans)
+	brainunits{i} = num2str(labview.data.nev(5).chans(i));
+end
+
 pre = load('./testdata/test_preprocess_brain_spline_60hz_short24.mat');
 processed = pre.processed;
 unitnames = processed.unitnames;
 unitnamesB = unitnames
 [GCdevpermB, GCpvalpermB, GCsigpermB, clustersB, namespermB] = granger_cluster(GCdevB, GCpvalB, GCsigB, unitnames, fn_out);
 [GCdevpermBP, GCpvalpermBP, GCsigpermBP, clustersBP, namespermBP] = granger_cluster(GCdevBP, GCpvalBP, GCsigBP, unitnames, fn_out);
-save('./worksheets/12_2_2014/GLMGrangerB.mat', 'GCdevB', 'GCpvalB', 'GCsigB', 'GCdevpermB', 'GCpvalpermB', 'GCsigpermB', 'clustersB', 'namespermB', 'unitnames');
-save('./worksheets/12_2_2014/GLMGrangerBP.mat', 'GCdevBP', 'GCpvalBP', 'GCsigBP', 'GCdevpermBP', 'GCpvalpermBP', 'GCsigpermBP', 'clustersBP', 'namespermBP', 'unitnames');
+save('./worksheets/12_2_2014/GLMGrangerB.mat', 'brainunits', 'GCdevB', 'GCpvalB', 'GCsigB', 'GCdevpermB', 'GCpvalpermB', 'GCsigpermB', 'clustersB', 'namespermB', 'unitnames');
+save('./worksheets/12_2_2014/GLMGrangerBP.mat', 'brainunits', 'GCdevBP', 'GCpvalBP', 'GCsigBP', 'GCdevpermBP', 'GCpvalpermBP', 'GCsigpermBP', 'clustersBP', 'namespermBP', 'unitnames');
 
 pre = load('./testdata/test_preprocess_spline_60hz_short24.mat');
 processed = pre.processed;
@@ -134,8 +145,8 @@ unitnames = processed.unitnames;
 unitnamesM = unitnames
 [GCdevpermM, GCpvalpermM, GCsigpermM, clustersM, namespermM] = granger_cluster(GCdevM, GCpvalM, GCsigM, unitnames, fn_out);
 [GCdevpermMP, GCpvalpermMP, GCsigpermMP, clustersMP, namespermMP] = granger_cluster(GCdevMP, GCpvalMP, GCsigMP, unitnames, fn_out);
-save('./worksheets/12_2_2014/GLMGrangerM.mat', 'GCdevM', 'GCpvalM', 'GCsigM', 'GCdevpermM', 'GCpvalpermM', 'GCsigpermM', 'clustersM', 'namespermM', 'unitnames');
-save('./worksheets/12_2_2014/GLMGrangerMP.mat', 'GCdevMP', 'GCpvalMP', 'GCsigMP', 'GCdevpermMP', 'GCpvalpermMP', 'GCsigpermMP', 'clustersMP', 'namespermMP', 'unitnames');
+save('./worksheets/12_2_2014/GLMGrangerM.mat', 'manualunits', 'GCdevM', 'GCpvalM', 'GCsigM', 'GCdevpermM', 'GCpvalpermM', 'GCsigpermM', 'clustersM', 'namespermM', 'unitnames');
+save('./worksheets/12_2_2014/GLMGrangerMP.mat', 'manualunits', 'GCdevMP', 'GCpvalMP', 'GCsigMP', 'GCdevpermMP', 'GCpvalpermMP', 'GCsigpermMP', 'clustersMP', 'namespermMP', 'unitnames');
 
 
 %Find which units are in common between brain and manual control
