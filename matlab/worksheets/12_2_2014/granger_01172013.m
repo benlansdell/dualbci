@@ -245,8 +245,6 @@ nU = length(unitnames);
 save('./worksheets/12_2_2014/GLMGrangerBcomm.mat', 'brainunits', 'GCdevBcomm', 'GCpvalBcomm', 'GCsigBcomm', 'GCdevpermBcomm', 'GCpvalpermBcomm', 'GCsigpermBcomm', 'clustersBcomm', 'namespermBcomm', 'unitnames');
 save('./worksheets/12_2_2014/GLMGrangerBPcomm.mat', 'brainunits', 'GCdevBPcomm', 'GCpvalBPcomm', 'GCsigBPcomm', 'GCdevpermBPcomm', 'GCpvalpermBPcomm', 'GCsigpermBPcomm', 'clustersBPcomm', 'namespermBPcomm', 'unitnames');
 
-
-
 %Plot deviance for brain vs manual, brain position vs manual position
 %Plot deviance for MP vs M, and BP vs B
 clf
@@ -282,3 +280,17 @@ plot(X, Y, '.');
 xlabel('Manual, pos filter')
 ylabel('Brain, pos filter')
 saveplot(gcf, './worksheets/12_2_2014/plots/MPvsBP.eps')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Difference between brain and manual cytoscape plot%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+GCdevBMcomm = GCdevBcomm-GCdevMcomm;
+GCpvalBMcomm = zeros(nU,nU);
+clustersBM = {1:nU};
+save('./worksheets/12_2_2014/GLMGrangerBMcomm.mat', 'brainunits', 'GCdevBMcomm', 'GCpvalBMcomm', 'clustersBM', 'unitnames');
+
+GCdevBMPcomm = GCdevBPcomm-GCdevMPcomm;
+GCpvalBMPcomm = zeros(nU,nU);
+clustersBMP = {1:nU};
+save('./worksheets/12_2_2014/GLMGrangerBMPcomm.mat', 'brainunits', 'GCdevBMPcomm', 'GCpvalBMPcomm', 'clustersBMP', 'unitnames');
