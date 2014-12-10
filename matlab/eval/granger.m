@@ -73,6 +73,10 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	%pval = 0.05;
 	GCsig = GCpval < pval;
 
+	for i = 1:nU
+		GCdev(i,i) = 0;
+	end
+
 	%Plot results
 	clf
 	subplot(3,1,1)
