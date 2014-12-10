@@ -58,7 +58,9 @@ data = filters_sp_pos_network(processed, nK_sp, nK_pos);
 %Save results
 save('./worksheets/12_2_2014/GLMGranger.mat', 'GCdevB', 'GCdevBP', 'GCdevM', 'GCdevMP', 'GCpvalB', 'GCpvalBP', 'GCpvalM', 'GCpvalMP', 'GCsigB', 'GCsigBP', 'GCsigM', 'GCsigMP');
 
-%Compare brain control and non-brain control datasets
+%%%%%%%%%%%%%%
+%Linear model%
+%%%%%%%%%%%%%%
 
 %Compare with Ivana's code: (Manual control, linear model on spike trains, testing based on F-stat)
 clear
@@ -76,7 +78,7 @@ fn_out = './worksheets/12_2_2014/plots/IvanaGC_LM_wout_pos.eps';
 subplot(3,1,1)
 colormap(bone);
 imagesc(F')
-title('Change in deviance')
+title('F-statistic')
 ylabel('Unit')
 xlabel('Unit')
 set(gca,'XTick',1:nU);
@@ -119,7 +121,10 @@ xlabel('F-stat')
 ylabel('chi2 statistic')
 saveplot(gcf, './worksheets/12_2_2014/plots/fstatvschi2stat.eps')
 
-%Find the units used for the BCI mapping
+%%%%%%%%%%%%
+%Clustering%
+%%%%%%%%%%%%
+
 labview = load('./testdata/Spanky_2013-01-17-1325.mat');
 manualunits = {};
 %for i = 1:length(labview.data.nev(1).chans)
@@ -148,6 +153,9 @@ unitnamesM = unitnames
 save('./worksheets/12_2_2014/GLMGrangerM.mat', 'manualunits', 'GCdevM', 'GCpvalM', 'GCsigM', 'GCdevpermM', 'GCpvalpermM', 'GCsigpermM', 'clustersM', 'namespermM', 'unitnames');
 save('./worksheets/12_2_2014/GLMGrangerMP.mat', 'manualunits', 'GCdevMP', 'GCpvalMP', 'GCsigMP', 'GCdevpermMP', 'GCpvalpermMP', 'GCsigpermMP', 'clustersMP', 'namespermMP', 'unitnames');
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Compare brain control and non-brain control datasets%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Find which units are in common between brain and manual control
 nUB = length(unitnamesB);
@@ -159,42 +167,99 @@ for i = 1:nUM
 		MinB = [MinB, i];
 	end
 end
-
 for i = 1:nUB
 	if any(ismember(unitnamesM, unitnamesB{i}))
 		BinM = [BinM, i];
 	end
 end
 
-unitnames = unitnamesB(BinM);
-nU = length(unitnames);
-GCdevMcom = GCdevM(MinB,MinB);
-GCpvalMcom = GCpvalM(MinB,MinB);
-GCsigMcom = GCsigM(MinB,MinB);
-GCdevMPcom = GCdevMP(MinB,MinB);
-GCpvalMPcom = GCpvalMP(MinB,MinB);
-GCsigMPcom = GCsigMP(MinB,MinB);
+%%%%%%%%
+%Manual%
+%%%%%%%%
 
-GCdevBcom = GCdevB(BinM,BinM);
-GCpvalBcom = GCpvalB(BinM,BinM);
-GCsigBcom = GCsigB(BinM,BinM);
-GCdevBPcom = GCdevBP(BinM,BinM);
-GCpvalBPcom = GCpvalBP(BinM,BinM);
-GCsigBPcom = GCsigBP(BinM,BinM);
+%Load test preprocessed data
+pre = load('./testdata/test_preprocess_spline_60hz_short24.mat');
+processed = pre.processed;
+processed.binnedspikes = processed.binnedspikes(:,MinB);
+processed.unitnames = processed.unitnames(MinB);
+
+%Run with position filters
+const = 'on';
+pval = 0.001;
+nK_sp = 6; 
+nK_pos = 6;
+fn_out = './worksheets/12_2_2014/plots/granger_manual_pos_common.eps';
+data = filters_sp_pos_network(processed, nK_sp, nK_pos);
+[GCdevMPcomm, GCpvalMPcomm, GCsigMPcomm] = granger(processed, data, fn_out, pval);
+
+%Run without position filters
+const = 'on';
+pval = 0.001;
+nK_sp = 6; 
+nK_pos = 0;
+fn_out = './worksheets/12_2_2014/plots/granger_manual_wout_pos_common.eps';
+data = filters_sp_pos_network(processed, nK_sp, nK_pos);
+[GCdevMcomm, GCpvalMcomm, GCsigMcomm] = granger(processed, data, fn_out, pval);
+
+unitnames = processed.unitnames;
+nU = length(unitnames);
+
+[GCdevpermMcomm, GCpvalpermMcomm, GCsigpermMcomm, clustersMcomm, namespermMcomm] = granger_cluster(GCdevMcomm, GCpvalMcomm, GCsigMcomm, unitnames, [fn_out '.clust']);
+[GCdevpermMPcomm, GCpvalpermMPcomm, GCsigpermMPcomm, clustersMPcomm, namespermMPcomm] = granger_cluster(GCdevMPcomm, GCpvalMPcomm, GCsigMPcomm, unitnames, [fn_out '.clust']);
+save('./worksheets/12_2_2014/GLMGrangerMcomm.mat', 'manualunits', 'GCdevMcomm', 'GCpvalMcomm', 'GCsigMcomm', 'GCdevpermMcomm', 'GCpvalpermMcomm', 'GCsigpermMcomm', 'clustersMcomm', 'namespermMcomm', 'unitnames');
+save('./worksheets/12_2_2014/GLMGrangerMPcomm.mat', 'manualunits', 'GCdevMPcomm', 'GCpvalMPcomm', 'GCsigMPcomm', 'GCdevpermMPcomm', 'GCpvalpermMPcomm', 'GCsigpermMPcomm', 'clustersMPcomm', 'namespermMPcomm', 'unitnames');
+
+
+%%%%%%%%%%%%%%%
+%Brain control%
+%%%%%%%%%%%%%%%
+
+pre = load('./testdata/test_preprocess_brain_spline_60hz_short24.mat');
+processed = pre.processed;
+processed.binnedspikes = processed.binnedspikes(:,BinM);
+processed.unitnames = processed.unitnames(BinM);
+
+%Run on brain control data with position filters
+const = 'on';
+pval = 0.001;
+nK_sp = 6; 
+nK_pos = 6;
+fn_out = './worksheets/12_2_2014/plots/granger_brain_pos_common.eps';
+data = filters_sp_pos_network(processed, nK_sp, nK_pos);
+[GCdevBPcomm, GCpvalBPcomm, GCsigBPcomm] = granger(processed, data, fn_out, pval);
+
+%Run on brain control data without position filters
+const = 'on';
+pval = 0.001;
+nK_sp = 6; 
+nK_pos = 0;
+fn_out = './worksheets/12_2_2014/plots/granger_brain_wout_pos_common.eps';
+data = filters_sp_pos_network(processed, nK_sp, nK_pos);
+[GCdevBcomm, GCpvalBcomm, GCsigBcomm] = granger(processed, data, fn_out, pval);
+
+unitnames = processed.unitnames;
+nU = length(unitnames);
+
+[GCdevpermBcomm, GCpvalpermBcomm, GCsigpermBcomm, clustersBcomm, namespermBcomm] = granger_cluster(GCdevBcomm, GCpvalBcomm, GCsigBcomm, unitnames, [fn_out '.clust']);
+[GCdevpermBPcomm, GCpvalpermBPcomm, GCsigpermBPcomm, clustersBPcomm, namespermBPcomm] = granger_cluster(GCdevBPcomm, GCpvalBPcomm, GCsigBPcomm, unitnames, [fn_out '.clust']);
+save('./worksheets/12_2_2014/GLMGrangerBcomm.mat', 'brainunits', 'GCdevBcomm', 'GCpvalBcomm', 'GCsigBcomm', 'GCdevpermBcomm', 'GCpvalpermBcomm', 'GCsigpermBcomm', 'clustersBcomm', 'namespermBcomm', 'unitnames');
+save('./worksheets/12_2_2014/GLMGrangerBPcomm.mat', 'brainunits', 'GCdevBPcomm', 'GCpvalBPcomm', 'GCsigBPcomm', 'GCdevpermBPcomm', 'GCpvalpermBPcomm', 'GCsigpermBPcomm', 'clustersBPcomm', 'namespermBPcomm', 'unitnames');
+
+
 
 %Plot deviance for brain vs manual, brain position vs manual position
 %Plot deviance for MP vs M, and BP vs B
 clf
-X = reshape(GCdevBcom, nU*nU,1);
-Y = reshape(GCdevBPcom, nU*nU,1);
+X = reshape(GCdevBcomm, nU*nU,1);
+Y = reshape(GCdevBPcomm, nU*nU,1);
 plot(X, Y, '.');
 xlabel('Brain, no pos filter')
 ylabel('Brian, pos filter')
 saveplot(gcf, './worksheets/12_2_2014/plots/BvsBP.eps')
 
 clf
-X = reshape(GCdevMcom, nU*nU,1);
-Y = reshape(GCdevMPcom, nU*nU,1);
+X = reshape(GCdevMcomm, nU*nU,1);
+Y = reshape(GCdevMPcomm, nU*nU,1);
 plot(X, Y, '.');
 xlabel('Manual, no pos filter')
 ylabel('Manual, pos filter')
@@ -203,16 +268,16 @@ saveplot(gcf, './worksheets/12_2_2014/plots/MvsMP.eps')
 %%%%%%%%%%%%%%%
 
 clf
-X = reshape(GCdevMcom, nU*nU,1);
-Y = reshape(GCdevBcom, nU*nU,1);
+X = reshape(GCdevMcomm, nU*nU,1);
+Y = reshape(GCdevBcomm, nU*nU,1);
 plot(X, Y, '.');
 xlabel('Manual')
 ylabel('Brain')
 saveplot(gcf, './worksheets/12_2_2014/plots/MvsB.eps')
 
 clf
-X = reshape(GCdevMPcom, nU*nU,1);
-Y = reshape(GCdevBPcom, nU*nU,1);
+X = reshape(GCdevMPcomm, nU*nU,1);
+Y = reshape(GCdevBPcomm, nU*nU,1);
 plot(X, Y, '.');
 xlabel('Manual, pos filter')
 ylabel('Brain, pos filter')
