@@ -45,6 +45,7 @@ function model = MLE_glmfit(data, const)
 		stats = rmfield(stats, {'resid', 'residp', 'residd', 'resida', 'wts'});
 		model.stats{idx} = stats;
 	end
+	model.logli = ll(model, data, 'poisson');
 	if ~strcmp(const, 'on')
 		model.b_hat = [zeros(nU, 1), model.b_hat]
 	end

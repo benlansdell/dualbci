@@ -1,10 +1,10 @@
-function model = MLE_glmfit_network(data, const)
+function model = MLE_lmfit(data, const)
 	%Fit GLM to spike data from blackrock recording file for each unit above a specified threshold
-	%
+	%     
 	%Input:
 	%	data = covariate data output structure from any function in ./models
 	%	const = (optional, default = 'on') whether to fit a constant term to the model or not, 'on' or 'off'
-	%
+	%   
 	%Output:
 	%	model is a structure containing the following fields:
 	%		b_hat = [nU x (nK + 1)] array with spikes from all channels binned according to binsize. nB = no. bins, nU = no. units.
@@ -14,16 +14,17 @@ function model = MLE_glmfit_network(data, const)
 	%
 	%Test code:
 	%	const = 'on';
-	%	nK_sp = 6; 
-	%	nK_pos = 6;
+	%	nK_sp = 100; 
+	%	nK_pos = 100;
 	%	%Load test preprocessed data
-	%	pre = load('./testdata/test_preprocess_spline_60hz_short24.mat');
-	%	data = filters_sp_pos_network(pre.processed, nK_sp, nK_pos);
-	%	model = MLE_glmfit(data, const);
+	%	pre = load('./testdata/test_preprocess_spline_short.mat');
+	%	data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
+	%	model = MLE_lmfit(data, const);
 
 	if (nargin < 2) const = 'on'; end
+
 	nU = size(data.y,1);
-	nK = size(data.X,2);
+	nK = size(data.X,3);
 	if strcmp(const, 'on')
 		model.b_hat = zeros(nU, nK+1);
 	else
@@ -35,16 +36,18 @@ function model = MLE_glmfit_network(data, const)
 	display(['Fitting GLM by MLE with IRLS. Fitting ' num2str(nU) ' units.'])
 	for idx=1:nU 
 		display(['Fitting unit ' num2str(idx)])
-		[b, dev, stats] = glmfit(data.X,data.y(idx,:),'poisson', 'constant', const);
+		[b, dev, stats] = glmfit(squeeze(data.X(idx,:,:)),data.y(idx,:),'normal', 'constant', const, 'link', 'identity');
 		%Extract filters fitted...
 		model.b_hat(idx,:) = b;	
 		model.dev{idx} = dev;
+		model.sigma(idx) = std(stats.resid(:));
+		%Compute likelihood, also
 		%Remove residual components since these take up a lot of memory
 		model.N = size(stats.resid,1);
 		stats = rmfield(stats, {'resid', 'residp', 'residd', 'resida', 'wts'});
 		model.stats{idx} = stats;
 	end
-	model.logli = ll_network(model, data, 'poisson');
+	model.logli = ll(model, data, 'normal');
 	if ~strcmp(const, 'on')
 		model.b_hat = [zeros(nU, 1), model.b_hat]
 	end

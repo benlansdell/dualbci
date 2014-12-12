@@ -1,4 +1,4 @@
-function model = MLE_glmfit_network(data, const)
+function model = MLE_lmfit_network(data, const)
 	%Fit GLM to spike data from blackrock recording file for each unit above a specified threshold
 	%
 	%Input:
@@ -19,7 +19,7 @@ function model = MLE_glmfit_network(data, const)
 	%	%Load test preprocessed data
 	%	pre = load('./testdata/test_preprocess_spline_60hz_short24.mat');
 	%	data = filters_sp_pos_network(pre.processed, nK_sp, nK_pos);
-	%	model = MLE_glmfit(data, const);
+	%	model = MLE_lmfit_network(data, const);
 
 	if (nargin < 2) const = 'on'; end
 	nU = size(data.y,1);
@@ -31,20 +31,23 @@ function model = MLE_glmfit_network(data, const)
 	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
+	model.sigma = zeros(nU,1);
 	%For each unit, fit a GLM to the torque data
 	display(['Fitting GLM by MLE with IRLS. Fitting ' num2str(nU) ' units.'])
 	for idx=1:nU 
 		display(['Fitting unit ' num2str(idx)])
-		[b, dev, stats] = glmfit(data.X,data.y(idx,:),'poisson', 'constant', const);
+		[b, dev, stats] = glmfit(data.X,data.y(idx,:),'normal', 'constant', const, 'link', 'identity');
 		%Extract filters fitted...
 		model.b_hat(idx,:) = b;	
 		model.dev{idx} = dev;
+		%Estimate sigma from residuals
+		model.sigma(idx) = std(stats.resid(:));
 		%Remove residual components since these take up a lot of memory
 		model.N = size(stats.resid,1);
 		stats = rmfield(stats, {'resid', 'residp', 'residd', 'resida', 'wts'});
 		model.stats{idx} = stats;
 	end
-	model.logli = ll_network(model, data, 'poisson');
+	model.logli = ll_network(model, data, 'normal');
 	if ~strcmp(const, 'on')
 		model.b_hat = [zeros(nU, 1), model.b_hat]
 	end
