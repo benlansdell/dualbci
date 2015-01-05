@@ -9,7 +9,7 @@ processed = pre.processed;
 %Run with position filters
 const = 'on';
 pval = 0.001;
-nK_sp = 6; 
+nK_sp = 6;
 nK_pos = 6;
 fn_out = './worksheets/12_2_2014/plots/granger_manual_pos.eps';
 data = filters_sp_pos_network(processed, nK_sp, nK_pos);
@@ -139,7 +139,9 @@ pre = load('./testdata/test_preprocess_brain_spline_60hz_short24.mat');
 processed = pre.processed;
 unitnames = processed.unitnames;
 unitnamesB = unitnames
+fn_out = './worksheets/12_2_2014/plots/granger_brain_wout_pos.eps.clust';
 [GCdevpermB, GCpvalpermB, GCsigpermB, clustersB, namespermB] = granger_cluster(GCdevB, GCpvalB, GCsigB, unitnames, fn_out);
+fn_out = './worksheets/12_2_2014/plots/granger_brain_pos.eps.clust';
 [GCdevpermBP, GCpvalpermBP, GCsigpermBP, clustersBP, namespermBP] = granger_cluster(GCdevBP, GCpvalBP, GCsigBP, unitnames, fn_out);
 save('./worksheets/12_2_2014/GLMGrangerB.mat', 'brainunits', 'GCdevB', 'GCpvalB', 'GCsigB', 'GCdevpermB', 'GCpvalpermB', 'GCsigpermB', 'clustersB', 'namespermB', 'unitnames');
 save('./worksheets/12_2_2014/GLMGrangerBP.mat', 'brainunits', 'GCdevBP', 'GCpvalBP', 'GCsigBP', 'GCdevpermBP', 'GCpvalpermBP', 'GCsigpermBP', 'clustersBP', 'namespermBP', 'unitnames');
@@ -148,7 +150,9 @@ pre = load('./testdata/test_preprocess_spline_60hz_short24.mat');
 processed = pre.processed;
 unitnames = processed.unitnames;
 unitnamesM = unitnames
+fn_out = './worksheets/12_2_2014/plots/granger_manual_wout_pos.eps.clust';
 [GCdevpermM, GCpvalpermM, GCsigpermM, clustersM, namespermM] = granger_cluster(GCdevM, GCpvalM, GCsigM, unitnames, fn_out);
+fn_out = './worksheets/12_2_2014/plots/granger_manual_pos.eps.clust';
 [GCdevpermMP, GCpvalpermMP, GCsigpermMP, clustersMP, namespermMP] = granger_cluster(GCdevMP, GCpvalMP, GCsigMP, unitnames, fn_out);
 save('./worksheets/12_2_2014/GLMGrangerM.mat', 'manualunits', 'GCdevM', 'GCpvalM', 'GCsigM', 'GCdevpermM', 'GCpvalpermM', 'GCsigpermM', 'clustersM', 'namespermM', 'unitnames');
 save('./worksheets/12_2_2014/GLMGrangerMP.mat', 'manualunits', 'GCdevMP', 'GCpvalMP', 'GCsigMP', 'GCdevpermMP', 'GCpvalpermMP', 'GCsigpermMP', 'clustersMP', 'namespermMP', 'unitnames');
@@ -204,11 +208,12 @@ data = filters_sp_pos_network(processed, nK_sp, nK_pos);
 unitnames = processed.unitnames;
 nU = length(unitnames);
 
-[GCdevpermMcomm, GCpvalpermMcomm, GCsigpermMcomm, clustersMcomm, namespermMcomm] = granger_cluster(GCdevMcomm, GCpvalMcomm, GCsigMcomm, unitnames, [fn_out '.clust']);
-[GCdevpermMPcomm, GCpvalpermMPcomm, GCsigpermMPcomm, clustersMPcomm, namespermMPcomm] = granger_cluster(GCdevMPcomm, GCpvalMPcomm, GCsigMPcomm, unitnames, [fn_out '.clust']);
+fn_out = './worksheets/12_2_2014/plots/granger_manual_wout_pos_common.eps.clust';
+[GCdevpermMcomm, GCpvalpermMcomm, GCsigpermMcomm, clustersMcomm, namespermMcomm] = granger_cluster(GCdevMcomm, GCpvalMcomm, GCsigMcomm, unitnames, [fn_out]);
+fn_out = './worksheets/12_2_2014/plots/granger_manual_pos_common.eps.clust';
+[GCdevpermMPcomm, GCpvalpermMPcomm, GCsigpermMPcomm, clustersMPcomm, namespermMPcomm] = granger_cluster(GCdevMPcomm, GCpvalMPcomm, GCsigMPcomm, unitnames, [fn_out]);
 save('./worksheets/12_2_2014/GLMGrangerMcomm.mat', 'manualunits', 'GCdevMcomm', 'GCpvalMcomm', 'GCsigMcomm', 'GCdevpermMcomm', 'GCpvalpermMcomm', 'GCsigpermMcomm', 'clustersMcomm', 'namespermMcomm', 'unitnames');
 save('./worksheets/12_2_2014/GLMGrangerMPcomm.mat', 'manualunits', 'GCdevMPcomm', 'GCpvalMPcomm', 'GCsigMPcomm', 'GCdevpermMPcomm', 'GCpvalpermMPcomm', 'GCsigpermMPcomm', 'clustersMPcomm', 'namespermMPcomm', 'unitnames');
-
 
 %%%%%%%%%%%%%%%
 %Brain control%
@@ -240,8 +245,10 @@ data = filters_sp_pos_network(processed, nK_sp, nK_pos);
 unitnames = processed.unitnames;
 nU = length(unitnames);
 
-[GCdevpermBcomm, GCpvalpermBcomm, GCsigpermBcomm, clustersBcomm, namespermBcomm] = granger_cluster(GCdevBcomm, GCpvalBcomm, GCsigBcomm, unitnames, [fn_out '.clust']);
-[GCdevpermBPcomm, GCpvalpermBPcomm, GCsigpermBPcomm, clustersBPcomm, namespermBPcomm] = granger_cluster(GCdevBPcomm, GCpvalBPcomm, GCsigBPcomm, unitnames, [fn_out '.clust']);
+fn_out = './worksheets/12_2_2014/plots/granger_brain_wout_pos_common.eps.clust';
+[GCdevpermBcomm, GCpvalpermBcomm, GCsigpermBcomm, clustersBcomm, namespermBcomm] = granger_cluster(GCdevBcomm, GCpvalBcomm, GCsigBcomm, unitnames, [fn_out]);
+fn_out = './worksheets/12_2_2014/plots/granger_brain_pos_common.eps.clust';
+[GCdevpermBPcomm, GCpvalpermBPcomm, GCsigpermBPcomm, clustersBPcomm, namespermBPcomm] = granger_cluster(GCdevBPcomm, GCpvalBPcomm, GCsigBPcomm, unitnames, [fn_out]);
 save('./worksheets/12_2_2014/GLMGrangerBcomm.mat', 'brainunits', 'GCdevBcomm', 'GCpvalBcomm', 'GCsigBcomm', 'GCdevpermBcomm', 'GCpvalpermBcomm', 'GCsigpermBcomm', 'clustersBcomm', 'namespermBcomm', 'unitnames');
 save('./worksheets/12_2_2014/GLMGrangerBPcomm.mat', 'brainunits', 'GCdevBPcomm', 'GCpvalBPcomm', 'GCsigBPcomm', 'GCdevpermBPcomm', 'GCpvalpermBPcomm', 'GCsigpermBPcomm', 'clustersBPcomm', 'namespermBPcomm', 'unitnames');
 
@@ -294,3 +301,22 @@ GCdevBMPcomm = GCdevBPcomm-GCdevMPcomm;
 GCpvalBMPcomm = zeros(nU,nU);
 clustersBMP = {1:nU};
 save('./worksheets/12_2_2014/GLMGrangerBMPcomm.mat', 'brainunits', 'GCdevBMPcomm', 'GCpvalBMPcomm', 'clustersBMP', 'unitnames');
+
+clf
+fn_out = './worksheets/12_2_2014/plots/GLMGrangerBMcomm_diff.eps';
+colormap(bone);
+for i = 1:nU
+	GCdevBMcomm(i,i) = 0;
+	GCdevBMPcomm(i,i) = 0;
+end
+imagesc(GCdevBMcomm);
+title('Difference bw manual and brain')
+ylabel('Unit')
+xlabel('Unit')
+set(gca,'XTick',1:nU);
+set(gca,'YTick',1:nU);
+set(gca,'XTickLabel',processed.unitnames);
+set(gca,'YTickLabel',processed.unitnames);
+rotateXLabels(gca, 90);
+colorbar
+saveplot(gcf, fn_out, 'eps', [6 6]);
