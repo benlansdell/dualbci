@@ -1,4 +1,4 @@
-function data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_pos, dt_vel)
+function data = filters_sp_relpos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	%Prepare spike and torque data for GLM which includes spike history and cursor position (x_1, x_2) filters:
 	%
 	%	y(i) ~ Pn(g(eta_i))
@@ -8,19 +8,16 @@ function data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_p
 	%	eta_i = \sum y(i-j) k_sp(i) + \sum x_1(i+j) k_1(j) + \sum x_2(i+j) k_2(j)
 	%
 	%Usage:
-	%	data = filters_sp_pos_vel(processed, nK_sp, nK_pos, dt_sp, dt_pos)
+	%	data = filters_sp_relpos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	%     
 	%Input:
 	%	processed = structure output from one of the preprocess functions.
 	%	nK_sp = number of timebins used for spike history filter
-	%	nK_pos = number of timebins used for cursor trajectory filters (on in x and y axis)
-	%	nK_vel = number of timebins used for cursor velocity trajectory filter
+	%	nK_pos = number of timebins used for target position filters 
 	%	dt_sp = (optional, default = binsize in processed structure) step size of spike history filter
 	%		in seconds. Must be a multiple of the data's binsize.
-	%	dt_pos = (optional, default = binsize in processed structure) step size of position filter in
-	%		seconds. Must be a multiple of the data's binsize
-	%	dt_vel = (optional, default = binsize in processed structure) step size of velocity filter in
-	%		seconds. Must be a multiple of the data's binsize
+	%	dt_pos = (optional, default = binze in processed structure) step size of target position filter
+	%		in seconds. Must be a multiple of the data's binsize
 	%   
 	%Output:
 	%	data is a structure containing the following fields:
@@ -29,6 +26,7 @@ function data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_p
 	%			Note: nK = nK_sp + 2*nK_pos
 	%		k = Names of each filter, a [n x 2] cell array in which each row is of the form ['filter j name', [idxj1 idxj2 ...]]
 	%			Note: The second column lists indices in 1:nK to which the label applies
+	%		target = trimmed target position data
 	%		torque = torque data trimmed in the same way X and y are. 
 	%			Note: truncated at start and end because spike and cursor trajectory are not defined for first 
 	%			and last nK_sp and nK_pos timebins respectively.
@@ -40,50 +38,39 @@ function data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_p
 	%	pre = load('./testdata/test_preprocess_spline_short.mat');
 	%	nK_sp = 50; 
 	%	nK_pos = 10;
-	%	nK_vel = 10;
 	%	dt_sp = 0.002;
 	%	dt_pos = 0.05;
-	%	dt_vel = 0.05;
-	%	data = filters_sp_pos_vel(pre.processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_pos, dt_vel);
+	%	data = filters_sp_relpos(pre.processed, nK_sp, nK_pos, dt_sp, dt_pos);
 
-	if (nargin < 5) dt_sp = processed.binsize; end
-	if (nargin < 6) dt_pos = processed.binsize; end
-	if (nargin < 7) dt_vel = processed.binsize; end
+	if (nargin < 4) dt_sp = processed.binsize; end
+	if (nargin < 5) dt_pos = processed.binsize; end
 
 	%Check dt's specified are valid
 	assert(rem(dt_sp,processed.binsize)==0, 'Invalid dt_sp. Must be a multiple of binsize');
-	assert(rem(dt_pos,processed.binsize)==0, 'Invalid dt_pos. Must be a multiple of binsize');
-	assert(rem(dt_vel,processed.binsize)==0, 'Invalid dt_vel. Must be a multiple of binsize');
+	assert(rem(dt_pos,processed.binsize)==0, 'Invalid dt_tar. Must be a multiple of binsize');
 	steps_sp = dt_sp/processed.binsize;
 	steps_pos = dt_pos/processed.binsize;
-	steps_vel = dt_vel/processed.binsize;
 
 	nU = size(processed.binnedspikes,2);
 	nB = size(processed.binnedspikes,1);
-	nK = nK_sp + 2*nK_pos + 2*nK_vel;
+	nK = nK_sp + 2*nK_pos;
 
 	data.X = zeros(nU, nB, nK);
 	data.k = cell(3,3);
 	data.k{1,1} = 'spike history'; 
 	data.k{1,2} = 1:nK_sp;
 	data.k{1,3} = dt_sp;
-	data.k{2,1} = 'RU pos'; 
+	data.k{2,1} = 'RU rel. pos'; 
 	data.k{2,2} = (1:nK_pos) + nK_sp;
 	data.k{2,3} = dt_pos;
-	data.k{3,1} = 'FE pos'; 
+	data.k{3,1} = 'FE rel. pos'; 
 	data.k{3,2} = (1:nK_pos) + nK_sp + nK_pos;
 	data.k{3,3} = dt_pos;
-	data.k{4,1} = 'RU vel'; 
-	data.k{4,2} = (1:nK_vel) + nK_sp + 2*nK_pos;
-	data.k{4,3} = dt_vel;
-	data.k{5,1} = 'FE vel'; 
-	data.k{5,2} = (1:nK_vel) + nK_sp + 2*nK_pos + nK_vel;
-	data.k{5,3} = dt_vel;
 	%Record specifically which indices are spike history indices for model simulation
 	data.sp_hist = data.k{1,2};
 
 	startbin = (nK_sp*steps_sp+1);
-	endbin = min((nB-nK_pos*steps_pos),(nB-nK_vel*steps_vel));
+	endbin = (nB-nK_pos*steps_pos);
 
 	%For each unit, add data to X array
 	for idx=1:nU 
@@ -94,11 +81,14 @@ function data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_p
 			%(future) torque trajectory
 			torqueRU = processed.torque(j:steps_pos:(j+(nK_pos-1)*steps_pos),1);
 			torqueFE = processed.torque(j:steps_pos:(j+(nK_pos-1)*steps_pos),2);
-			%(future) torque velocity trajectory
-			dtorqueRU = processed.dtorque(j:steps_vel:(j+(nK_vel-1)*steps_vel),1);
-			dtorqueFE = processed.dtorque(j:steps_vel:(j+(nK_vel-1)*steps_vel),2);
+			%(future) target position
+			targetRU = processed.target(j:steps_pos:(j+(nK_pos-1)*steps_pos),1);
+			targetFE = processed.target(j:steps_pos:(j+(nK_pos-1)*steps_pos),2);			
+			%(future) relative cursor position to target
+			reltorqueRU = torqueRU-targetRU;
+			reltorqueFE = torqueFE-targetFE;			
 			%Form stim vector
-			data.X(idx,j,:) = [shist' torqueRU' torqueFE' dtorqueRU' dtorqueFE'];
+			data.X(idx,j,:) = [shist' reltorqueRU' reltorqueFE'];
 		end
 	end
 	%Truncate to exclude start and end of recording where spike history 
@@ -106,6 +96,7 @@ function data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_p
 	data.X = data.X(:,startbin:endbin,:); %(nkt+1:end-nkt,:);
 	data.y = processed.binnedspikes(startbin:endbin, :)';
 	%Truncate other data for comparison, too
+	data.target = processed.target(startbin:endbin,:);
 	data.torque = processed.torque(startbin:endbin,:); 
 	data.dtorque = processed.dtorque(startbin:endbin,:);
 	data.ddtorque = processed.ddtorque(startbin:endbin,:);
