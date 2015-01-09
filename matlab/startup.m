@@ -4,17 +4,17 @@
 %nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
 %metaData = '/home/lansdell/projects/bci/matlab/labview';
 
-addpath('./functions');
-addpath_recurse('./functions');
-addpath_recurse('./preprocess');
-addpath_recurse('./models');
-addpath_recurse('./fitting');
-addpath_recurse('./eval');
-addpath_recurse('./worksheets');
-addpath_recurse('./other');
+addpath('/home/lansdell/projects/bci/matlab/functions');
+addpath_recurse('/home/lansdell/projects/bci/matlab/functions');
+addpath_recurse('/home/lansdell/projects/bci/matlab/preprocess');
+addpath_recurse('/home/lansdell/projects/bci/matlab/models');
+addpath_recurse('/home/lansdell/projects/bci/matlab/fitting');
+addpath_recurse('/home/lansdell/projects/bci/matlab/eval');
+addpath_recurse('/home/lansdell/projects/bci/matlab/worksheets');
+addpath_recurse('/home/lansdell/projects/bci/matlab/other');
 
 %nev files, labview files, respectively
-addpath('./blackrock', './labview');
+addpath('/home/lansdell/projects/bci/matlab/blackrock', '/home/lansdell/projects/bci/matlab/labview');
 addpath_recurse('~/matlab/chronux');
 addpath_recurse('~/matlab/arfit');
 
