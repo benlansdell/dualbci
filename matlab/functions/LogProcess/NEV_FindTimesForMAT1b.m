@@ -47,7 +47,7 @@
 % is re-run *only* doing the fine adjustment to detect remaining channels.
 
 
-function data = NEV_FindTimesForMAT1b(data, matpath, nevpath, metaData, Tguess, dbFlag)
+function [data, success] = NEV_FindTimesForMAT1b(data, matpath, nevpath, metaData, Tguess, dbFlag)
 try
 Nspikes = 500;     % How many spikes to use when calculating correlations
                    % (Just has to be good enough for unique
@@ -64,6 +64,7 @@ convergeWidth = 10;
 tTrimSec = 5;       % Number of seconds @ start & end of NEV to trim off in
                     % order to ignore poorly-timed channel switches
 ToffsetSpread = 2;  % maximum distribution of time offsets for 'ok' match (IN SAMPLES)
+success = 0;
 
 if (nargin < 5)
     Tguess = 15.5*60;    % guess for clock offset between data & nev
@@ -782,6 +783,7 @@ end
     if (sum(sum(cell2mat({data.nev.chans}) ~= 0)) >= nChanExisting || sum(diff(Toff(:,2:3)')) < skew/2)
     data.nevUpdateNum = now;
     fprintf('Saving channel & timing info to %s.mat\n',data.fname);
+    success = 1;
     save([matpath filesep data.fname '.mat'],'data');
 else
     fprintf('Dumping results, existing mapping looks better...\n\n')
