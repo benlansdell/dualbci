@@ -88,10 +88,30 @@ for idx = 1:length(nK_poss)
 end
 
 %MSVP
+%MSV mean, spike history and velocity
+%Do for a range of filter sizes
+const = 'on';
+nK_sp = 100; 
+nK_poss = [5];
+nK_vel = 5;
+models_MSVP = {};
+for idx = 1:length(nK_poss)
+	idx
+	nK_pos = nK_poss(idx);
+	data = filters_sp_pos_vel(processed, nK_sp, nK_pos, nK_vel, dt_sp, dt_pos, dt_vel);
+	%Fit each of the above GLMs
+	models_MSVP{idx} = MLE_glmfit(data, const);
+	%Make plots of each filter fitted, predictions of each unit, and record the deviance
+	fn_out = ['./worksheets/12_22_2014/plots/AOD_MSVP_nK_' num2str(nK_pos)];
+	plot_filters(models_MSVP{idx}, data, processed, fn_out);
+	plot_predictions(models_MSVP{idx}, data, processed, fn_out);
+end
 
 %MSVPr
 
+
 %MSPrT
+
 
 %Plot log likelihood of one vs another
 clf
@@ -102,3 +122,5 @@ xlabel('Rel vel');
 ylabel('Abs vel');
 title('Log likelihood');
 saveplot(gcf, fn_out);
+
+%Plot sum of likelihoods across all units, and compare for each of the above models (use the AIC and the BIC, here)
