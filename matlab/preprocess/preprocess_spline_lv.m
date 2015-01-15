@@ -2,6 +2,7 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	%Preprocess both torque data and firing rate data from an .nev file and a corresponding .ns3 file.
 	%Will do the following:
 	%	- resample spikes and torque data into units of binsize (seconds)
+	%	- extract cursor data from labview mat file during nev recording
 	%	- apply a temporal offset between the two
 	%	- apply a threshold on average firing rate, below which, unit is not returned
 	%	- smooth torque data by fitting a cubic spline to data. Compute velocity and accel 'analytically' from the spline
