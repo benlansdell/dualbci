@@ -31,11 +31,11 @@ function weeklynevs = genweeklydataset(csv, condition, duration)
 	%weekstarts = [1];
 	%weekends = [31];
 	%Every two weeks
-	weekstarts = [1 16];
-	weekends = [15 31];
+	%weekstarts = [1 16];
+	%weekends = [15 31];
 	%Every week
-	%weekstarts = [1 8 16 23];
-	%weekends = [7 15 22 31];
+	weekstarts = [1 8 16 23];
+	weekends = [7 15 22 31];
 	cnt = 1;
 	for month = months
 		for idx = 1:length(weekstarts)
