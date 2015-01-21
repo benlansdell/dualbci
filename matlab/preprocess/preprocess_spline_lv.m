@@ -137,51 +137,58 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	lvdtorque = resample(lvdtorque, samplerate, labviewsamplerate);
 	lvddtorque = resample(lvddtorque, samplerate, labviewsamplerate);
 
-	NS3 = openNSx(ns3file, 'read', 'c:138:139');
-	nsxtorque = double(NS3.Data);
-	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
-	%Switch sign of FE axis for coordinate consistency
-	nsxtorque(2,:)=-nsxtorque(2,:);
-	nsxpts = ((1:size(nsxtorque,2))-1)/nsxsamplerate;
-	pts = ((1:size(binnedspikes,1))-1)/samplerate;
-
-	%Smoothing parameter
-	%p = 1/(1+binsize^3/0.001);
-	p = 0.9999;
-	for j=1:2
-		%Scale from uint16 value to proportion
-		nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
-		%Subtract mean
-		nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
-		%Smooth w spline
-		sp = csaps(nsxpts, nsxtorque(j,:), p);
-		torque(:,j) = fnval(sp, pts);
-		%Compute velocity of spline
-		vel = fnder(sp);
-		dtorque(:,j) = fnval(vel, pts);
-		%Compute accel of spline
-		accel = fnder(vel);
-		ddtorque(:,j) = fnval(accel, pts);
-	end
-
-	if isstr(fn_out)
-		%Check smoothness of spline smoothing
-		clf
-		subplot(2,2,1)
-		hold on
-		t = 220;
-		unit = 18;
-		dt = 2;
-		plot(nsxtorque(1,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), nsxtorque(2,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), 'b');
-		plot(torque((t*samplerate):(t*samplerate+dt*samplerate),1), torque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-		xlabel('x'); ylabel('y');
-		subplot(2,2,2)
-		plot(dtorque((t*samplerate):(t*samplerate+dt*samplerate),1), dtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-		xlabel('dx'); ylabel('dy');
-		subplot(2,2,3)
-		plot(ddtorque((t*samplerate):(t*samplerate+dt*samplerate),1), ddtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-		xlabel('d^2x'); ylabel('d^2y');
-		saveplot(gcf, [fn_out '_spline.eps'], 'eps', [6 6])
+	%If can't find NSx file then go ahead with zeros...
+	if exist(ns3file, 'file')
+		NS3 = openNSx(ns3file, 'read', 'c:138:139');
+		nsxtorque = double(NS3.Data);
+		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
+		%Switch sign of FE axis for coordinate consistency
+		nsxtorque(2,:)=-nsxtorque(2,:);
+		nsxpts = ((1:size(nsxtorque,2))-1)/nsxsamplerate;
+		pts = ((1:size(binnedspikes,1))-1)/samplerate;
+	
+		%Smoothing parameter
+		%p = 1/(1+binsize^3/0.001);
+		p = 0.9999;
+		for j=1:2
+			%Scale from uint16 value to proportion
+			nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
+			%Subtract mean
+			nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
+			%Smooth w spline
+			sp = csaps(nsxpts, nsxtorque(j,:), p);
+			torque(:,j) = fnval(sp, pts);
+			%Compute velocity of spline
+			vel = fnder(sp);
+			dtorque(:,j) = fnval(vel, pts);
+			%Compute accel of spline
+			accel = fnder(vel);
+			ddtorque(:,j) = fnval(accel, pts);
+		end
+	
+		if isstr(fn_out)
+			%Check smoothness of spline smoothing
+			clf
+			subplot(2,2,1)
+			hold on
+			t = 220;
+			unit = 18;
+			dt = 2;
+			plot(nsxtorque(1,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), nsxtorque(2,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), 'b');
+			plot(torque((t*samplerate):(t*samplerate+dt*samplerate),1), torque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
+			xlabel('x'); ylabel('y');
+			subplot(2,2,2)
+			plot(dtorque((t*samplerate):(t*samplerate+dt*samplerate),1), dtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
+			xlabel('dx'); ylabel('dy');
+			subplot(2,2,3)
+			plot(ddtorque((t*samplerate):(t*samplerate+dt*samplerate),1), ddtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
+			xlabel('d^2x'); ylabel('d^2y');
+			saveplot(gcf, [fn_out '_spline.eps'], 'eps', [6 6])
+		end
+	else
+		torque = zeros(size(lvtorque));
+		dtorque = zeros(size(lvdtorque));
+		ddtorque = zeros(size(lvddtorque));
 	end
 
 	%Check they're the same length, and trim

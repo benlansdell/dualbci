@@ -84,8 +84,8 @@ function data = filters_sp_pos_network_lv(processed, nK_sp, nK_pos, dt_sp, dt_po
 			shist(((idx-1)*nK_sp+1):(idx*nK_sp)) = processed.binnedspikes(j-nK_sp*steps_sp:steps_sp:j-steps_sp, idx);
 		end
 		%(future) torque trajectory
-		torqueRU = processed.torque(j:steps_pos:(j+(nK_pos-1)*steps_pos),1);
-		torqueFE = processed.torque(j:steps_pos:(j+(nK_pos-1)*steps_pos),2);
+		torqueRU = processed.cursor(j:steps_pos:(j+(nK_pos-1)*steps_pos),1);
+		torqueFE = processed.cursor(j:steps_pos:(j+(nK_pos-1)*steps_pos),2);
 		%Form stim vector
 		data.X(j,:) = [shist' torqueRU' torqueFE'];
 	end
