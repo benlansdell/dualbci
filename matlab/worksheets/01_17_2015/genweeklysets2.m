@@ -36,3 +36,6 @@ for idx = 1:length(conds)
 		end
 	end
 end
+
+%Now they've been copied across...
+%Use grangerweekly.m script to run granger analysis on the files
