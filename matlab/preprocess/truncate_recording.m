@@ -18,7 +18,7 @@ function short_processed = truncate_recording(processed, duration)
 	%		threshold = 5;
     %       duration = 360;
 	%		processed = preprocess_spline(nevfile, binsize, threshold, offset);
-    %       short_processed = trunate_recording(processed, duration);
+    %       short_processed = truncate_recording(processed, duration);
 
     short_processed = processed;
     nU = length(short_processed.unitnames);
