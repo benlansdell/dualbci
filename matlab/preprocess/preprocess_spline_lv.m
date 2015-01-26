@@ -284,3 +284,5 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	processed.unitnames = unitnames;
 	processed.tspks = tspks;
 	processed.binsize = binsize;
+	processed.nevfile = nevfile;
+	processed.labviewfile = matfile;

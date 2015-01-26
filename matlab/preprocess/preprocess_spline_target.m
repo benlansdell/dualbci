@@ -295,3 +295,5 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	%Cursor from labview structure (without going through my processing)
 	processed.cursor = cursor;
 	%The torque, cursor1 and cursor2 data should be the same...(check)
+	processed.nevfile = nevfile;
+	processed.labviewfile = labviewfile;

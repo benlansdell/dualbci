@@ -180,3 +180,5 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	processed.unitnames = unitnames;
 	processed.tspks = spikemuas;
 	processed.binsize = binsize;
+	processed.nevfile = nevfile;
+	%processed.labviewfile = labviewfile;

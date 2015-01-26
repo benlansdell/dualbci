@@ -215,3 +215,5 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	processed.unitnames = unitnames;
 	processed.tspks = spikemuas;
 	processed.binsize = binsize;
+	processed.nevfile = nevfile;
+	%processed.labviewfile = labviewfile;

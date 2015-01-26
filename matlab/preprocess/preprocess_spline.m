@@ -210,3 +210,5 @@ function processed = preprocess_spline(nevfile, binsize, threshold, offset, fn_o
 	processed.unitnames = unitnames;
 	processed.tspks = tspks;
 	processed.binsize = binsize;
+	processed.nevfile = nevfile;
+	%processed.labviewfile = labviewfile;
