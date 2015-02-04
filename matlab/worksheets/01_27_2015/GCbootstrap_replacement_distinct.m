@@ -27,7 +27,7 @@ processed.dtorque = processed.dtorque(1:nB,:);
 processed.ddtorque = processed.ddtorque(1:nB,:);
 
 data = filters_sp_pos_network(processed, nK_sp, nK_pos);
-fn_out = './worksheets/01_27_2015/wholedataset.m';
+fn_out = './worksheets/01_27_2015/wholedataset_replace_distinct.mat';
 
 %update number of bins
 nB = size(data.y,2);
@@ -62,17 +62,22 @@ for i = 1:length(Ns)
 		model = MLE_glmfit_network(traindata, const);
 		%Randomly sample another test set and compute the deviance
 	    traindev = deviance_network(model, traindata);
-		sample = randsample(nB,N,false);
-		%Then, within each subset, compute deviance of a training and test set
-		testdata = data;
-		testdata.X = testdata.X(sample,:);
-		testdata.y = testdata.y(:,sample);
-		testdata.torque = testdata.torque(sample,:);
-		testdata.dtorque = testdata.dtorque(sample,:);
-		testdata.ddtorque = testdata.ddtorque(sample,:);
-	    testdev = deviance_network(model, testdata);
+	    allpts = 1:nB;
+	    notsampled = allpts(~ismember(allpts, sample));
+	    %Take a subsample of these
+	    if N < nB
+	    	testsample = randsample(notsampled, N, false);
+			%Then, within each subset, compute deviance of a training and test set
+			testdata = data;
+			testdata.X = testdata.X(testsample,:);
+			testdata.y = testdata.y(:,testsample);
+			testdata.torque = testdata.torque(testsample,:);
+			testdata.dtorque = testdata.dtorque(testsample,:);
+			testdata.ddtorque = testdata.ddtorque(testsample,:);
+	    	testdev = deviance_network(model, testdata);
+		    testdevs(i,j,:) = testdev;
+		end
 	    traindevs(i,j,:) = traindev;
-	    testdevs(i,j,:) = testdev;
 	end
 end
 
@@ -95,22 +100,67 @@ summedtestdevs = flipud(summedtestdevs);
 clf
 invNs = fliplr(Ns);
 labels = {}; %cellfun(@num2str,num2cell(fliplr(Ns)*binsize),'uniformoutput',0);
-for idx = 1:length(Ns)
+for idx = 1:(length(Ns)-1)
 	labels{idx} = [num2str(ceil(invNs(idx)*binsize))];% '\newline ' num2str(invNs(idx))];
 end
 subplot(3,1,1)
-boxplot(summedtraindevs', 'labels', labels);
+boxplot(summedtraindevs(1:end-1,:)', 'labels', labels);
 ylabel('deviance train')
 subplot(3,1,2)
-boxplot(summedtestdevs', 'labels', labels);
+boxplot(summedtestdevs(1:end-1,:)', 'labels', labels);
 ylabel('deviance test')
 subplot(3,1,3)
-boxplot(summeddiff', 'labels', labels);
+boxplot(summeddiff(1:end-1,:)', 'labels', labels);
 xlabel('seconds of training');
 ylabel('log-likelihood b/w test and train')
-fn_out = './worksheets/01_27_2015/plots/GCbootstrap_ll_boxplot.eps';
+fn_out = './worksheets/01_27_2015/plots/GCbootstrap_replacement_distinct_ll_boxplot.eps';
 saveplot(gcf, fn_out, 'eps', [6 15]);
 
-%Compute GC for different Ns. Just make the plots and see the difference...
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Compute GC for different Ns. Just make the plots and see the difference...%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Nfrac = [0.5 0.4 0.3 0.2 0.1];
+Ns = floor(nB.*Nfrac);
+K = 20;
+pval = 0.001;
+fn_out = './worksheets/01_27_2015/plots/granger_sp_pos.eps';
+GCdevs = {};
+for i = 1:length(Ns)
+	N = Ns(i);
+	display(['Computing bootstrap estimates of model for N=' num2str(N)])
+	%samples = zeros(K, N);
+	for j = 1:K
+		display(['Repeat number: ' num2str(j)])
+		sample = randsample(nB,N,false);
+		size(sample);
+		%Then, within each subset, compute deviance of a training and test set
+		traindata = data;
+		traindata.X = traindata.X(sample,:);
+		traindata.y = traindata.y(:,sample);
+		traindata.torque = traindata.torque(sample,:);
+		traindata.dtorque = traindata.dtorque(sample,:);
+		traindata.ddtorque = traindata.ddtorque(sample,:);
+		%model = MLE_glmfit_network(traindata, const);
+		GCdev = granger(processed, traindata, fn_out, pval);
+		GCdevs{i,j} = GCdev;
+	end
+end
+fn_out = './worksheets/01_27_2015/gc_dev_variance.mat';
+save(fn_out);
 
-%[GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval);
+%Plot a boxplot of each 
+GCdata = zeros(length(Ns), K, nU*nU);
+for i = 1:length(Ns)
+	for j = 1:K
+		GCdata(i,j,:) = reshape(GCdevs{i,j},nU*nU,1);
+	end
+end
+for i = 1:length(Ns)
+	clf
+	boxplot(squeeze(GCdata(i,:,:)));
+	title([num2str(ceil(Ns(i)*binsize)) ' seconds of training'])
+	fn_out = ['./worksheets/01_27_2015/plots/GCboxplots_' num2str(i) '.eps'];
+	saveplot(gcf, fn_out, 'eps', [20 6]);
+end
+
+

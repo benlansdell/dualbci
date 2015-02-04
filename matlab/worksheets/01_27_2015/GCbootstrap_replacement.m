@@ -27,7 +27,7 @@ processed.dtorque = processed.dtorque(1:nB,:);
 processed.ddtorque = processed.ddtorque(1:nB,:);
 
 data = filters_sp_pos_network(processed, nK_sp, nK_pos);
-fn_out = './worksheets/01_27_2015/wholedataset.m';
+fn_out = './worksheets/01_27_2015/wholedataset_replace.mat';
 
 %update number of bins
 nB = size(data.y,2);
@@ -50,7 +50,7 @@ for i = 1:length(Ns)
 	%samples = zeros(K, N);
 	for j = 1:K
 		display(['Repeat number: ' num2str(j)])
-		sample = randsample(nB,N,false);
+		sample = randsample(nB,N,true);
 		size(sample);
 		%Then, within each subset, compute deviance of a training and test set
 		traindata = data;
@@ -62,7 +62,7 @@ for i = 1:length(Ns)
 		model = MLE_glmfit_network(traindata, const);
 		%Randomly sample another test set and compute the deviance
 	    traindev = deviance_network(model, traindata);
-		sample = randsample(nB,N,false);
+		sample = randsample(nB,N,true);
 		%Then, within each subset, compute deviance of a training and test set
 		testdata = data;
 		testdata.X = testdata.X(sample,:);
@@ -108,7 +108,7 @@ subplot(3,1,3)
 boxplot(summeddiff', 'labels', labels);
 xlabel('seconds of training');
 ylabel('log-likelihood b/w test and train')
-fn_out = './worksheets/01_27_2015/plots/GCbootstrap_ll_boxplot.eps';
+fn_out = './worksheets/01_27_2015/plots/GCbootstrap_replacement_ll_boxplot.eps';
 saveplot(gcf, fn_out, 'eps', [6 15]);
 
 %Compute GC for different Ns. Just make the plots and see the difference...
