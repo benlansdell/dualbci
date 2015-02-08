@@ -88,10 +88,16 @@ function plot_filters(model, data, processed, fn_out)
 			xlabel('time (ms)');
 		end
 
+		if ischar(processed.unitnames)
+			name = processed.unitnames;
+		else
+			name = processed.unitnames{idx};
+		end
+
 		%Plot information about each subplot
 		subplot(nP, nK+1, (nK+1))
 		if isfield(stats, 'dfe')
-			str1(1) = {['Unit: ' processed.unitnames{idx}]};
+			str1(1) = {['Unit: ' name]};
 			str1(2) = {['Deviance: ' num2str(dev)]};
 			str1(3) = {['Degrees of freedom: ' num2str(stats.dfe)]};
 			str1(4) = {['Estimated dispersion: ' num2str(stats.sfit)]};
@@ -111,7 +117,7 @@ function plot_filters(model, data, processed, fn_out)
 		axis off
 
 		%save eps
-		saveplot(gcf, [fn_out '_unit_' processed.unitnames{idx} '_filters.eps'], 'eps', [12,6]);	
+		saveplot(gcf, [fn_out '_unit_' name '_filters.eps'], 'eps', [12,6]);	
 		%save fig
-		saveas(gcf, [fn_out '_unit_' processed.unitnames{idx} '_filters.fig'])
+		saveas(gcf, [fn_out '_unit_' name '_filters.fig'])
 	end
