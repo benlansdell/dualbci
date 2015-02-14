@@ -100,9 +100,9 @@ function data = filters_sprc_accel_lv(processed, nK_sp, nK_acc, dt_sp, dt_acc)
 	data.torque = processed.torque((nK_sp*steps_sp+1):(nB-nK_acc*steps_acc),:); 
 	data.dtorque = processed.dtorque((nK_sp*steps_sp+1):(nB-nK_acc*steps_acc),:);
 	data.ddtorque = processed.ddtorque((nK_sp*steps_sp+1):(nB-nK_acc*steps_acc),:);
-	data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:); 
-	data.dcursor = processed.dcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
-	data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+	data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_acc*steps_acc),:); 
+	data.dcursor = processed.dcursor((nK_sp*steps_sp+1):(nB-nK_acc*steps_acc),:);
+	data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_acc*steps_acc),:);
 
 	data.rcbasis = rcbasis;
 	data.spbasis = spbasis;

@@ -45,9 +45,10 @@ function data = filters_sprc_pos_target_lv(processed, nK_sp, nK_pos, nK_tar, dt_
 	%	pre = load('./testdata/test_preprocess_spline_short.mat');
 	%	nK_sp = 50; 
 	%	nK_pos = 10;
+	%	nK_tar = 10;
 	%	dt_sp = 0.002;
 	%	dt_pos = 0.05;
-	%	data = filters_sprc_pos_target_lv(pre.processed, nK_sp, nK_pos, dt_sp, dt_pos);
+	%	data = filters_sprc_pos_target_lv(pre.processed, nK_sp, nK_pos, nK_tar, dt_sp, dt_pos);
 
 	if (nargin < 5) dt_sp = processed.binsize; end
 	if (nargin < 6) dt_pos = processed.binsize; end
@@ -117,9 +118,9 @@ function data = filters_sprc_pos_target_lv(processed, nK_sp, nK_pos, nK_tar, dt_
 	data.torque = processed.torque(startbin:endbin,:); 
 	data.dtorque = processed.dtorque(startbin:endbin,:);
 	data.ddtorque = processed.ddtorque(startbin:endbin,:);
-	data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:); 
-	data.dcursor = processed.dcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
-	data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+	data.cursor = processed.cursor(startbin:endbin,:); 
+	data.dcursor = processed.dcursor(startbin:endbin,:);
+	data.ddcursor = processed.ddcursor(startbin:endbin,:);
 
 	data.rcbasis = rcbasis;
 	data.spbasis = spbasis;

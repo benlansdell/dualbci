@@ -102,9 +102,9 @@ function data = filters_sprc_revpos_lv(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	data.torque = processed.torque((strpt):(nB),:); 
 	data.dtorque = processed.dtorque((strpt):(nB),:);
 	data.ddtorque = processed.ddtorque((strpt):(nB),:);
-	data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:); 
-	data.dcursor = processed.dcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
-	data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+	data.cursor = processed.cursor((strpt):(nB),:); 
+	data.dcursor = processed.dcursor((strpt):(nB),:);
+	data.ddcursor = processed.ddcursor((strpt):(nB),:);
 
 	data.rcbasis = rcbasis;
 	data.spbasis = spbasis;

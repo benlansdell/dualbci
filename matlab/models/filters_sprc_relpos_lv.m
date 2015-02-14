@@ -108,9 +108,9 @@ function data = filters_sprc_relpos_lv(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	data.torque = processed.torque(startbin:endbin,:); 
 	data.dtorque = processed.dtorque(startbin:endbin,:);
 	data.ddtorque = processed.ddtorque(startbin:endbin,:);
-	data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:); 
-	data.dcursor = processed.dcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
-	data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);	
+	data.cursor = processed.cursor(startbin:endbin,:); 
+	data.dcursor = processed.dcursor(startbin:endbin,:);
+	data.ddcursor = processed.ddcursor(startbin:endbin,:);	
 
 	data.rcbasis = rcbasis;
 	data.spbasis = spbasis;

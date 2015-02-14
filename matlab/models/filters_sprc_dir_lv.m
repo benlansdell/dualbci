@@ -111,9 +111,9 @@ function data = filters_sprc_dir_lv(processed, nK_sp, nK_dir, dt_sp, dt_dir)
 	data.torque = processed.torque((nK_sp*steps_sp+1):(nB-nK_dir*steps_dir),:); 
 	data.dtorque = processed.dtorque((nK_sp*steps_sp+1):(nB-nK_dir*steps_dir),:);
 	data.ddtorque = processed.ddtorque((nK_sp*steps_sp+1):(nB-nK_dir*steps_dir),:);
-	data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:); 
-	data.dcursor = processed.dcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
-	data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+	data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_dir*steps_dir),:); 
+	data.dcursor = processed.dcursor((nK_sp*steps_sp+1):(nB-nK_dir*steps_dir),:);
+	data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_dir*steps_dir),:);
 
 	data.rcbasis = rcbasis;
 	data.spbasis = spbasis;
