@@ -1,4 +1,4 @@
-function model = MLE_glmfit_matlab(data, const)
+function model = MLE_glmfit_lasso(data, const)
 	%Fit GLM to spike data from blackrock recording file for each unit above a specified threshold
 	%     
 	%Input:
@@ -11,52 +11,38 @@ function model = MLE_glmfit_matlab(data, const)
 	%			Note: if a constant term is not fit, a column of zeros is appended to b_hat to make dimensions consistent
 	%		dev = [nU x 1] cell array listing deviance of each unit's fit
 	%		stats = [nU x 1] cell array listing fitting statistics output from glmfit
-	%		converged = [nU x 1] array listing 1 if the IRLS converged within iteration limit, 0 if not
-	%		conditioned = [nU x 1] array listing 1 if the IRLS did not issue an ill-conditioned warning, 0 if it did
 	%
 	%Test code:
 	%	const = 'on';
-	%	nK_sp = 100; 
-	%	nK_pos = 100;
+	%	nK_sp = 6; 
+	%	nK_pos = 6;
 	%	%Load test preprocessed data
 	%	%pre = load('./testdata/test_preprocess_spline_short.mat');
-	%	pre = load('./testdata/test_preprocess_short.mat');
+	%	pre = load('./testdata/test_preprocess_bs_50ms_short.mat');
 	%	data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
-	%	model = MLE_glmfit_matlab(data, const);
+	%	model = MLE_glmfit_lasso(data, const);
 
 	if (nargin < 2) const = 'on'; end
 
 	nU = size(data.y,1);
 	nK = size(data.X,3);
-	if strcmp(const, 'on')
-		model.b_hat = zeros(nU, nK+1);
-	else
-		model.b_hat = zeros(nU, nK);
-	end
+	model.b_hat = zeros(nU, nK+1);
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
-	model.converged = ones(nU,1);
-	model.conditioned = ones(nU,1);
+
 	%For each unit, fit a GLM to the torque data
 	for idx=1:nU
-		[b, dev, stats] = glmfit_matlab(squeeze(data.X(idx,:,:)),data.y(idx,:),'poisson', 'constant', const, 'k', data.k);
-		%Catch if a warning was raised about badly conditioned matrix
-		[warn, warnid] = lastwarn;
-		if ~strcmp(warn, '')
-	   		switch warnid
-        	case 'stats:glmfit:IterationLimit'
-        		model.converged(idx) = 0;
-        	case 'stats:glmfit:BadScaling'
-        		model.conditioned(idx) = 0;
-       		end
-	    end
-	    lastwarn('')
-
-	    %Extract filters fitted...
+		X = squeeze(data.X(idx,:,:));
+		%If a constant term is to be added, then add a column of ones to data
+		if isequal(const, 'on')
+			X = [ones(size(X, 1), 1), X];
+		end
+		[b, fitinfo] = lassoglm(X,data.y(idx,:),'poisson');
+		%Extract filters fitted...
 		model.b_hat(idx,:) = b;	
-		model.dev{idx} = dev;
-		model.stats{idx} = stats;
+		model.dev{idx} = fitinfo.Deviance;
+		model.stats{idx} = fitinfo;
 	end
-	if const ~= 'on'
+	if ~isequal(const, 'on')
 		model.b_hat = [zeros(nU, 1), model.b_hat]
 	end

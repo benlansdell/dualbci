@@ -11,6 +11,8 @@ function model = MLE_glmfit_network(data, const)
 	%			Note: if a constant term is not fit, a column of zeros is appended to b_hat to make dimensions consistent
 	%		dev = [nU x 1] cell array listing deviance of each unit's fit
 	%		stats = [nU x 1] cell array listing fitting statistics output from glmfit
+	%		converged = [nU x 1] array listing 1 if the IRLS converged within iteration limit, 0 if not
+	%		conditioned = [nU x 1] array listing 1 if the IRLS did not issue an ill-conditioned warning, 0 if it did
 	%
 	%Test code:
 	%	const = 'on';
@@ -31,12 +33,25 @@ function model = MLE_glmfit_network(data, const)
 	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
+	model.converged = ones(nU,1);
+	model.conditioned = ones(nU,1);
 	%For each unit, fit a GLM to the torque data
 	display(['Fitting GLM by MLE with IRLS. Fitting ' num2str(nU) ' units.'])
 	for idx=1:nU 
 		display(['Fitting unit ' num2str(idx)])
 		[b, dev, stats] = glmfit(data.X,data.y(idx,:),'poisson', 'constant', const);
-		%Extract filters fitted...
+		%Catch if a warning was raised about badly conditioned matrix
+		[warn, warnid] = lastwarn;
+		if ~strcmp(warn, '')
+	   		switch warnid
+        	case 'stats:glmfit:IterationLimit'
+        		model.converged(idx) = 0;
+        	case 'stats:glmfit:BadScaling'
+        		model.conditioned(idx) = 0;
+       		end
+	    end
+	    lastwarn('')
+	    %Extract filters fitted...
 		model.b_hat(idx,:) = b;	
 		model.dev{idx} = dev;
 		%Remove residual components since these take up a lot of memory
