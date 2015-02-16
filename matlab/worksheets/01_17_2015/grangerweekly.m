@@ -21,8 +21,10 @@ for i = 1:length(conds)
 		nevfile = ['./blackrock/' recinfo.nevfile];
 		matfile = ['./labview/' recinfo.matfile];
 		currdate = strrep(recinfo.date, '/', '-');
-		if exist(['./worksheets/01_17_2015/grangerresults/' condition '_' currdate '.mat'], 'file')
-			display([condition '_' currdate '.mat exists, continuing to next file.'])
+		curr_fn = ['./worksheets/01_17_2015/grangerresults/' condition '_' currdate '.mat'];
+		curr_fn = strrep(curr_fn, ' ', '_')
+		if exist(curr_fn, 'file')
+			display([curr_fn ' exists, continuing to next file.'])
 			continue
 		end
 		if (exist(nevfile, 'file') == 2) & (exist(matfile, 'file') == 2)
@@ -37,8 +39,8 @@ for i = 1:length(conds)
 			data = filters_sp_pos_network_lv(processed_mua, nK_sp, nK_pos);
 			[GCdev, GCpval, GCsig] = granger(processed_mua, data, fn_out, pval);		
 			%Save the GC matrices for producing GC plots in cytoscape
-			fn_out = ['./worksheets/01_17_2015/grangerresults/' condition '_' currdate '.mat'];
-			save(fn_out, 'GCdev', 'GCpval', 'GCsig', 'processed_mua');
+			fn_out = curr_fn;
+			save(fn_out, 'GCdev', 'GCpval', 'GCsig', 'processed_mua', 'nevfile', 'matfile');
 		else
 			display(['Missing files: ' nevfile ' or ' matfile '. Continuing to next file.'])
 		end
