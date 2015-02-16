@@ -1,7 +1,7 @@
 function compareglms(baseglm, otherglms, threshdev)
 	if (nargin < 1) baseglm = 'sprc'; end
 	if (nargin < 2) otherglms = {'sprc_pos_lv'}; end
-	if (nargin < 3) threshdev = 1e20; end
+	if (nargin < 3) threshdev = 1e5; end
 
 	fn_out = './worksheets/01_17_2015/weeklynevs.mat';
 	conds = {'2D Manual Position', 'Dual Control'};
@@ -45,6 +45,7 @@ function compareglms(baseglm, otherglms, threshdev)
 					curr_devs(k) = model.dev{k};
 				end
 				curr_devs(curr_devs>threshdev) = 0;
+				curr_devs(curr_devs<0) = 0;
 				%Find units used
 				units = cellfun(@str2num, processed_mua.unitnames);
 				%Add these to devs matrix
@@ -90,6 +91,7 @@ function compareglms(baseglm, otherglms, threshdev)
 						curr_devs(k) = model.dev{k};
 					end
 					curr_devs(curr_devs>threshdev) = 0;
+					curr_devs(curr_devs<0) = 0;
 					%Find units used
 					units = cellfun(@str2num, processed_mua.unitnames);
 					%Add these to devs matrix

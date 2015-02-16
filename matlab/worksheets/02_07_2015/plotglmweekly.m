@@ -1,6 +1,6 @@
 function plotglmweekly(modeltype)
 	if (nargin < 1) modeltype = 'sp_pos_lv'; end
-	threshdev = 1e20;
+	threshdev = 1e5;
 	%Plot results from glmweekly for files that match a given pattern
 	fn_out = './worksheets/01_17_2015/weeklynevs.mat';
 	conds = {'2D Manual Position', 'Dual Control'};
@@ -24,7 +24,7 @@ function plotglmweekly(modeltype)
 			matfile = ['./labview/' recinfo.matfile];
 			currdate = strrep(recinfo.date, '/', '-');
 			curr_fn = ['./worksheets/02_07_2015/glmresults/' modeltype '_' condition '_' currdate '.mat'];
-			curr_fn = strrep(curr_fn, ' ', '_')
+			curr_fn = strrep(curr_fn, ' ', '_');
 			if exist(curr_fn, 'file')
 				%Add data to matrix for plotting
 				display([curr_fn ' exists, reading in deviances.'])
@@ -36,6 +36,7 @@ function plotglmweekly(modeltype)
 					curr_devs(k) = model.dev{k};
 				end
 				curr_devs(curr_devs>threshdev) = 0;
+				curr_devs(curr_devs<0) = 0;
 				%Find units used
 				units = cellfun(@str2num, processed_mua.unitnames);
 				%Add these to devs matrix
