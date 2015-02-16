@@ -75,7 +75,7 @@ function plotTrialInfo(fn_in_all, fn_out)
 
     %Plot recording condition curves
     clf
-    plot(dates, cond_secs/3600);
+    plot(dates, cond_secs(:,1:7)/3600, dates, cond_secs(:,8:12)/3600, '--');
     set(gca,'XTick',xlabeldates);
     datetick('x','mmm','keepticks');
     xlabel('Date');
