@@ -1,4 +1,4 @@
-function trialinfo(matpath, fn_out_event, fn_out_all)
+function trialinfo(matpath, fn_out_event, fn_out_all, matfile_out)
     %Create a csv file which lists, for each date, the no. of hours of recording
     %that have taken place under each condition (2D manual, brain control, etc) upto that date.
     %And also extract, for each electrode, how many hours it has been used to drive a BCI
@@ -10,6 +10,7 @@ function trialinfo(matpath, fn_out_event, fn_out_all)
     %   matpath = filename to csv file output from nevmappings containing all nev and mapping info
     %   fn_out_event = output csv file for only each date with recordings
     %   fn_out_all = output csv file for recording info for all days of the year 
+    %   matfile_out = output mat file containing events structure
     %
     %Output:
     %   none
@@ -68,6 +69,7 @@ function trialinfo(matpath, fn_out_event, fn_out_all)
                 end
                 %Found an nev file whose info we want to record
                 nevdate = strrep(data.fname, 'Spanky_', '');
+                nevtime = nevdate(end-3:end);
                 %Save info in an events structure
                 events(k).date = nevdate;
                 events(k).daten = datenum(nevdate(1:end-5), 'yyyy-mm-dd')
@@ -76,11 +78,17 @@ function trialinfo(matpath, fn_out_event, fn_out_all)
                 [bciunits, durs] = findBCIUnits(data, nevmap, activechannels, nevoffset, nevdur);
                 events(k).bciunits = bciunits;
                 events(k).dur = durs;
+                events(k).matfile = matfile;
+                events(k).nevfile = nevfile;
+                events(k).nevtime = nevtime;
                 k = k + 1;
             end
             end
         end
     end
+
+    %Save events structure
+    save(matfile_out, 'events');
 
     %%%%%%%%%%%%
     %Write file%
@@ -149,7 +157,7 @@ function trialinfo(matpath, fn_out_event, fn_out_all)
     fclose(fh_all);
 end 
 
-function writeLine(fh, curr_date, cond_secs, electrodeBCIHpos, electrodeBCIVpos, electrodeBCIHvel, electrodeBCIVvel, electrodeBCI2vel, electrodeBCIDual)
+function writeLine(fh, curr_date, cond_secs, electrodeBCIHpos, electrodeBCIVpos, electrodeBCIHvel, electrodeBCIVvel, electrodeBCI2vel, electrodeBCIDual, nevfile, matfile)
     %Includes only current date
     %curr_date
     fprintf(fh, '%d,', curr_date);
