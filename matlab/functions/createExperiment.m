@@ -32,7 +32,7 @@ function expts = createExperiment(matfile_in, ndays, condition)
     %   condition = '2D Manual Position';
     %   ndays = 1;
     %   expts = createExperiment(matfile_out, ndays, condition);
-    %   save('./expts/2dmanualpos_1.mat', 'expts');
+    %   save('./expts/2dmanualpos_1day.mat', 'expts');
 
     keys = {'1D Horiz Brain  Position',    '1D Horiz Brain  Velocity',    '1D Horiz Manual Position',    '1D Horiz Manual Velocity',    '1D Vert  Brain  Position',    '1D Vert  Brain  Velocity',    '1D Vert  Manual Position',    '1D Vert  Manual Velocity',    '2D Brain  Velocity',    '2D Manual Position',    '2D Manual Velocity', 'Dual Control'};
     vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
