@@ -87,8 +87,9 @@ function trialinfo(matpath, fn_out_event, fn_out_all, matfile_out)
         end
     end
 
+    allevents
     %Save events structure
-    save(matfile_out, 'events');
+    save(matfile_out, 'allevents');
 
     %%%%%%%%%%%%
     %Write file%
