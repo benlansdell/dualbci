@@ -118,6 +118,9 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	[pathstr,nevfilename,ext] = fileparts(nevfile);
 	for idx = 1:length(data.nev)
 		%Find nev structure
+		if length(data.nev(idx).nevfile)==0
+			continue
+		end
 		[pathstr,curr_nevfilename,ext] = fileparts(data.nev(idx).nevfile);
 		if strcmp(curr_nevfilename, nevfilename)
 			%Find offset and duration in seconds
