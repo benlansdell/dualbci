@@ -38,6 +38,7 @@ function expts = createExperiment(matfile_in, ndays, condition)
     vals = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     mappings = containers.Map(keys, vals);
     nC = 12;
+    mindur = 360;
 
 	load(matfile_in);
 	nexpts = 1;
@@ -57,7 +58,7 @@ function expts = createExperiment(matfile_in, ndays, condition)
             elseif currdate == exptenddate
                 %--If come across condition of interest, use that as the terminal condition and finish expt struct,
                 %  set inexpt = false
-                if strcmp(event.mapping, condition)
+                if strcmp(event.mapping, condition) & (event.totaldur > mindur)
                     expts(nexpts).nevfile_end = event.nevfile;
                     expts(nexpts).matfile_end = event.matfile;
                     nexpts = nexpts + 1;
@@ -76,7 +77,7 @@ function expts = createExperiment(matfile_in, ndays, condition)
     	%If not in expt. Note that the same event can count as the end of an expt and the start of one...
 		if inexpt == false
 			%If find recording that matches condition, then we are in expt!
-			if strcmp(event.mapping,condition)
+			if strcmp(event.mapping,condition) & (event.totaldur > mindur)
 				inexpt = true;
     			expts(nexpts).nevfile_start = event.nevfile;
     			expts(nexpts).matfile_start = event.matfile;
