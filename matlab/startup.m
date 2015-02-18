@@ -21,8 +21,8 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/other']);
 
 %nev files, labview files, respectively
 addpath([homedir '/lansdell/projects/bci/matlab/blackrock'], [homedir '/lansdell/projects/bci/matlab/labview']);
-addpath_recurse([homedir '/matlab/chronux']);
-addpath_recurse([homedir '/matlab/arfit']);
+addpath_recurse([homedir 'lansdell/matlab/chronux']);
+addpath_recurse([homedir 'lansdell/matlab/arfit']);
 
 %Add extra color
 %my_ColorOrder = [   0.00000   0.00000   1.00000;
