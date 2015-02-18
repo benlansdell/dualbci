@@ -4,14 +4,20 @@
 %nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
 %metaData = '/home/lansdell/projects/bci/matlab/labview';
 
-addpath('/home/lansdell/projects/bci/matlab/functions');
-addpath_recurse('/home/lansdell/projects/bci/matlab/functions');
-addpath_recurse('/home/lansdell/projects/bci/matlab/preprocess');
-addpath_recurse('/home/lansdell/projects/bci/matlab/models');
-addpath_recurse('/home/lansdell/projects/bci/matlab/fitting');
-addpath_recurse('/home/lansdell/projects/bci/matlab/eval');
-addpath_recurse('/home/lansdell/projects/bci/matlab/worksheets');
-addpath_recurse('/home/lansdell/projects/bci/matlab/other');
+if ismac
+	homedir = '/Users/';
+else
+	homedir = '/home/';
+end
+
+addpath([homedir 'lansdell/projects/bci/matlab/functions']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/functions']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/preprocess']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/models']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/eval']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/worksheets']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/other']);
 
 %nev files, labview files, respectively
 addpath('/home/lansdell/projects/bci/matlab/blackrock', '/home/lansdell/projects/bci/matlab/labview');
