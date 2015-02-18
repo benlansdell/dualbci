@@ -56,7 +56,7 @@ function expts = runExperiment(matfile_in, settings, exptname)
             %Create filters
             data = settings.filters(processed_mua);
             %Fit model
-            model = MLE_glmfit(data, settings.const);
+            model = settings.fit(data, settings.const);
             %Save fit model as ./expts/exptname_nevfile.mat
             save(fn_start, 'model');            
         end
@@ -77,7 +77,7 @@ function expts = runExperiment(matfile_in, settings, exptname)
             %Create filters
             data = settings.filters(processed_mua);
             %Fit model
-            model = MLE_glmfit(data, settings.const);
+            model = settings.fit(data, settings.const);
             %Save fit model as ./expts/exptname_nevfile.mat
             save(fn_end, 'model');            
         end
