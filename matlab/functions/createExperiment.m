@@ -91,4 +91,8 @@ function expts = createExperiment(matfile_in, ndays, condition)
     		end
 		end
 	end
+    %If last experiment wasn't completed before events ran out then exclude it
+    if strcmp(expts(nexpts).matfile_end, '') & strcmp(expts(nexpts).nevfile_end, '')
+        expts = expts(1:nexpts-1);
+    end 
 end
