@@ -45,6 +45,13 @@ function expts = runExperiment(matfile_in, settings, exptname)
         if (exist(fn_start, 'file') == 2)
             display([fn_start ' already fit. Continuing'])
             load(fn_start);
+            %Check if structure has unitnames, if not add them
+            if ~isfield(model, 'unitnames')
+                display(['Model ' fn_start ' does not contain unit names, adding.'])
+                processed = settings.process([settings.nevfiledir expt.nevfile_start], [settings.matfiledir expt.matfile_start]);
+                processed_mua = combine_mua(processed);
+                model.unitnames = processed_mua.unitnames;
+            end
         else
             display([fn_start ' not fit. Fitting GLM'])
             %If not, preprocess data
@@ -57,6 +64,7 @@ function expts = runExperiment(matfile_in, settings, exptname)
             data = settings.filters(processed_mua);
             %Fit model
             model = settings.fit(data, settings.const);
+            model.unitnames = processed_mua.unitnames;
             %Save fit model as ./expts/exptname_nevfile.mat
             save(fn_start, 'model');            
         end
@@ -66,6 +74,13 @@ function expts = runExperiment(matfile_in, settings, exptname)
         if (exist(fn_end, 'file') == 2)
             display([fn_end ' already fit. Continuing'])
             load(fn_end);
+            %Check if structure has unitnames, if not add them
+            if ~isfield(model, 'unitnames')
+                display(['Model ' fn_end ' does not contain unit names, adding.'])
+                processed = settings.process([settings.nevfiledir expt.nevfile_start], [settings.matfiledir expt.matfile_start]);
+                processed_mua = combine_mua(processed);
+                model.unitnames = processed_mua.unitnames;
+            end
         else
             display([fn_end ' not fit. Fitting GLM'])
             %If hasn't been processed, do it
@@ -78,6 +93,7 @@ function expts = runExperiment(matfile_in, settings, exptname)
             data = settings.filters(processed_mua);
             %Fit model
             model = settings.fit(data, settings.const);
+            model.unitnames = processed_mua.unitnames;
             %Save fit model as ./expts/exptname_nevfile.mat
             save(fn_end, 'model');            
         end
