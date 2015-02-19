@@ -52,6 +52,7 @@ function expts = runExperiment(matfile_in, settings, exptname)
                 processed_mua = combine_mua(processed);
                 model.unitnames = processed_mua.unitnames;
             end
+            save(fn_start, 'model');
         else
             display([fn_start ' not fit. Fitting GLM'])
             %If not, preprocess data
@@ -81,6 +82,7 @@ function expts = runExperiment(matfile_in, settings, exptname)
                 processed_mua = combine_mua(processed);
                 model.unitnames = processed_mua.unitnames;
             end
+            save(fn_start, 'model');
         else
             display([fn_end ' not fit. Fitting GLM'])
             %If hasn't been processed, do it
