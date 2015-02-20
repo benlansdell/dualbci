@@ -7,6 +7,7 @@ matlab/NPMK
 matlab/worksheets
 matlab/tmp
 matlab/GLMwGUI
+matlab/expts
 
 *.gif
 *.eps
