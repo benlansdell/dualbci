@@ -103,55 +103,6 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	end
 	%Return spike times for each active channel
 	tspks = spikemuas;
-	%%%%%%%%%%%%%%%%%%%%%
-	%Process torque data%
-	%%%%%%%%%%%%%%%%%%%%%
-	clear torque;
-	NS3 = openNSx(ns3file, 'read', 'c:138:139');
-	nsxtorque = double(NS3.Data);
-	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
-	%Switch sign of FE axis for coordinate consistency
-	nsxtorque(2,:)=-nsxtorque(2,:);
-	nsxpts = ((1:size(nsxtorque,2))-1)/nsxsamplerate;
-	pts = ((1:size(binnedspikes,1))-1)/samplerate;
-	%Smoothing parameter
-	%p = 1/(1+binsize^3/0.001);
-	p = 0.9999;
-	for j=1:2
-		%Scale from uint16 value to proportion
-		nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
-		%Subtract mean
-		nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
-		%Smooth w spline
-		sp = csaps(nsxpts, nsxtorque(j,:), p);
-		torque(:,j) = fnval(sp, pts);
-		%Compute velocity of spline
-		vel = fnder(sp);
-		dtorque(:,j) = fnval(vel, pts);
-		%Compute accel of spline
-		accel = fnder(vel);
-		ddtorque(:,j) = fnval(accel, pts);
-	end
-
-	if isstr(fn_out)
-		%Check smoothness of spline smoothing
-		clf
-		subplot(2,2,1)
-		hold on
-		t = 220;
-		unit = 18;
-		dt = 2;
-		plot(nsxtorque(1,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), nsxtorque(2,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), 'b');
-		plot(torque((t*samplerate):(t*samplerate+dt*samplerate),1), torque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-		xlabel('x'); ylabel('y');
-		subplot(2,2,2)
-		plot(dtorque((t*samplerate):(t*samplerate+dt*samplerate),1), dtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-		xlabel('dx'); ylabel('dy');
-		subplot(2,2,3)
-		plot(ddtorque((t*samplerate):(t*samplerate+dt*samplerate),1), ddtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-		xlabel('d^2x'); ylabel('d^2y');
-		saveplot(gcf, [fn_out '_spline.eps'], 'eps', [6 6])
-	end
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Import cursor and target info from labview file%
@@ -159,8 +110,38 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	%We should translate the cursor/target information so that it matches the torque data from the nsx file
 	display('Importing trial info');
 	trials = import_trials(labviewfile);
-	target = zeros(size(torque));
-	cursor_trial = zeros(size(torque));
+
+	%Set the cursor value also from the labviewfile and compare to make sure we've done this right
+	data = load(labviewfile);
+	labviewsample = data.data.sampleRate;
+	cursor = data.data.stateHist.cursor;
+	bins = (1:size(cursor,1))';
+	lag = 4+ceil(data.data.stateHist.lag/1000*labviewsample);
+	bins = min(max(1,bins+lag), size(cursor,1));
+	cursor = cursor(bins,:);
+	%Find the right offset
+	for idx = 1:length(data.data.nev)
+		[path, nevfile, ext] = fileparts(nevfile);
+		[path, nevfilemat, ext] = fileparts(data.data.nev(idx).nevfile);
+		if strcmp(nevfilemat, nevfile)
+			nevoffset = single(data.data.nev(idx).Toffset(1))/60;
+			dur = data.data.nev(idx).DurationSec;
+		end
+	end
+	startbin = floor(nevoffset*labviewsample);
+	endbin = floor((nevoffset+dur)*labviewsample);
+	if nevoffset == 0
+		startbin = startbin + 1;
+		endbin = endbin + 1;
+	end
+	bins = startbin:endbin;
+	cursor = cursor(bins,:);
+	cursor = resample(cursor, floor(10000000/labviewsample), binsize*10000000);
+	dcursor = [diff(cursor); 0, 0]*labviewsample;
+	ddcursor = [diff(dcursor); 0, 0]*labviewsample;
+
+	target = zeros(size(cursor));
+	cursor_trial = zeros(size(cursor));
 	for trial = trials
 		[path, nevfile, ext] = fileparts(nevfile);
 		[path, nevfiletrial, ext] = fileparts(trial.nevfile);
@@ -178,20 +159,63 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 		end
 	end
 
-	%Set the cursor value also from the labviewfile and compare to make sure we've done this right
-	data = load(labviewfile);
-	labviewsample = data.data.sampleRate;
-	cursor = data.data.stateHist.cursor;
-	bins = (1:size(cursor,1))';
-	lag = 4+ceil(data.data.stateHist.lag/1000*labviewsample);
-	bins = min(max(1,bins+lag), size(cursor,1));
-	cursor = cursor(bins,:);
-	startbin = floor(nevoffset*labviewsample);
-	endbin = floor((nevoffset+dur)*labviewsample);
-	bins = startbin:endbin;
-	cursor = cursor(bins,:);
-	cursor = resample(cursor, floor(10000000/labviewsample), binsize*10000000);
-
+	%%%%%%%%%%%%%%%%%%%%%
+	%Process torque data%
+	%%%%%%%%%%%%%%%%%%%%%
+	%If can't find NSx file then go ahead with zeros...
+	if exist(ns3file, 'file')
+		clear torque;
+		NS3 = openNSx(ns3file, 'read', 'c:138:139');
+		nsxtorque = double(NS3.Data);
+		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
+		%Switch sign of FE axis for coordinate consistency
+		nsxtorque(2,:)=-nsxtorque(2,:);
+		nsxpts = ((1:size(nsxtorque,2))-1)/nsxsamplerate;
+		pts = ((1:size(binnedspikes,1))-1)/samplerate;
+		%Smoothing parameter
+		%p = 1/(1+binsize^3/0.001);
+		p = 0.9999;
+		for j=1:2
+			%Scale from uint16 value to proportion
+			nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
+			%Subtract mean
+			nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
+			%Smooth w spline
+			sp = csaps(nsxpts, nsxtorque(j,:), p);
+			torque(:,j) = fnval(sp, pts);
+			%Compute velocity of spline
+			vel = fnder(sp);
+			dtorque(:,j) = fnval(vel, pts);
+			%Compute accel of spline
+			accel = fnder(vel);
+			ddtorque(:,j) = fnval(accel, pts);
+		end
+		if isstr(fn_out)
+			%Check smoothness of spline smoothing
+			clf
+			subplot(2,2,1)
+			hold on
+			t = 220;
+			unit = 18;
+			dt = 2;
+			plot(nsxtorque(1,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), nsxtorque(2,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), 'b');
+			plot(torque((t*samplerate):(t*samplerate+dt*samplerate),1), torque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
+			xlabel('x'); ylabel('y');
+			subplot(2,2,2)
+			plot(dtorque((t*samplerate):(t*samplerate+dt*samplerate),1), dtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
+			xlabel('dx'); ylabel('dy');
+			subplot(2,2,3)
+			plot(ddtorque((t*samplerate):(t*samplerate+dt*samplerate),1), ddtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
+			xlabel('d^2x'); ylabel('d^2y');
+			saveplot(gcf, [fn_out '_spline.eps'], 'eps', [6 6])
+		end
+	else
+		torque = zeros(size(cursor));
+		dtorque = zeros(size(dcursor));
+		ddtorque = zeros(size(ddcursor));
+	end
+	size(torque)
+	size(cursor)
 	%%%%%%%%%%%%%%%
 	%Finalize data%
 	%%%%%%%%%%%%%%%
@@ -203,6 +227,8 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	ddtorque=ddtorque(1:nsamp,:);
 	target=target(1:nsamp,:);
 	cursor=cursor(1:nsamp,:);
+	dcursor=dcursor(1:nsamp,:);
+	ddcursor=ddcursor(1:nsamp,:);
 	cursor_trial=cursor_trial(1:nsamp,:);
 	rates = rates(1:nsamp,:);
 	binnedspikes = binnedspikes(1:nsamp,:);
@@ -213,6 +239,8 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 		rates = rates(1+delaysamples:end,:);
 		target = target(1:end-delaysamples,:);
 		cursor = cursor(1:end-delaysamples,:);
+		dcursor = dcursor(1:end-delaysamples,:);
+		ddcursor = ddcursor(1:end-delaysamples,:);
 		cursor_trial = cursor_trial(1:end-delaysamples,:);
 		torque = torque(1:end-delaysamples,:);
 		dtorque = dtorque(1:end-delaysamples,:);
@@ -223,6 +251,8 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 		torque = torque(1-delaysamples:end,:);
 		target = target(1-delaysamples:end,:);
 		cursor = cursor(1-delaysamples:end,:);
+		dcursor = dcursor(1-delaysamples:end,:);
+		ddcursor = ddcursor(1-delaysamples:end,:);
 		cursor_trial = cursor_trial(1-delaysamples:end,:);
 		dtorque = dtorque(1-delaysamples:end,:);
 		ddtorque = ddtorque(1-delaysamples:end,:);
@@ -294,6 +324,8 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	processed.cursor_trial = cursor_trial;
 	%Cursor from labview structure (without going through my processing)
 	processed.cursor = cursor;
+	processed.dcursor = dcursor;
+	processed.ddcursor = ddcursor;
 	%The torque, cursor1 and cursor2 data should be the same...(check)
 	processed.nevfile = nevfile;
 	processed.labviewfile = labviewfile;
