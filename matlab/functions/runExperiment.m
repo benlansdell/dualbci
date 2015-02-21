@@ -60,16 +60,28 @@ function expts = runExperiment(matfile_in, settings, exptname, redo)
         else
             display([fn_start ' not fit. Fitting GLM'])
             %If not, preprocess data
-            processed = settings.process([settings.nevfiledir expt.nevfile_start], [settings.matfiledir expt.matfile_start]);
-            %Combine data to same electrode
-            processed_mua = combine_mua(processed);
-            %Truncate to 'duration' seconds of recording
-            processed_mua = truncate_recording(processed_mua, settings.duration);
-            %Create filters
-            data = settings.filters(processed_mua);
-            %Fit model
-            model = settings.fit(data, settings.const);
-            model.unitnames = processed_mua.unitnames;
+            try 
+                processed = settings.process([settings.nevfiledir expt.nevfile_start], [settings.matfiledir expt.matfile_start]);
+                %Combine data to same electrode
+                processed_mua = combine_mua(processed);
+                %Truncate to 'duration' seconds of recording
+                processed_mua = truncate_recording(processed_mua, settings.duration);
+                %Create filters
+                data = settings.filters(processed_mua);
+                %Fit model
+                model = settings.fit(data, settings.const);
+                model.unitnames = processed_mua.unitnames;
+                model.na = false;
+            catch err
+                %Write a blank model to file
+                if strcmp(err.identifier, 'BCIGLM:filters_sprc_pos_target:noTargetInformation')
+                    display(['Recording ' expt.nevfile_end ' contains no trials. Inappropriate model for this file. Skipping.'])
+                    model.na = true;
+                    model.unitnames = {};
+                else
+                    throw(err)
+                end
+            end
             %Save fit model as ./expts/exptname_nevfile.mat
             save(fn_start, 'model');            
         end
@@ -89,17 +101,29 @@ function expts = runExperiment(matfile_in, settings, exptname, redo)
             save(fn_end, 'model');
         else
             display([fn_end ' not fit. Fitting GLM'])
-            %If hasn't been processed, do it
-            processed = settings.process([settings.nevfiledir expt.nevfile_end], [settings.matfiledir expt.matfile_end]);
-            %Combine data from same electrode
-            processed_mua = combine_mua(processed);
-            %Truncate to 'duration' seconds of recording
-            processed_mua = truncate_recording(processed_mua, settings.duration);
-            %Create filters
-            data = settings.filters(processed_mua);
-            %Fit model
-            model = settings.fit(data, settings.const);
-            model.unitnames = processed_mua.unitnames;
+            try
+                %If hasn't been processed, do it
+                processed = settings.process([settings.nevfiledir expt.nevfile_end], [settings.matfiledir expt.matfile_end]);
+                %Combine data from same electrode
+                processed_mua = combine_mua(processed);
+                %Truncate to 'duration' seconds of recording
+                processed_mua = truncate_recording(processed_mua, settings.duration);
+                %Create filters
+                data = settings.filters(processed_mua);
+                %Fit model
+                model = settings.fit(data, settings.const);
+                model.unitnames = processed_mua.unitnames;
+                model.na = false;
+            catch err
+                %Write a blank model to file
+                if strcmp(err.identifier, 'BCIGLM:filters_sprc_pos_target:noTargetInformation')
+                    display(['Recording ' expt.nevfile_end ' contains no trials. Inappropriate model for this file. Skipping MLE fit.'])
+                    model.na = true;
+                    model.unitnames = {};
+                else
+                    throw(err)
+                end
+            end
             %Save fit model as ./expts/exptname_nevfile.mat
             save(fn_end, 'model');            
         end
