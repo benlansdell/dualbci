@@ -214,8 +214,8 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 		dtorque = zeros(size(dcursor));
 		ddtorque = zeros(size(ddcursor));
 	end
-	size(torque)
-	size(cursor)
+	size(torque);
+	size(cursor);
 	%%%%%%%%%%%%%%%
 	%Finalize data%
 	%%%%%%%%%%%%%%%
