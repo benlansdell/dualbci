@@ -81,7 +81,7 @@ function settings = setupExperiment(expttype)
             settings.threshold = 3;
             settings.offset = 0;
             settings.const = 'on';
-            settings.process = @(nev, mat) preprocess_spline_lv(nev, mat, settings.binsize, settings.threshold, settings.offset);
+            settings.process = @(nev, mat) preprocess_spline_target(nev, mat, settings.binsize, settings.threshold, settings.offset);
             %Filter settings
             settings.dt_sp = settings.binsize;
             settings.dt_tar = settings.binsize;
