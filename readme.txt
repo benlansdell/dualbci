@@ -57,6 +57,15 @@ labview and BlackRock files
 Version history
 ===============
 
+0.3 -- Can now:
+
+-Compute Granger causality for a recording
+-Estimate a range of intentional and non-intentional GLMs
+-Use raised cosine basis vectors for spike history filters
+-Added concept of experiment stuctures, allowing the study of entire year's worth of recordings with createExperiment, setupExperiment and runExperiment functions
+
+0.2 -- Updated to include code to run LN model, and a basic version of a GLM model
+
 0.1 -- contains a whole bunch of functions to compute correlation (corr_*.m) bw
 firing rate and torque (cursor) position/vel/accel. Not needed, as superseded
 by correlation_nev.m. Will be dropped from future versions.
