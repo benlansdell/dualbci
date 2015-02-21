@@ -52,6 +52,12 @@ function data = filters_sp_pos_target_lv(processed, nK_sp, nK_pos, nK_tar, dt_sp
 	if (nargin < 6) dt_pos = processed.binsize; end
 	if (nargin < 7) dt_tar = processed.binsize; end
 
+	%Check if target vector is all zero, if it is then this recording contains no trial information
+	%and the use of the 'target' model is inappropriate
+	if length(unique(processed.target)) == 1
+		error('BCIGLM:filters_sprc_pos_target:noTargetInformation', 'No target information during recording available during recording, use different GLM model');
+	end
+	
 	%Check dt's specified are valid
 	assert(rem(dt_sp,processed.binsize)==0, 'Invalid dt_sp. Must be a multiple of binsize');
 	assert(rem(dt_pos,processed.binsize)==0, 'Invalid dt_pos. Must be a multiple of binsize');
