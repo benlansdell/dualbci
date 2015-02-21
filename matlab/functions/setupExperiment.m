@@ -89,7 +89,7 @@ function settings = setupExperiment(expttype)
             settings.nK_sp = 100;
             settings.nK_pos = 5;
             settings.nK_tar = 1;
-            settings.filters = @(proc) filters_sp_pos_target_lv(proc, settings.nK_sp, settings.nK_pos, settings.nK_tar, settings.dt_sp, settings.dt_pos, settings.dt_tar);
+            settings.filters = @(proc) filters_sprc_pos_target_lv(proc, settings.nK_sp, settings.nK_pos, settings.nK_tar, settings.dt_sp, settings.dt_pos, settings.dt_tar);
             %Fitting function
             settings.fit = @(data, const) MLE_glmfit(data, const);
         case 'sprc_pos_network_lv_def'
