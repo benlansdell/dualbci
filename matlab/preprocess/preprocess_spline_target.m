@@ -122,7 +122,11 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	%Find the right offset
 	for idx = 1:length(data.data.nev)
 		[path, nevfile, ext] = fileparts(nevfile);
-		[path, nevfilemat, ext] = fileparts(data.data.nev(idx).nevfile);
+		if length(data.data.nev(idx).nevfile) > 0
+			[path, nevfilemat, ext] = fileparts(data.data.nev(idx).nevfile);
+		else
+			nevfilemat = '';
+		end
 		if strcmp(nevfilemat, nevfile)
 			nevoffset = single(data.data.nev(idx).Toffset(1))/60;
 			dur = data.data.nev(idx).DurationSec;
