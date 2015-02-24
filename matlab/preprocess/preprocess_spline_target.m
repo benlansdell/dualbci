@@ -140,6 +140,9 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	end
 	bins = startbin:endbin;
 	cursor = cursor(bins,:);
+	if labviewsample == 59
+		error('preprocess:labviewrecording:rareSampleRate', ['Sample rate of labview file cannot be processed: ' labviewsample]);
+	end
 	cursor = resample(cursor, floor(10000000/labviewsample), binsize*10000000);
 	dcursor = [diff(cursor); 0, 0]*labviewsample;
 	ddcursor = [diff(dcursor); 0, 0]*labviewsample;

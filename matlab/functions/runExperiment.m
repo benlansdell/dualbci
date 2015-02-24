@@ -120,6 +120,10 @@ function expts = runExperiment(matfile_in, settings, exptname, redo)
                     display(['Recording ' expt.nevfile_end ' contains no trials. Inappropriate model for this file. Skipping MLE fit.'])
                     model.na = true;
                     model.unitnames = {};
+                elseif strcmp(err.identifier, 'preprocess:labviewrecording:rareSampleRate')
+                    display('Sample rate rare. Will not process this file. Continuing.')
+                    model.na = true;
+                    model.unitnames = {};
                 else
                     display(err.identifier);
                     throw(err)
