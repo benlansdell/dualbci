@@ -121,6 +121,7 @@ function expts = runExperiment(matfile_in, settings, exptname, redo)
                     model.na = true;
                     model.unitnames = {};
                 else
+                    display(err.identifier);
                     throw(err)
                 end
             end
