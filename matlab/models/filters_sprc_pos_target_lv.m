@@ -57,7 +57,7 @@ function data = filters_sprc_pos_target_lv(processed, nK_sp, nK_pos, nK_tar, dt_
 	%Check if target vector is all zero, if it is then this recording contains no trial information
 	%and the use of the 'target' model is inappropriate
 	if length(unique(processed.target)) == 1
-		error('BCIGLM:filters_sprc_pos_target_lv:noTargetInformation', 'No target information during recording available during recording, use different GLM model');
+		error('BCIGLM:filters_sprc_pos_target:noTargetInformation', 'No target information during recording available during recording, use different GLM model');
 	end
 
 	%Check dt's specified are valid
