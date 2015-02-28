@@ -7,7 +7,8 @@ function settings = setupExperiment(expttype)
     %
     %Input:
     %   expttype = one of:
-    %       'sprc_def', 'sprc_pos_lv_def', 'sprc_pos_target_lv_def', 'sprc_pos_def'
+    %       'sprc_def', 'sprc_pos_lv_def', 'sprc_pos_target_lv_def', 'sprc_pos_def',
+    %       'sprc_relpos_lv_def'
     %
     %Output:
     %	settings = structure array listing experiment settings:
@@ -90,6 +91,22 @@ function settings = setupExperiment(expttype)
             settings.nK_pos = 5;
             settings.nK_tar = 1;
             settings.filters = @(proc) filters_sprc_pos_target_lv(proc, settings.nK_sp, settings.nK_pos, settings.nK_tar, settings.dt_sp, settings.dt_pos, settings.dt_tar);
+            %Fitting function
+            settings.fit = @(data, const) MLE_glmfit(data, const);
+        case 'sprc_relpos_lv_def'
+            %Preprocess settings
+            settings.binsize = 0.002;
+            settings.duration = 360; 
+            settings.threshold = 3;
+            settings.offset = 0;
+            settings.const = 'on';
+            settings.process = @(nev, mat) preprocess_spline_target(nev, mat, settings.binsize, settings.threshold, settings.offset);
+            %Filter settings
+            settings.dt_sp = settings.binsize;
+            settings.dt_pos = 0.2;
+            settings.nK_sp = 100;
+            settings.nK_pos = 5;
+            settings.filters = @(proc) filters_sprc_relpos_lv(proc, settings.nK_sp, settings.nK_pos, settings.dt_sp, settings.dt_pos);
             %Fitting function
             settings.fit = @(data, const) MLE_glmfit(data, const);
         case 'sprc_pos_network_lv_def'
