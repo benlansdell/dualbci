@@ -81,7 +81,8 @@ function expts = runExperiment(matfile_in, settings, exptname, redo)
                 elseif strcmp(err.identifier, 'preprocess:labviewrecording:rareSampleRate')
                     display('Sample rate rare. Will not process this file. Continuing.')
                     model.na = true;
-                    model.unitnames = {};                else
+                    model.unitnames = {};
+                else
                     throw(err)
                 end
             end
