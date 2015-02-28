@@ -228,7 +228,7 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	%%%%%%%%%%%%%%%
 
 	%Check they're the same length, and trim
-	nsamp = min(size(torque,1), size(rates,1));
+	nsamp = min([size(torque,1), size(rates,1), size(cursor,1)]);
 	torque=torque(1:nsamp,:);
 	dtorque=dtorque(1:nsamp,:);
 	ddtorque=ddtorque(1:nsamp,:);
