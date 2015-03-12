@@ -93,6 +93,24 @@ function settings = setupExperiment(expttype)
             settings.filters = @(proc) filters_sprc_pos_target_lv(proc, settings.nK_sp, settings.nK_pos, settings.nK_tar, settings.dt_sp, settings.dt_pos, settings.dt_tar);
             %Fitting function
             settings.fit = @(data, const) MLE_glmfit(data, const);
+        case 'sprc_relpos_target_lv_def'
+            %Preprocess settings
+            settings.binsize = 0.002;
+            settings.duration = 360; 
+            settings.threshold = 3;
+            settings.offset = 0;
+            settings.const = 'on';
+            settings.process = @(nev, mat) preprocess_spline_target(nev, mat, settings.binsize, settings.threshold, settings.offset);
+            %Filter settings
+            settings.dt_sp = settings.binsize;
+            settings.dt_tar = settings.binsize;
+            settings.dt_pos = 0.2;
+            settings.nK_sp = 100;
+            settings.nK_pos = 5;
+            settings.nK_tar = 1;
+            settings.filters = @(proc) filters_sprc_relpos_target_lv(proc, settings.nK_sp, settings.nK_pos, settings.nK_tar, settings.dt_sp, settings.dt_pos, settings.dt_tar);
+            %Fitting function
+            settings.fit = @(data, const) MLE_glmfit(data, const);
         case 'sprc_relpos_lv_def'
             %Preprocess settings
             settings.binsize = 0.002;
@@ -125,6 +143,40 @@ function settings = setupExperiment(expttype)
             settings.filters = @(proc) filters_sprc_pos_network_lv(proc, settings.nK_sp, settings.nK_pos, settings.dt_sp, settings.dt_pos);
             %Fitting function
             settings.fit = @(data, const) MLE_glmfit_network(data, const);
+        case 'sprc_posvel_lv_def'
+            %Preprocess settings
+            settings.binsize = 0.002;
+            settings.duration = 360; 
+            settings.threshold = 3;
+            settings.offset = 0;
+            settings.const = 'on';
+            settings.process = @(nev, mat) preprocess_spline_lv(nev, mat, settings.binsize, settings.threshold, settings.offset);
+            %Filter settings
+            settings.dt_sp = settings.binsize;
+            settings.dt_pos = 0.2;
+            settings.dt_vel = 0.1;
+            settings.nK_sp = 100;
+            settings.nK_pos = 5;
+            settings.nK_vel = 5;
+            settings.filters = @(proc) filters_sprc_pos_vel_lv(proc, settings.nK_sp, settings.nK_pos, settings.nK_vel, settings.dt_sp, settings.dt_pos, settings.dt_vel);
+            %Fitting function
+            settings.fit = @(data, const) MLE_glmfit(data, const);
+        case 'sprc_revpos_lv_def'
+            %Preprocess settings
+            settings.binsize = 0.002;
+            settings.duration = 360; 
+            settings.threshold = 3;
+            settings.offset = 0;
+            settings.const = 'on';
+            settings.process = @(nev, mat) preprocess_spline_lv(nev, mat, settings.binsize, settings.threshold, settings.offset);
+            %Filter settings
+            settings.dt_sp = settings.binsize;
+            settings.dt_pos = 0.2;
+            settings.nK_sp = 100;
+            settings.nK_pos = 5;
+            settings.filters = @(proc) filters_sprc_revpos_lv(proc, settings.nK_sp, settings.nK_pos, settings.dt_sp, settings.dt_pos);
+            %Fitting function
+            settings.fit = @(data, const) MLE_glmfit(data, const);
         otherwise
             error('See help setupExperiment for valid settings names');
     end
