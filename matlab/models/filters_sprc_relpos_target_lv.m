@@ -34,7 +34,7 @@ function data = filters_sprc_relpos_target_lv(processed, nK_sp, nK_pos, nK_tar, 
 	%			Note: truncated at start and end because spike and cursor trajectory are not defined for first 
 	%			and last nK_sp and nK_pos timebins respectively.
 	%		dtorque = trimmed dtorque
-	%		ddtorque = trimeed ddtorque
+	%		ddtorque = trimmed ddtorque
 	%		cursor = trimmed cursor position 
 	%		dcursor = trimmed diff of cursor position
 	%		ddcursor = trimmed diff of diff of cursor position	
@@ -44,9 +44,11 @@ function data = filters_sprc_relpos_target_lv(processed, nK_sp, nK_pos, nK_tar, 
 	%	pre = load('./testdata/test_preprocess_spline_short.mat');
 	%	nK_sp = 50; 
 	%	nK_pos = 10;
+	%	nK_tar = 1;
 	%	dt_sp = 0.002;
 	%	dt_pos = 0.05;
-	%	data = filters_sprc_relpos_lv(pre.processed, nK_sp, nK_pos, dt_sp, dt_pos);
+	%	dt_tar = 0.002;
+	%	data = filters_sprc_relpos_target_lv(pre.processed, nK_sp, nK_pos, nK_tar, dt_sp, dt_pos, dt_tar);
 
 	if (nargin < 5) dt_sp = processed.binsize; end
 	if (nargin < 6) dt_pos = processed.binsize; end
@@ -59,6 +61,12 @@ function data = filters_sprc_relpos_target_lv(processed, nK_sp, nK_pos, nK_tar, 
 	steps_sp = dt_sp/processed.binsize;
 	steps_pos = dt_pos/processed.binsize;
 	steps_tar = dt_tar/processed.binsize;
+
+	%Check if target vector is all zero, if it is then this recording contains no trial information
+	%and the use of the 'target' model is inappropriate
+	if length(unique(processed.target)) == 1
+		error('BCIGLM:filters_sprc_pos_target:noTargetInformation', 'No target information during recording available during recording, use different GLM model');
+	end
 
 	nU = size(processed.binnedspikes,2);
 	nB = size(processed.binnedspikes,1);
