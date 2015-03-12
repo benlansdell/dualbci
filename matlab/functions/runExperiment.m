@@ -58,7 +58,7 @@ function expts = runExperiment(matfile_in, settings, exptname, redo)
             end
             save(fn_start, 'model');
         else
-            display([fn_start ' not fit. Fitting GLM'])
+            display([fn_start ' not fit. Fitting GLM to ' expt.nevfile_start])
             %If not, preprocess data
             try 
                 processed = settings.process([settings.nevfiledir expt.nevfile_start], [settings.matfiledir expt.matfile_start]);
