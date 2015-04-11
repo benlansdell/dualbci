@@ -23,7 +23,7 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/other']);
 addpath([homedir '/lansdell/projects/bci/matlab/blackrock'], [homedir '/lansdell/projects/bci/matlab/labview']);
 addpath_recurse([homedir 'lansdell/matlab/chronux']);
 addpath_recurse([homedir 'lansdell/matlab/arfit']);
-
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
 %Add extra color
 %my_ColorOrder = [   0.00000   0.00000   1.00000;
 %   0.00000   0.50000   0.00000;
@@ -50,3 +50,37 @@ addpath_recurse([homedir 'lansdell/matlab/arfit']);
 
 % Change default line width
 %set(0,'DefaultLineLineWidth',1.5)
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%GPFA startup....
+%%%%%%%%%%%%%%%%%%
+
+path(path,'gpfa/util/invToeplitz');
+% Create the mex file if necessary.
+if ~exist(sprintf('gpfa/util/invToeplitz/invToeplitzFastZohar.%s',mexext),'file')
+  try
+    eval(sprintf('mex -outdir util/invToeplitz util/invToeplitz/invToeplitzFastZohar.c'));
+    fprintf('NOTE: the relevant invToeplitz mex files were not found.  They have been created.\n');
+  catch
+    fprintf('NOTE: the relevant invToeplitz mex files were not found, and your machine failed to create them.\n');
+    fprintf('      This usually means that you do not have the proper C/MEX compiler setup.\n');
+    fprintf('      The code will still run identically, albeit slower (perhaps considerably).\n');
+    fprintf('      Please read the README file, section Notes on the Use of C/MEX.\n');
+  end
+end
+
+% Posterior Covariance Precomputation  
+path(path,'gpfa/util/precomp');
+% Create the mex file if necessary.
+if ~exist(sprintf('gpfa/util/precomp/makePautoSumFast.%s',mexext),'file')
+  try
+    eval(sprintf('mex -outdir util/precomp util/precomp/makePautoSumFast.c'));
+    fprintf('NOTE: the relevant precomp mex files were not found.  They have been created.\n');
+  catch
+    fprintf('NOTE: the relevant precomp mex files were not found, and your machine failed to create them.\n');
+    fprintf('      This usually means that you do not have the proper C/MEX compiler setup.\n');
+    fprintf('      The code will still run identically, albeit slower (perhaps considerably).\n');
+    fprintf('      Please read the README file, section Notes on the Use of C/MEX.\n');
+  end
+end
+
