@@ -1,8 +1,10 @@
-function plotEachDimVsTime(seq, xspec, binWidth, varargin)
+function plotEachDimVsTime_specificquad(seq, xspec, binWidth, quads, varargin)
 %
 % plotEachDimVsTime(seq, xspec, binWidth, ...)
 %
 % Plot each state dimension versus time in a separate panel.
+%
+% Color traces by octant which trial (target - start) pos lies in 
 %
 % INPUTS:
 %
@@ -10,6 +12,7 @@ function plotEachDimVsTime(seq, xspec, binWidth, varargin)
 % xspec     - field name of trajectories in 'seq' to be plotted 
 %             (e.g., 'xorth' or 'xsm')
 % binWidth  - spike bin width used when fitting model
+% octs      - vector indicating which octant trial lies in
 %
 % OPTIONAL ARGUMENTS:
 %
@@ -20,7 +23,7 @@ function plotEachDimVsTime(seq, xspec, binWidth, varargin)
 %
 % @ 2009 Byron Yu -- byronyu@stanford.edu
 
-  nPlotMax  = 20;
+  nPlotMax  = 124;
   redTrials = [];
   nCols     = 4;
   assignopts(who, varargin);
@@ -39,7 +42,8 @@ function plotEachDimVsTime(seq, xspec, binWidth, varargin)
   ytk     = [-xMax 0 xMax];
 
   nRows   = ceil(size(Xall, 1) / nCols);
-  
+  cm = colormap(lines(4));
+
   %Plot each trial
   for n = 1:min(length(seq), nPlotMax)
     %Projected activity
@@ -48,33 +52,37 @@ function plotEachDimVsTime(seq, xspec, binWidth, varargin)
         
     %On each set of axes
     for k = 1:size(dat,1)
-      subplot(nRows, nCols, k);
-      hold on;
+      for j = 1:4
+        subplot((nRows)*nCols, 4, 4*(k-1)+j);
+        q = quads(n);
+        if q == j
+          hold on;
+          lw = 0.05;
+          col = cm(quads(n),:); 
+          plot(1:T, dat(k,:), 'linewidth', lw, 'color', col);
+        end
+      end
+    end
+  end
+
+%Plot axes
+for k = 1:size(dat,1)
+  h = subplot((nRows)*nCols, 4, 4*(k-1)+1);
+  axis([1 Tmax 1.1*min(ytk) 1.1*max(ytk)]);
+
+  if isequal(xspec, 'xorth')
+    str = sprintf('$$\\tilde{\\mathbf x}_{%d,:}$$',k);
+  else
+    str = sprintf('$${\\mathbf x}_{%d,:}$$',k);
+  end
+  %title(str, 'interpreter', 'latex', 'fontsize', 16);
       
-      if ismember(seq(n).trialId, redTrials)
-        col = [1 0 0]; % red
-        lw  = 3;
-      else
-        col = 0.2 * [1 1 1]; % gray
-        lw = 0.05;
-      end      
-      plot(1:T, dat(k,:), 'linewidth', lw, 'color', col);
-    end
-  end
+  set(h, 'xtick', xtk, 'xticklabel', xtkl);
+  set(h, 'ytick', ytk, 'yticklabel', ytk);
+  xlabel('Time (ms)');
+end
 
-  %Plot axes
-  for k = 1:size(dat,1)
-    h = subplot(nRows, nCols, k);
-    axis([1 Tmax 1.1*min(ytk) 1.1*max(ytk)]);
-
-    if isequal(xspec, 'xorth')
-      str = sprintf('$$\\tilde{\\mathbf x}_{%d,:}$$',k);
-    else
-      str = sprintf('$${\\mathbf x}_{%d,:}$$',k);
-    end
-    %title(str, 'interpreter', 'latex', 'fontsize', 16);
-        
-    set(h, 'xtick', xtk, 'xticklabel', xtkl);
-    set(h, 'ytick', ytk, 'yticklabel', ytk);
-    xlabel('Time (ms)');
-  end
+%h = subplot((nRows+1), nCols, size(dat,1)+1)
+%plot(zeros(4))
+%axis off 
+%legend('Quad 1','Quad 2','Quad 3','Quad 4')

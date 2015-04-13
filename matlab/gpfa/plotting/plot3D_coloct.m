@@ -1,4 +1,4 @@
-function plot3D(seq, xspec, varargin)
+function plot3D_coloct(seq, xspec, octs, varargin)
 %
 % plot3D(seq, xspec, ...)
 %
@@ -37,20 +37,22 @@ function plot3D(seq, xspec, varargin)
   nPlots = min(length(seq), nPlotMax);
 
   %cm = lines(nPlots);
-  %cm = autumn(8);
+  cm = autumn(8);
   for n = 1:min(length(seq), nPlotMax)
     dat = seq(n).(xspec)(dimsToPlot,:);
     T   = seq(n).T;
         
-    if ismember(seq(n).trialId, redTrials)
-      col = [1 0 0]; % red
-      lw  = 3;
-    else
-      col = 0.2 * [1 1 1]; % gray
-      lw = 0.5;
-    end
-    plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', col);
-    %plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', cm(n,:));
+    %if ismember(seq(n).trialId, redTrials)
+    %  col = [1 0 0]; % red
+    %  lw  = 3;
+    %else
+    %  col = 0.2 * [1 1 1]; % gray
+    %  lw = 0.5;
+    %end
+    lw = 0.05;
+    o = octs(n);
+    %plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', col);
+    plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', cm(o,:));
     hold on;
   end
 

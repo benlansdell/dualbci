@@ -1,6 +1,6 @@
-function plot3D(seq, xspec, varargin)
+function plot2D(seq, xspec, varargin)
 %
-% plot3D(seq, xspec, ...)
+% plot2D(seq, xspec, ...)
 %
 % Plot neural trajectories in a three-dimensional space.
 %
@@ -20,26 +20,28 @@ function plot3D(seq, xspec, varargin)
 %
 % @ 2009 Byron Yu -- byronyu@stanford.edu
 
-  dimsToPlot = 1:3;
+  dimsToPlot = 1:2;
   nPlotMax   = 20;
   redTrials  = [];
   assignopts(who, varargin);
-
-  if size(seq(1).(xspec), 1) < 3
-    fprintf('ERROR: Trajectories have less than 3 dimensions.\n');
-    return
-  end
 
   f = figure;
   pos = get(gcf, 'position');
   set(f, 'position', [pos(1) pos(2) 1.3*pos(3) 1.3*pos(4)]);
   
   nPlots = min(length(seq), nPlotMax);
+  nMaxBins = 10;
 
   %cm = lines(nPlots);
   %cm = autumn(8);
   for n = 1:min(length(seq), nPlotMax)
     dat = seq(n).(xspec)(dimsToPlot,:);
+    %Place at same starting point
+    dat(1,:) = dat(1,:)-dat(1,1);
+    dat(2,:) = dat(2,:)-dat(2,1);    
+    nB = size(dat,2);
+    nB = min(nB, nMaxBins);
+    dat = dat(:,1:nB);
     T   = seq(n).T;
         
     if ismember(seq(n).trialId, redTrials)
@@ -49,8 +51,18 @@ function plot3D(seq, xspec, varargin)
       col = 0.2 * [1 1 1]; % gray
       lw = 0.5;
     end
-    plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', col);
-    %plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', cm(n,:));
+    %lw = 0.05;
+    %o = octs(n);
+    %plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', col);
+    plot(dat(1,:), dat(2,:), '.-', 'linewidth', lw, 'color', col);
+    %h.Color(4) = 0.5;
+    %z = zeros(size(dat(1,:)));
+    %S = surface([dat(1,:);dat(1,:)],[dat(2,:);dat(2,:)],[z;z],...
+%            'facecol','no',...
+%            'edgecol','interp',...
+%            'linew',lw,...
+%            'edgealpha',.02,...
+%            'edgecolor',cm(o,:));
     hold on;
   end
 

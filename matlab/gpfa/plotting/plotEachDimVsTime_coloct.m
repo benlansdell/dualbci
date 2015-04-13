@@ -1,8 +1,10 @@
-function plotEachDimVsTime(seq, xspec, binWidth, varargin)
+function plotEachDimVsTime_coloct(seq, xspec, binWidth, octs, varargin)
 %
 % plotEachDimVsTime(seq, xspec, binWidth, ...)
 %
 % Plot each state dimension versus time in a separate panel.
+%
+% Color traces by octant which trial (target - start) pos lies in 
 %
 % INPUTS:
 %
@@ -10,6 +12,7 @@ function plotEachDimVsTime(seq, xspec, binWidth, varargin)
 % xspec     - field name of trajectories in 'seq' to be plotted 
 %             (e.g., 'xorth' or 'xsm')
 % binWidth  - spike bin width used when fitting model
+% octs      - vector indicating which octant trial lies in
 %
 % OPTIONAL ARGUMENTS:
 %
@@ -39,7 +42,8 @@ function plotEachDimVsTime(seq, xspec, binWidth, varargin)
   ytk     = [-xMax 0 xMax];
 
   nRows   = ceil(size(Xall, 1) / nCols);
-  
+  cm = colormap(autumn(8));;
+
   %Plot each trial
   for n = 1:min(length(seq), nPlotMax)
     %Projected activity
@@ -50,31 +54,25 @@ function plotEachDimVsTime(seq, xspec, binWidth, varargin)
     for k = 1:size(dat,1)
       subplot(nRows, nCols, k);
       hold on;
-      
-      if ismember(seq(n).trialId, redTrials)
-        col = [1 0 0]; % red
-        lw  = 3;
-      else
-        col = 0.2 * [1 1 1]; % gray
-        lw = 0.05;
-      end      
+      lw = 0.05;
+      col = cm(octs(n),:); 
       plot(1:T, dat(k,:), 'linewidth', lw, 'color', col);
     end
   end
 
   %Plot axes
-  for k = 1:size(dat,1)
-    h = subplot(nRows, nCols, k);
-    axis([1 Tmax 1.1*min(ytk) 1.1*max(ytk)]);
+%for k = 1:size(dat,1)
+%  h = subplot(nRows, nCols, k);
+%  axis([1 Tmax 1.1*min(ytk) 1.1*max(ytk)]);
 
-    if isequal(xspec, 'xorth')
-      str = sprintf('$$\\tilde{\\mathbf x}_{%d,:}$$',k);
-    else
-      str = sprintf('$${\\mathbf x}_{%d,:}$$',k);
-    end
-    %title(str, 'interpreter', 'latex', 'fontsize', 16);
-        
-    set(h, 'xtick', xtk, 'xticklabel', xtkl);
-    set(h, 'ytick', ytk, 'yticklabel', ytk);
-    xlabel('Time (ms)');
-  end
+%  if isequal(xspec, 'xorth')
+%    str = sprintf('$$\\tilde{\\mathbf x}_{%d,:}$$',k);
+%  else
+%    str = sprintf('$${\\mathbf x}_{%d,:}$$',k);
+%  end
+%  title(str, 'interpreter', 'latex', 'fontsize', 16);
+%      
+%  set(h, 'xtick', xtk, 'xticklabel', xtkl);
+%  set(h, 'ytick', ytk, 'yticklabel', ytk);
+%  xlabel('Time (ms)');
+%end
