@@ -1,4 +1,4 @@
-function dat = makedata(trials, spikes, cursor, target)
+function [dat, octs, quads] = makedata(trials, spikes, cursor, target)
 
 	nU = size(spikes, 2);
 	dtrials = diff(trials);
@@ -44,9 +44,12 @@ function dat = makedata(trials, spikes, cursor, target)
 		startPos = cursor(startidx+1,:);
 		targetPos = target(startidx+1,:);
 		dat(ntrials).quadrant = Targ2Quadrants(startPos, targetPos);
+		dat(ntrials).oct = Targ2Octants(startPos, targetPos);
 		cursor = cursor(endidx+1:end,:);
 		target = target(endidx+1:end,:);
 		trials = trials(endidx+1:end);
 		dtrials = diff(trials);
+		octs(ntrials) = dat(ntrials).oct;
+		quads(ntrials) = dat(ntrials).quadrant;
 	end
 end
