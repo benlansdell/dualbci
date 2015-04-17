@@ -94,4 +94,4 @@ function gpfaEngine(seqTrain, seqTest, fname, varargin)
   % =============
   vars  = who;
   fprintf('Saving %s...\n', fname);
-  save(fname, vars{~ismember(vars, {'yAll'})});
+  save(fname, vars{~ismember(vars, {'yAll'})}, '-v7.3');
