@@ -136,7 +136,7 @@ function result = neuralTraj(runIdx, dat, varargin)
     end
 
     if exist([fname '.mat'], 'file')
-      save(fname, 'method', 'cvf', 'hasSpikesBool', 'extraOpts', '-append');
+      save(fname, 'method', 'cvf', 'hasSpikesBool', 'extraOpts', '-append', '-v7.3');
     end
   end
   

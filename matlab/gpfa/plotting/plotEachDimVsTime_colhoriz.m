@@ -20,12 +20,15 @@ function plotEachDimVsTime_colhoriz(seq, xspec, binWidth, quads, varargin)
 % redTrials - vector of trialIds whose trajectories are plotted in red
 %             (default: [])
 % nCols     - number of subplot columns (default: 4)
+% dwelltime - number of bins before trial starts in each trial.spikes matrix. 
+%             (default: 0)
 %
 % @ 2009 Byron Yu -- byronyu@stanford.edu
 
   nPlotMax  = 124;
   redTrials = [];
   nCols     = 4;
+  dwelltime = 0;
   assignopts(who, varargin);
 
   f = figure;
@@ -60,7 +63,12 @@ function plotEachDimVsTime_colhoriz(seq, xspec, binWidth, quads, varargin)
       else
         col = cm(2,:); 
       end
-      plot(1:T, dat(k,:), 'linewidth', lw, 'color', col);
+      nB = min(dwelltime/20, T);
+      plot(1:nB, dat(k,1:nB), 'linewidth', lw, 'color', [0.2 0.2 0.2]);
+      %Once trial starts color by the side the target is on relative to the start position of the cursor
+      if T > nB
+        plot((nB+1):T, dat(k,(nB+1):T), 'linewidth', lw, 'color', col);
+      end
     end
   end
 
@@ -82,6 +90,6 @@ for k = 1:size(dat,1)
 end
 
 h = subplot((nRows+1), nCols, size(dat,1)+1)
-plot(zeros(4))
+plot(zeros(2))
 axis off 
-legend('Quad 1','Quad 2','Quad 3','Quad 4')
+legend('Quad 1/4','Quad 2/3')
