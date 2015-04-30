@@ -14,6 +14,7 @@ processed_bci = preprocess_spline_target(nevfile, labviewfile, binsize, threshol
 
 %Time bins which occur within a trial
 spikes_bci = processed_bci.binnedspikes;
+%1 if timebin in trial, 0 otherwise
 trials_bci = sum(abs(processed_bci.target),2)>0;
 
 %Run all trials together
