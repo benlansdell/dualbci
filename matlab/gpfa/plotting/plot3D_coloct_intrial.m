@@ -1,4 +1,4 @@
-function plot3D_coloct(seq, xspec, octs, varargin)
+function plot3D_coloct_intrial(seq, xspec, octs, intrial, varargin)
 %
 % plot3D(seq, xspec, ...)
 %
@@ -24,6 +24,8 @@ function plot3D_coloct(seq, xspec, octs, varargin)
   nPlotMax   = 20;
   redTrials  = [];
   assignopts(who, varargin);
+  nMaxBins = 50000;
+  ncol = 8; %number of colors
 
   if size(seq(1).(xspec), 1) < 3
     fprintf('ERROR: Trajectories have less than 3 dimensions.\n');
@@ -38,32 +40,34 @@ function plot3D_coloct(seq, xspec, octs, varargin)
 
   %cm = lines(nPlots);
   cm = jet(8);
+  cm = [cm; [0.8 0.8 0.8]];
+  colormap(cm);
+
   for n = 1:min(length(seq), nPlotMax)
     dat = seq(n).(xspec)(dimsToPlot,:);
     T   = seq(n).T;
-
-    %Place data at same starting point
-    dat(1,:) = dat(1,:)-dat(1,1);
-    dat(2,:) = dat(2,:)-dat(2,1);    
-    dat(3,:) = dat(3,:)-dat(3,1);
         
-    %if ismember(seq(n).trialId, redTrials)
-    %  col = [1 0 0]; % red
-    %  lw  = 3;
-    %else
-    %  col = 0.2 * [1 1 1]; % gray
-    %  lw = 0.5;
-    %end
-    lw = 1;
+    %Place at same starting point
+    dat(1,:) = dat(1,:)-dat(1,intrial(n,1));
+    dat(2,:) = dat(2,:)-dat(2,intrial(n,1));    
+    dat(3,:) = dat(3,:)-dat(3,intrial(n,1));    
+    nB = size(dat,2);
+    nB = min(nB, nMaxBins);
+    dat = dat(:,1:nB);
+    T   = seq(n).T;        
+    lw = 1.5;
     o = octs(n);
-    %plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', col);
-    %plot3(dat(1,:), dat(2,:), dat(3,:), '.-', 'linewidth', lw, 'color', cm(o,:));
-    S = mesh([dat(1,:);dat(1,:)],[dat(2,:);dat(2,:)],[dat(3,:);dat(3,:)],...
+    trialidx = intrial(n,1):(min(nB, intrial(n,2)));
+    trialcol = o;
+    col = (ncol+1)*ones(T, 1);
+    col(trialidx) = trialcol;
+
+    size(col);
+    S = mesh([dat(1,:);dat(1,:)],[dat(2,:);dat(2,:)],[dat(3,:);dat(3,:)],[col'; col'],...%);
             'facecol','no',...
             'edgecol','interp',...
             'linew',lw,...
-            'edgealpha',.8,...
-            'edgecolor',cm(o,:));
+            'edgealpha',.6);
     hold on;
   end
 

@@ -1,4 +1,4 @@
-function plotEachDimVsTime_coloct(seq, xspec, binWidth, octs, varargin)
+function plotEachDimVsTime_specifictarg(seq, xspec, binWidth, targ, varargin)
 %
 % plotEachDimVsTime(seq, xspec, binWidth, ...)
 %
@@ -23,7 +23,7 @@ function plotEachDimVsTime_coloct(seq, xspec, binWidth, octs, varargin)
 %
 % @ 2009 Byron Yu -- byronyu@stanford.edu
 
-  nPlotMax  = 20;
+  nPlotMax  = 124;
   redTrials = [];
   nCols     = 4;
   assignopts(who, varargin);
@@ -42,7 +42,7 @@ function plotEachDimVsTime_coloct(seq, xspec, binWidth, octs, varargin)
   ytk     = [-xMax 0 xMax];
 
   nRows   = ceil(size(Xall, 1) / nCols);
-  cm = colormap(lines(8));;
+  cm = colormap(lines(8));
 
   %Plot each trial
   for n = 1:min(length(seq), nPlotMax)
@@ -52,27 +52,37 @@ function plotEachDimVsTime_coloct(seq, xspec, binWidth, octs, varargin)
         
     %On each set of axes
     for k = 1:size(dat,1)
-      subplot(nRows, nCols, k);
-      hold on;
-      lw = 0.05;
-      col = cm(octs(n),:); 
-      plot(1:T, dat(k,:), 'linewidth', lw, 'color', col);
+      for j = 1:8
+        subplot((nRows)*nCols, 8, 8*(k-1)+j);
+        q = targ(n);
+        if q == j
+          hold on;
+          lw = 0.05;
+          col = cm(targ(n),:); 
+          plot(1:T, dat(k,:), 'linewidth', lw, 'color', col);
+        end
+      end
     end
   end
 
-  %Plot axes
-%for k = 1:size(dat,1)
-%  h = subplot(nRows, nCols, k);
-%  axis([1 Tmax 1.1*min(ytk) 1.1*max(ytk)]);
+%Plot axes
+for k = 1:size(dat,1)
+  h = subplot((nRows)*nCols, 8, 8*(k-1)+1);
+  axis([1 Tmax 1.1*min(ytk) 1.1*max(ytk)]);
 
-%  if isequal(xspec, 'xorth')
-%    str = sprintf('$$\\tilde{\\mathbf x}_{%d,:}$$',k);
-%  else
-%    str = sprintf('$${\\mathbf x}_{%d,:}$$',k);
-%  end
-%  title(str, 'interpreter', 'latex', 'fontsize', 16);
-%      
-%  set(h, 'xtick', xtk, 'xticklabel', xtkl);
-%  set(h, 'ytick', ytk, 'yticklabel', ytk);
-%  xlabel('Time (ms)');
-%end
+  if isequal(xspec, 'xorth')
+    str = sprintf('$$\\tilde{\\mathbf x}_{%d,:}$$',k);
+  else
+    str = sprintf('$${\\mathbf x}_{%d,:}$$',k);
+  end
+  %title(str, 'interpreter', 'latex', 'fontsize', 16);
+      
+  set(h, 'xtick', xtk, 'xticklabel', xtkl);
+  set(h, 'ytick', ytk, 'yticklabel', ytk);
+  xlabel('Time (ms)');
+end
+
+%h = subplot((nRows+1), nCols, size(dat,1)+1)
+%plot(zeros(4))
+%axis off 
+%legend('Quad 1','Quad 2','Quad 3','Quad 4')
