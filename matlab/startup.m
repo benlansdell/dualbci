@@ -10,6 +10,8 @@ else
 	homedir = '/home/';
 end
 
+opengl software
+
 addpath([homedir 'lansdell/projects/bci/matlab/functions']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/functions']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/preprocess']);
@@ -22,6 +24,8 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/other']);
 %nev files, labview files, respectively
 addpath([homedir '/lansdell/projects/bci/matlab/blackrock'], [homedir '/lansdell/projects/bci/matlab/labview']);
 addpath_recurse([homedir 'lansdell/matlab/chronux']);
+addpath_recurse([homedir 'lansdell/matlab/Tubeplot']);
+addpath_recurse([homedir 'lansdell/matlab/plot2svg']);
 addpath_recurse([homedir 'lansdell/matlab/arfit']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
 %Add extra color
