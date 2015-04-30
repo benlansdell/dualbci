@@ -7,7 +7,7 @@ function saveplot(h, filename, format, dimensions, journal)
 % Input:
 %			h = figure object. Can just use 'gcf'
 %			filename = output filename
-%			format = one of 'eps', 'png', 'jpg' or 'pdf' (optional, default 'eps')
+%			format = one of 'eps', 'png', 'jpg', 'pdf' or 'svg' (optional, default 'eps')
 %			dimensions = (optional, default = [6, 4]) width and height of figure in inches OR
 %					a scale factor to multiply the journal specific dims described below
 %			journal = (optional) if specified as one of 'plos1', 'plos2', 'plos1.5' or 'els1', 'els2', 'els1.5'
@@ -76,6 +76,9 @@ function saveplot(h, filename, format, dimensions, journal)
 	elseif strcmp(format, 'png')
 		dev = '-dpng';
 		renderer = '-zbuffer';
+	elseif strcmp(format, 'svg')
+		dev = '-dsvg';
+		%renderer = '-zbuffer';
 	elseif strcmp(format, 'pdf')
 		dev = '-dpdf';
 	elseif strcmp(format, 'jpg')
