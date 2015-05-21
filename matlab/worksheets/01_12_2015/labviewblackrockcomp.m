@@ -25,10 +25,13 @@ clear data; %Save memory
 
 %Lab view data:
 datalv = filters_sp_pos_lv(processed, nK_sp, nK_pos, dt_sp, dt_pos);
-%modellv = MLE_glmfit(datalv, const);
+modellv = MLE_glmfit(datalv, const);
 fn_out = './worksheets/01_12_2015/plots/cursor';
 plot_filters(modellv, datalv, processed, fn_out);
 clear datalv;
+
+
+%%%%Vel
 
 %Torque data:
 data = filters_sp_vel(processed, nK_sp, nK_vel, dt_sp, dt_vel);
@@ -39,7 +42,7 @@ clear data; %Save memory
 
 %Lab view data:
 datalv = filters_sp_vel_lv(processed, nK_sp, nK_vel, dt_sp, dt_vel);
-%modellv = MLE_glmfit(datalv, const);
+modellv = MLE_glmfit(datalv, const);
 fn_out = './worksheets/01_12_2015/plots/cursor_vel';
 plot_filters(modellv, datalv, processed, fn_out);
 clear datalv;
@@ -70,9 +73,9 @@ modelcomp = ...
     5.7007e+04-5.7005e+04;
     4.3475e+04-4.3548e+04;
     3.6168e+04-3.6165e+04;]
+%Pretty similar, in general... but not identical
 
-
-%Also also a file that uses a BCI:
+%Also a file that uses a BCI:
 
 %1D horizontal position (I believe)
 nevfile = './testdata/20130117SpankyUtah005.nev';
