@@ -9,6 +9,7 @@ matlab/worksheets
 matlab/tmp
 matlab/GLMwGUI
 matlab/expts
+matlab/tmp*
 
 *.gif
 *.eps
