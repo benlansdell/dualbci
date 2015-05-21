@@ -119,7 +119,7 @@ for idx = 1:nU
 		csvMSP(idx, 5+4*L+j) = 2*csvMSP(idx, 5+L+j) - 2*csvMSP(idx, 5) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
 		%Change in BIC
 		%11
-		csvMSP(idx, 5+5*L+j) = (csvMSP(idx, 5+L+j) - csvMSP(idx, 5))*log(NMSV) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
+		csvMSP(idx, 5+5*L+j) = (csvMSP(idx, 5+L+j) - csvMSP(idx, 5))*log(NMSP) + csvMSP(idx, 5+j) - csvMSP(idx, 4);
 	end
 end
 %Save all data as a csv for analysis in excel or similar
@@ -216,7 +216,7 @@ ylim([log(1e-10), 0])
 saveplot(gcf, './worksheets/01_13_2014/postuning_pvals.eps')
 
 %Plot heatmap of AIC and BIC values
-
+clf
 %Change the colormap
 colormap(bone);
 AIC = csvMSV(:, (5+4*L)+(1:L));
