@@ -6,73 +6,172 @@ files = {'20131031SpankyUtah014'};
 matfile = {'Spanky_2013-10-31-1322.mat'};
 
 %Read in spreadsheet
-performance = xlsread('./TuningResults1.xlsx')
+[data, txt] = xlsread('./exptinfo/Results1_excluding2d.xls');
 
-for idx = 1:length(files);
-	%Load test preprocessed data
-	nevfile = files{idx};
-	nevpath = ['./testdata/', nevfile, '.nev']
-	binsize = 1/60;
-	offset = 0.0;
-	threshold = 5;
-	processed = preprocess_spline(nevpath, binsize, threshold, offset);
-	%Modify so that it's shorter, then save it
-	processed.binnedspikes = processed.binnedspikes(1:10800,:);
-	processed.rates = processed.rates(1:10800,:);              
-	processed.torque = processed.torque(1:10800,:);
-	processed.dtorque = processed.dtorque(1:10800,:);
-	processed.ddtorque = processed.ddtorque(1:10800,:);
-	%save('./testdata/test_preprocess_brain_spline_60hz_short24.mat', 'processed');
-	
-	%Run with position filters
-	const = 'on';
-	pval = 0.001;
-	nK_sp = 6;
-	nK_pos = 6;
-	fn_out = ['./worksheets/05_12_2015/plots/GC_' nevfile '.eps'];
-	data = filters_sp_pos_network(processed, nK_sp, nK_pos);
-	[GCdevMP, GCpvalMP, GCsigMP] = granger(processed, data, fn_out, pval);
-	%Save results
-	clear processed;
-	save(['./worksheets/05_12_2015/plots/GC_' nevfile '.mat']);
-end
+indices = 3:size(data,1);
+%Compute tuning angle for MC pos
+tunedidx = data(indices,3);
 
-for idx = 1:length(files)
-	nevfile = files{idx};
-	nevpath = ['./testdata/', nevfile, '.nev']
-	tuningmatrix = NEVFastAnalysis_NPMK_func(nevpath);
-	load(['./worksheets/05_12_2015/plots/GC_' nevfile '.mat']);
-	tuningmatrix = sortrows(tuningmatrix);
-	nU = size(tuningmatrix, 1);
+torqueFE1 = data(indices,10);
+torqueRU1 = data(indices,11);
+torqueFE2 = data(indices,12);
+torqueRU2 = data(indices,13);
 
-	fn_out = ['./worksheets/05_12_2015/plots/GC_' nevfile '_wTuning.eps'];
-%	unitnames{1} = 'FE'; 
-%	unitnames{2} = 'RU';
-	unitnames = {};
-	for j = 1:nU
-		unitnames{j} = [num2str(tuningmatrix(j,1)) '.' num2str(tuningmatrix(j,2))];
-		if abs(tuningmatrix(j, 5)) > threshold;
-			unitnames{j} = ['*', unitnames{j}];
-		end
-		if abs(tuningmatrix(j, 6)) > threshold;
-			unitnames{j} = ['+', unitnames{j}];
-		end
-	end
-	%GCdevwTuning = [tuningmatrix(:,5:6), GCdevMP];
-	%GCdevwTuning = [GCdevwTuning; zeros(2,2), tuningmatrix(:,5:6)'];
+torqueH1 = atan(torqueRU1./torqueFE1); %theta
+torqueS1 = sqrt(torqueRU1.^2 + torqueFE1.^2); %speed
+piplus = torqueFE1 < 0 & torqueRU1 > 0;
+piminus = torqueFE1 < 0 & torqueRU1 < 0;
+torqueH1(piplus) = torqueH1(piplus) + pi;
+torqueH1(piminus) = torqueH1(piminus) - pi;
+torqueH1(torqueH1<0) = torqueH1(torqueH1<0)+2*pi;
 
-	%Plot with Tuning scores
-	clf
-	colormap(bone);
-	imagesc(GCdevMP)
-	title('Change in deviance')
-	ylabel('Unit')
-	xlabel('Unit')
-	set(gca,'XTick',1:(nU));
-	set(gca,'YTick',1:(nU));
-	set(gca,'XTickLabel',unitnames);
-	set(gca,'YTickLabel',unitnames);
-	rotateXLabels(gca, 90);
-	colorbar
-	saveplot(gcf, fn_out, 'eps', [6 9])
-end
+torqueH2 = atan(torqueRU2./torqueFE2); %theta
+torqueS2 = sqrt(torqueRU2.^2 + torqueFE2.^2); %speed
+piplus = torqueFE2 < 0 & torqueRU2 > 0;
+piminus = torqueFE2 < 0 & torqueRU2 < 0;
+torqueH2(piplus) = torqueH2(piplus) + pi;
+torqueH2(piminus) = torqueH2(piminus) - pi;
+torqueH2(torqueH1<0) = torqueH2(torqueH1<0)+2*pi;
+
+%Compute angles used in BC task
+taskH1 = (data(indices, 5)==1)*pi+(data(indices, 5)==2)*pi/2;
+taskH2 = (data(indices, 5)==2)*0+3*(data(indices, 5)==2)*pi/2;
+
+%Compute difference
+deltaH1 = mod(torqueH1 - taskH1, 2*pi);
+deltaH2 = mod(torqueH2 - taskH2, 2*pi);
+
+deltaH1(deltaH1>pi) = abs(deltaH1(deltaH1>pi)-2*pi);
+deltaH2(deltaH2>pi) = abs(deltaH2(deltaH2>pi)-2*pi);
+
+%Plot performance as function of difference for each unit
+performance1BC = data(indices,25);
+
+%subplot(2,1,1)
+%plot(deltaH1, performance1BC, '.');
+%xlabel('\Delta unit 1')
+%ylabel('Targets/minute')
+
+%subplot(2,1,2)
+%plot(deltaH2, performance1BC, '.');
+%xlabel('\Delta unit 2')
+%ylabel('Targets/minute')
+
+%pts that are control = 5
+%
+
+clf
+colormap(jet);
+hold on
+scatter(deltaH1(tunedidx==1), deltaH2(tunedidx==1), [], performance1BC(tunedidx==1), '.')
+scatter(deltaH1(tunedidx==2), deltaH2(tunedidx==2), [], performance1BC(tunedidx==2), 'o')
+scatter(deltaH1(tunedidx==3), deltaH2(tunedidx==3), [], performance1BC(tunedidx==3), 'd')
+scatter(deltaH1(tunedidx==4), deltaH2(tunedidx==4), [], performance1BC(tunedidx==4), '+')
+scatter(deltaH1(tunedidx==5), deltaH2(tunedidx==5), [], performance1BC(tunedidx==5), '*')
+%legend('Tuned', 'Tuned ff', 'Tuned 45', 'Untuned', 'Control', 'location', 'northoutside')
+colorbar
+xlabel('\Delta unit 1')
+ylabel('\Delta unit 2')
+
+saveplot(gcf, './worksheets/05_27_2015/performance_scatter.eps')
+
+%Plot histograms of preferred directions computed by cross correlation
+clf
+subplot(2,1,1)
+hist(torqueH1, 25)
+subplot(2,1,2)
+hist(torqueH2, 25)
+xlabel('Preferred angle')
+
+saveplot(gcf, './worksheets/05_27_2015/preferreddirection_crosscorrelation.eps')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Plot linear regression preferred direction%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+[datalinear, txt] = xlsread('./exptinfo/ResultsTuningPosRegression.xls');
+
+indices = 3:size(datalinear,1);
+%Compute tuning angle for MC pos
+tunedidx = datalinear(indices,4);
+torqueH1 = datalinear(indices,5);
+torqueH2 = datalinear(indices,6);
+
+clf
+subplot(2,1,1)
+hist(torqueH1, 25)
+subplot(2,1,2)
+hist(torqueH2, 25)
+xlabel('Preferred angle')
+
+saveplot(gcf, './worksheets/05_27_2015/preferreddirection_linearregression.eps')
+
+%Plot performance versus change in 
+[data, txt] = xlsread('./exptinfo/Results1_excluding2d.xls');
+
+indices = 3:size(data,1);
+%Compute tuning angle for MC pos
+tunedidx = data(indices,3);
+
+torqueFE1 = data(indices,34);
+torqueRU1 = data(indices,35);
+torqueFE2 = data(indices,36);
+torqueRU2 = data(indices,37);
+
+torqueH1 = atan(torqueRU1./torqueFE1); %theta
+torqueS1 = sqrt(torqueRU1.^2 + torqueFE1.^2); %speed
+piplus = torqueFE1 < 0 & torqueRU1 > 0;
+piminus = torqueFE1 < 0 & torqueRU1 < 0;
+torqueH1(piplus) = torqueH1(piplus) + pi;
+torqueH1(piminus) = torqueH1(piminus) - pi;
+torqueH1(torqueH1<0) = torqueH1(torqueH1<0)+2*pi;
+
+torqueH2 = atan(torqueRU2./torqueFE2); %theta
+torqueS2 = sqrt(torqueRU2.^2 + torqueFE2.^2); %speed
+piplus = torqueFE2 < 0 & torqueRU2 > 0;
+piminus = torqueFE2 < 0 & torqueRU2 < 0;
+torqueH2(piplus) = torqueH2(piplus) + pi;
+torqueH2(piminus) = torqueH2(piminus) - pi;
+torqueH2(torqueH1<0) = torqueH2(torqueH1<0)+2*pi;
+
+%Compute angles used in BC task
+taskH1 = (data(indices, 5)==1)*pi+(data(indices, 5)==2)*pi/2;
+taskH2 = (data(indices, 5)==2)*0+3*(data(indices, 5)==2)*pi/2;
+
+%Compute difference
+deltaH1 = mod(torqueH1 - taskH1, 2*pi)*180/pi;
+deltaH2 = mod(torqueH2 - taskH2, 2*pi)*180/pi;
+
+deltaH1(deltaH1>180) = abs(deltaH1(deltaH1>180)-360);
+deltaH2(deltaH2>180) = abs(deltaH2(deltaH2>180)-360);
+
+%Plot performance as function of difference for each unit
+performance1BC = data(indices,25);
+
+%subplot(2,1,1)
+%plot(deltaH1, performance1BC, '.');
+%xlabel('\Delta unit 1')
+%ylabel('Targets/minute')
+
+%subplot(2,1,2)
+%plot(deltaH2, performance1BC, '.');
+%xlabel('\Delta unit 2')
+%ylabel('Targets/minute')
+
+%pts that are control = 5
+%
+
+clf
+colormap(jet);
+hold on
+scatter(deltaH1(tunedidx==1), deltaH2(tunedidx==1), [], performance1BC(tunedidx==1), '.')
+scatter(deltaH1(tunedidx==2), deltaH2(tunedidx==2), [], performance1BC(tunedidx==2), 'o')
+scatter(deltaH1(tunedidx==3), deltaH2(tunedidx==3), [], performance1BC(tunedidx==3), 'd')
+scatter(deltaH1(tunedidx==4), deltaH2(tunedidx==4), [], performance1BC(tunedidx==4), '+')
+scatter(deltaH1(tunedidx==5), deltaH2(tunedidx==5), [], performance1BC(tunedidx==5), '*')
+%legend('Tuned', 'Tuned ff', 'Tuned 45', 'Untuned', 'Control', 'location', 'northoutside')
+colorbar
+xlabel('\Delta unit 1')
+ylabel('\Delta unit 2')
+
+saveplot(gcf, './worksheets/05_27_2015/performance_scatter_regression.eps')
