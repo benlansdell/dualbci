@@ -20,6 +20,7 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/eval']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/worksheets']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/other']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/sql']);
 
 %nev files, labview files, respectively
 addpath([homedir '/lansdell/projects/bci/matlab/blackrock'], [homedir '/lansdell/projects/bci/matlab/labview']);
