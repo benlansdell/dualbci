@@ -3,7 +3,7 @@
 %Determine relationship between performance and angle of rotation...
 
 script = './worksheets/2015_06_10/lineartuning.m';
-binsize = 0.1;
+binsize = 1/60;
 threshold = 5;
 blackrock = './blackrock/';
 %100ms offset (torque data is moved 100ms ahead of spiking data)
@@ -11,6 +11,8 @@ offset = -0.1;
 nK_pos = 1;
 nK_sp = 0;
 const = 'on';
+dur = 180;
+
 %Fetch each pair of nev files to run
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
@@ -51,16 +53,19 @@ for idx = 1:nR
 	processedbci = preprocess_spline_lv(bcipath, matfile, binsize, threshold, offset);
 	processedman = preprocess_spline_lv(manpath, matfile, binsize, threshold, offset);
 	%Truncate to just the units of interest
+	%Truncate to three minutes of data
 	ind1 = find(ismember(processedbci.unitnames,BCunit1));
 	ind2 = find(ismember(processedbci.unitnames,BCunit2));
 	processedbci.unitnames = processedbci.unitnames([ind1, ind2]);
 	processedbci.binnedspikes = processedbci.binnedspikes(:,[ind1, ind2]);
 	processedbci.rates = processedbci.rates(:,[ind1, ind2]);
+	processedbci = truncate_recording(processedbci, dur);
 	ind1 = find(ismember(processedman.unitnames,BCunit1));
 	ind2 = find(ismember(processedman.unitnames,BCunit2));
 	processedman.unitnames = processedman.unitnames([ind1, ind2]);
 	processedman.binnedspikes = processedman.binnedspikes(:,[ind1, ind2]);
 	processedman.rates = processedman.rates(:,[ind1, ind2]);
+	processedman = truncate_recording(processedman, dur);
 	%Fit a linear model to the pair
 	data = filters_sp_pos_lv(processedman, nK_sp, nK_pos);
 	modelman = MLE_lmfit(data, const);
