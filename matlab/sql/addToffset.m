@@ -1,6 +1,5 @@
 %Add missing columns to Recordings table
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
-
 tablename = 'Recordings';
 
 %Toffset
