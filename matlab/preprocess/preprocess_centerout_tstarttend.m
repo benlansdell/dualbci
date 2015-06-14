@@ -1,4 +1,4 @@
-function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsize, threshold, offset, fn_out)
+function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsize, threshold, offset, fn_out, verbose, units)
 	%Preprocess both torque data and firing rate data from an .nev file and a corresponding .ns3 file.
 	%Will do the following:
 	%	- resample spikes and torque data into units of binsize (seconds)
@@ -8,7 +8,7 @@ function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsi
 	%	- computer when and which center-out trials are taking place
 	%
 	%Usage:
-	%	processed = preprocess_centerout(nevfile, labviewfile, binsize, threshold, offset, fn_out)
+	%	processed = preprocess_centerout(nevfile, labviewfile, binsize, threshold, offset, fn_out, verbose, units)
 	%
 	%Input:
 	%		nevfile = file to process. For loading torque data, assumes that an .nsx file of the same name and location exists.
@@ -17,6 +17,8 @@ function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsi
 	%		threshold = (optional, default = 5) threshold firing rate below which unit is ignored
 	%		offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
 	%		fn_out = (optional) file to output diagnostic plots to, if desired
+	%		verbose = (optional) if provided then will output info about firing of units
+	%		units = (optional) if a cell array of unit names is provided then will load only these, and ignore the threshold constraint
 	%		
 	%Output:
 	%	processed is a structure containing the following fields:
@@ -38,13 +40,16 @@ function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsi
 	%		offset = 0.0;
 	%		threshold = 5;
 	%		fn_out = './worksheets/diagnostics/plots/test_centerout';
-	%		processed = preprocess_centerout(nevfile, labviewfile, binsize, threshold, offset, fn_out);
+	%		verbose = 0;
+	%		processed = preprocess_centerout(nevfile, labviewfile, binsize, threshold, offset, fn_out, verbose);
 	
 	%Optional arguments
 	if (nargin < 3) binsize = 0.05; end
 	if (nargin < 4) threshold = 5; end		
 	if (nargin < 5) offset = 0; end
 	if (nargin < 6) fn_out = 0; end
+	if (nargin < 7) verbose = 0; end
+	if (nargin < 8) units = {}; end
 	%Total number of possible units recorded from
 	nE = 128;
 	nunits = 5; 
@@ -86,16 +91,31 @@ function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsi
 				isvalid(idx)=1;
 			end
 		end
-		display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
+		if verbose ~= 0
+			display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
+		end
 	end
-	%Set a threshold firing rate, below which we ignore that unit
-	abovethresh = (averate > threshold) & isvalid;
-	%Update nU
-	nU = sum(abovethresh);
-	display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
-	unitnames = unitnames(abovethresh);
-	spikemuas = spikemuas(abovethresh);
-	averate = averate(abovethresh);
+	if length(units) == 0
+		%Set a threshold firing rate, below which we ignore that unit
+		abovethresh = (averate > threshold) & isvalid;
+		%Update nU
+		nU = sum(abovethresh);
+		display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
+		unitnames = unitnames(abovethresh);
+		spikemuas = spikemuas(abovethresh);
+		averate = averate(abovethresh);
+	else
+		indices = cellfun(@(x)ismember(num2str(x), units), unitnames);
+		if ~any(indices)
+			display(['Cannot find units in nev file. Please provide cell array of strings between 1-128 '...
+				'followed by a sort code of 0-3.'])
+		end
+		unitnames = unitnames(indices);
+		spikemuas = spikemuas(indices);
+		averate = averate(indices);
+		nU = sum(indices);
+	end
+
 	%Bin spikes (chronux function)
 	binnedspikes = binspikes(spikemuas, samplerate);
 	%From this apply gaussian filter to spike train for each electrode
@@ -128,7 +148,8 @@ function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsi
 	if exist(ns3file, 'file')
 		clear torque;
 		%Note the different channels used
-		NS3 = openNSx(ns3file, 'read', 'c:140:141');
+		chans = findTorqueChannels(nevfile);
+		NS3 = openNSx(ns3file, 'read', ['c:' num2str(chans(1)) ':' num2str(chans(2))]);
 		nsxtorque = double(NS3.Data);
 		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 		%Switch sign of FE axis for coordinate consistency
@@ -159,7 +180,7 @@ function processed = preprocess_centerout_tstarttend(nevfile, labviewfile, binsi
 			subplot(2,2,1)
 			hold on
 			t = 220;
-			unit = 18;
+			unit = min(18, nU);
 			dt = 20;
 			plot(nsxtorque(1,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), nsxtorque(2,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), 'b');
 			plot(torque((t*samplerate):(t*samplerate+dt*samplerate),1), torque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');

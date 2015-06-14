@@ -1,4 +1,4 @@
-function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out)
+function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out, verbose, units)
 	%Preprocess both torque data and firing rate data from an .nev file and a corresponding .ns3 file.
 	%Will do the following:
 	%- resample spikes and torque data into units of binsize (seconds)
@@ -9,7 +9,7 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	%- plot some diagnostics if desired
 	%
 	%Usage:
-	%		processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out)
+	%		processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out, verbose, units)
 	%
 	%Input:
 	%		nevfile = file to process. For loading torque data, assumes that an .nsx file of the same name and location exists.
@@ -20,6 +20,8 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	%		threshold = (optional, default = 5) threshold firing rate below which unit is ignored
 	%		offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
 	%		fn_out = (optional) If provided then plot/print extra info
+	%		verbose = (optional) if provided then will output info about firing of units
+	%		units = (optional) if a cell array of unit names is provided then will load only these, and ignore the threshold constraint
 	%	
 	%Output:
 	%	processed is a structure containing the following fields:
@@ -40,7 +42,8 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	%		offset = 0;
 	%		threshold = 5;
 	%		fn_out = './worksheets/diagnostics/plots/test_smooth_pre.eps';
-	%		processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out);
+	%		verbose = 0;
+	%		processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out, verbose);
 
 	%Optional arguments
 	if (nargin < 2) binsize = 0.05; end
@@ -49,6 +52,8 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	if (nargin < 5) threshold = 5; end		
 	if (nargin < 6) offset = 0; end
 	if (nargin < 7) fn_out = 0; end
+	if (nargin < 8) verbose = 0; end
+	if (nargin < 9) units = {}; end
 
 	nE = 128;
 	nunits = 5; 
@@ -105,16 +110,31 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 				isvalid(idx)=1;
 			end
 		end
-		if (isstr(fn_out)) display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]); end
+		if verbose ~= 0
+			display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
+		end
 	end
-	%Set a threshold firing rate, below which we ignore that unit
-	abovethresh = (averate > threshold) & isvalid;
-	%Update nU
-	nU = sum(abovethresh);
-	 display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
-	unitnames = unitnames(abovethresh);
-	spikemuas = spikemuas(abovethresh);
-	averate = averate(abovethresh);
+	if length(units) == 0
+		%Set a threshold firing rate, below which we ignore that unit
+		abovethresh = (averate > threshold) & isvalid;
+		%Update nU
+		nU = sum(abovethresh);
+		display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
+		unitnames = unitnames(abovethresh);
+		spikemuas = spikemuas(abovethresh);
+		averate = averate(abovethresh);
+	else
+		indices = cellfun(@(x)ismember(num2str(x), units), unitnames);
+		if ~any(indices)
+			display(['Cannot find units in nev file. Please provide cell array of strings between 1-128 '...
+				'followed by a sort code of 0-3.'])
+		end
+		unitnames = unitnames(indices);
+		spikemuas = spikemuas(indices);
+		averate = averate(indices);
+		nU = sum(indices);
+	end
+
 	%Bin spikes (chronux function)
 	binnedspikes = binspikes(spikemuas, samplerate);
 	%From this apply gaussian filter to spike train for each electrode
@@ -131,7 +151,8 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	%%%%%%%%%%%%%%%%%%%%%
 	clear torque;
 	%Torque data are in channels 138 and 139
-	NS3 = openNSx(ns3file, 'read', 'c:138:139');
+	chans = findTorqueChannels(nevfile);
+	NS3 = openNSx(ns3file, 'read', ['c:' num2str(chans(1)) ':' num2str(chans(2))]);
 	nsxtorque = double(NS3.Data);
 	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 	%Switch sign of FE axis for coordinate consistency
@@ -175,7 +196,8 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 		title('Gaussian filter used torque')
 		%And make a plot of smoothed data compared with binned spikes
 		subplot(3,2,2);
-		t = 50; unit = 18;
+		t = 50; 
+		unit = min(18, nU);
 		times = (1:(t*samplerate))*binsize;
 		plot(times, rates(1:(t*samplerate), unit)*binsize, times, binnedspikes(1:(t*samplerate),unit))
 		title('Smoothed rate vs binned spikes');

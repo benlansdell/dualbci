@@ -1,4 +1,4 @@
-function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
+function processed = preprocess(nevfile, binsize, threshold, offset, fn_out, verbose, units)
 	%Preprocess both torque data and firing rate data from an .nev file and a corresponding .ns3 file.
 	%Will do the following:
 	%- resample spikes and torque data into units of binsize (seconds)
@@ -6,7 +6,7 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	%- apply a threshold on average firing rate, below which, unit is not returned
 	%
 	%Usage:
-	%		processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
+	%		processed = preprocess(nevfile, binsize, threshold, offset, fn_out, verbose, units)
 	%	
 	%Input:
 	%		nevfile = .nev file to process. For loading torque data, assumes that an .nsx file of the same name and location exists.
@@ -14,6 +14,8 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	%		threshold = (optional, default = 5) threshold firing rate below which unit is ignored
 	%		offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
 	%		fn_out = (optional) file to output diagnostic plots to, if provided
+	%		verbose = (optional) if provided then will output info about firing of units
+	%		units = (optional) if a cell array of unit names is provided then will load only these, and ignore the threshold constraint
 	%	
 	%Output:
 	%		processed is a structure containing the following fields:
@@ -32,13 +34,16 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	%		offset = 0.0;
 	%		threshold = 5;
 	%		fn_out = './worksheets/diagnostics/test_pre.eps';
-	%		processed = preprocess(nevfile, binsize, threshold, offset, fn_out);
+	%		verbose = 0;
+	%		processed = preprocess(nevfile, binsize, threshold, offset, fn_out, verbose);
 	
 	%Optional arguments
 	if (nargin < 2) binsize = 0.05; end
 	if (nargin < 3) threshold = 5; end		
 	if (nargin < 4) offset = 0; end
 	if (nargin < 5) fn_out = 0; end
+	if (nargin < 6) verbose = 0; end
+	if (nargin < 7) units = {}; end
 	%Total number of possible units recorded from
 	nE = 128;
 	%Total number of sort codes per channel used
@@ -85,16 +90,31 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 				isvalid(idx)=1;
 			end
 		end
-		display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
+		if verbose ~= 0
+			display(['Electrode.Unit: ' unitnames{idx} ' Spike count: ' num2str(length(spikemuas(idx).times)-1) ' Mean firing rate (Hz): ' num2str(averate(idx))]);
+		end
 	end
-	%Set a threshold firing rate, below which we ignore that unit
-	abovethresh = (averate > threshold) & isvalid;
-	%Update nU
-	nU = sum(abovethresh);
-	display(['preprocess: Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
-	unitnames = unitnames(abovethresh);
-	spikemuas = spikemuas(abovethresh);
-	averate = averate(abovethresh);
+	if length(units) == 0
+		%Set a threshold firing rate, below which we ignore that unit
+		abovethresh = (averate > threshold) & isvalid;
+		%Update nU
+		nU = sum(abovethresh);
+		display(['Found ' num2str(nU) ' units above ' num2str(threshold) 'Hz']);
+		unitnames = unitnames(abovethresh);
+		spikemuas = spikemuas(abovethresh);
+		averate = averate(abovethresh);
+	else
+		indices = cellfun(@(x)ismember(num2str(x), units), unitnames);
+		if ~any(indices)
+			display(['Cannot find units in nev file. Please provide cell array of strings between 1-128 '...
+				'followed by a sort code of 0-3.'])
+		end
+		unitnames = unitnames(indices);
+		spikemuas = spikemuas(indices);
+		averate = averate(indices);
+		nU = sum(indices);
+	end
+
 	%Bin spikes (chronux function)
 	binnedspikes = binspikes(spikemuas, samplerate);
 	%Compute firing rate simply as spike count divided by binsize
@@ -105,7 +125,8 @@ function processed = preprocess(nevfile, binsize, threshold, offset, fn_out)
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
 	clear torque;
-	NS3 = openNSx(ns3file, 'read', 'c:138:139');
+	chans = findTorqueChannels(nevfile);
+	NS3 = openNSx(ns3file, 'read', ['c:' num2str(chans(1)) ':' num2str(chans(2))]);
 	nsxtorque = double(NS3.Data);
 	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 	%Switch sign of FE axis for coordinate consistency
