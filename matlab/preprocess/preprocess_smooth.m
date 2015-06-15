@@ -142,6 +142,7 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 		if sigma_fr > 0
 			gf = conv(binnedspikes(:,idx), gaussFilter_fr, 'same');
 			rates(:,idx)=gf*samplerate;
+			binnedspikes(:,idx) = rates(:,idx)/samplerate;
 		else
 			rates(:,idx) = binnedspikes(:,idx)*samplerate;
 		end
