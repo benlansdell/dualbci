@@ -16,12 +16,15 @@ dur = 180;
 %Fetch each pair of nev files to run
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-tablename = 'AnalysisLinearLabview';
+tablename = 'AnalysisLinear';
 colnames = {'1DBCrecording', 'manualrecording'};
-toprocess = exec(conn, ['SELECT `1DBCrecording`,`manualrecording` FROM AnalysisLinear WHERE regrFE1 IS NULL']);
+toprocess = exec(conn, ['SELECT `1DBCrecording`,`manualrecording` FROM ' tablename ' WHERE regrFE1 IS NULL']);
 toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 nR = size(toprocess,1);
+
+%20130920SpankyUtah004.nev
+%20130920SpankyUtah002.nev
 for idx = 1:nR
 	bcifile = toprocess{idx, 1};
 	manfile = toprocess{idx, 2};
@@ -53,15 +56,15 @@ for idx = 1:nR
 	units = {BCunit1, BCunit2};
 	%Preprocess data
 	%Truncate to just the units of interest
-	processedbci = preprocess_spline_lv(bcipath, matfile, binsize, threshold, offset, 0, 0, units);
-	processedman = preprocess_spline_lv(manpath, matfile, binsize, threshold, offset, 0, 0, units);
+	processedbci = preprocess_smooth(bcipath, binsize, threshold, offset, 0, 0, units);
+	processedman = preprocess_smooth(manpath, binsize, threshold, offset, 0, 0, units);
 	%Truncate to three minutes of data
 	processedbci = truncate_recording(processedbci, dur);
 	processedman = truncate_recording(processedman, dur);
 	%Fit a linear model to the pair
-	data = filters_sp_pos_lv(processedman, nK_sp, nK_pos);
+	data = filters_sp_pos(processedman, nK_sp, nK_pos);
 	modelman = MLE_lmfit(data, const);
-	data = filters_sp_pos_lv(processedbci, nK_sp, nK_pos);
+	data = filters_sp_pos(processedbci, nK_sp, nK_pos);
 	modelbci = MLE_lmfit(data, const);
 	%Extract and save regression coefficients
 	regrFE1 = modelman.b_hat(1,2);
