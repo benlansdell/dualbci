@@ -12,6 +12,8 @@ nK_pos = 1;
 nK_sp = 0;
 const = 'on';
 dur = 180;
+sigma_fr = 0.3;
+sigma_trq = 0.3;
 
 %Fetch each pair of nev files to run
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
@@ -56,8 +58,8 @@ for idx = 1:nR
 	units = {BCunit1, BCunit2};
 	%Preprocess data
 	%Truncate to just the units of interest
-	processedbci = preprocess_smooth(bcipath, binsize, threshold, offset, 0, 0, units);
-	processedman = preprocess_smooth(manpath, binsize, threshold, offset, 0, 0, units);
+	processedbci = preprocess_smooth(bcipath, binsize, sigma_fr, sigma_trq, threshold, offset, 0, 0, units);
+	processedman = preprocess_smooth(manpath, binsize, sigma_fr, sigma_trq, threshold, offset, 0, 0, units);
 	%Truncate to three minutes of data
 	processedbci = truncate_recording(processedbci, dur);
 	processedman = truncate_recording(processedman, dur);
