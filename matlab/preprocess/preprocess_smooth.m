@@ -157,7 +157,7 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	nsxtorque = double(NS3.Data);
 	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 	%Switch sign of FE axis for coordinate consistency
-	nsxtorque(2,:)=-nsxtorque(2,:);
+	nsxtorque(1,:)=-nsxtorque(1,:);
 	for j=1:2
 		%Scale from uint16 value to proportion
 		nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
@@ -173,14 +173,17 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	end
 	%Check they're the same length, and trim
 	nsamp = min(size(torque,1), size(rates,1));
+	binnedspikes(1:nsamp,:) = binnedspikes(1:nsamp,:);
 	torque=torque(1:nsamp,:);
 	rates = rates(1:nsamp,:);
 	%Apply offset to data
 	delaysamples = round(offset*samplerate);
 	if (delaysamples > 0)
+		binnedspikes = binnedspikes(1+delaysamples:end,:);
 		rates = rates(1+delaysamples:end,:);
 		torque = torque(1:end-delaysamples,:);
 	elseif (delaysamples < 0)
+		binnedspikes = binnedspikes(1:end+delaysamples,:);
 		rates = rates(1:end+delaysamples,:);
 		torque = torque(1-delaysamples:end,:);
 	end

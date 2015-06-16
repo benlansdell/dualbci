@@ -153,7 +153,7 @@ function processed = preprocess_centerout(nevfile, labviewfile, binsize, thresho
 		nsxtorque = double(NS3.Data);
 		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
 		%Switch sign of FE axis for coordinate consistency
-		nsxtorque(2,:)=-nsxtorque(2,:);
+		nsxtorque(1,:)=-nsxtorque(1,:);
 		nsxpts = ((1:size(nsxtorque,2))-1)/nsxsamplerate;
 		pts = ((1:size(binnedspikes,1))-1)/samplerate;
 		%Smoothing parameter
