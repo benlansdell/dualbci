@@ -72,6 +72,7 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	%Threshold to compute result of significance test
 	%pval = 0.05;
 	GCsig = GCpval < pval;
+	GCsig = multiple_sig(GCpval, pval);
 
 	for i = 1:nU
 		GCdev(i,i) = 0;
