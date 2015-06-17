@@ -49,7 +49,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 
 		%Get the fitID
 		%fitid = getFitID(conn);
-		fitid = randi(1e12);
+		fitid = randi(1e9);
 		%Insert into Fits
 		tablename = 'Fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'fitID', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit'};
