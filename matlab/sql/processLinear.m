@@ -1,5 +1,4 @@
 function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, units)
-	rng('shuffle')
 	nevpath = [blackrock nevfile];
 	%Load parameters
 	eval(paramcode);
