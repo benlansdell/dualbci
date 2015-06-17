@@ -1,4 +1,5 @@
 function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, units)
+	rng('shuffle')
 	nevpath = [blackrock nevfile];
 	%Load parameters
 	eval(paramcode);
@@ -47,7 +48,8 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 		mseout = sum((datanovel.y(idx,:)-rho_hat').^2)/nBout;
 
 		%Get the fitID
-		fitid = getFitID(conn);
+		%fitid = getFitID(conn);
+		fitid = randi(1e12);
 		%Insert into Fits
 		tablename = 'Fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'fitID', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit'};
