@@ -24,6 +24,8 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 	model = MLE_lmfit(data, const);
 	%%Compute MSE on test data
 	datanovel = filters_sp_pos(processed_novel, nK_sp, nK_pos);
+	nBout = size(datanovel.y,2);
+	nBin = size(data.y,2);
 
 	nC = size(model.b_hat,2);
 	%Tag with computer run on, date, last git commit
@@ -41,13 +43,14 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 		%Extract MSE. Need to add cross-validation code to do this... add later
 		b_hat = model.b_hat(idx,:);
 		rho_hat = glmval(b_hat', squeeze(datanovel.X(idx,:,:)), 'identity');
-		mseout = sum((datanovel.y(idx,:)-rho_hat').^2);
+
+		mseout = sum((datanovel.y(idx,:)-rho_hat').^2)/nBout;
 
 		%Get the fitID
 		fitid = getFitID(conn);
 		%Insert into Fits
 		tablename = 'Fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'fitID', 'nCoeff', 'dev', 'mse', 'computer', '`analysis date`', 'commit'};
+		fitcols = {'modelID', '`nev file`', 'unit', 'fitID', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit'};
 		sqldata = { modelID, nevfile, unit, fitid, nC, dev, mseout, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
 
@@ -58,7 +61,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 		regrFE = model.b_hat(idx,3);
 		[direction, tuningsize] = unitTheta(regrRU, regrFE);
 		sqldata = { fitid, direction, tuningsize};
-		datainsert(conn,tablename,colnames,sqldata);
+		datainsert(conn,tablename,fitcols,sqldata);
 
 		%Insert into ParameterEstimates
 		tablename = 'ParameterEstimates';
@@ -77,7 +80,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 				label = findLabel(labidx, data.k);
 			end
 			sqldata = {fitid, num, label, model.b_hat(idx, j), stats.se(j)};
-			datainsert(conn,tablename,colnames,sqldata);
+			datainsert(conn,tablename,fitcols,sqldata);
 		end
 	end
 end
