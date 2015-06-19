@@ -1,25 +1,29 @@
-function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, offset, fn_out, verbose, units)
+function processed = preprocess_smooth_lv(nevfile, matfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out, verbose, units)
 	%Preprocess both torque data and firing rate data from an .nev file and a corresponding .ns3 file.
 	%Will do the following:
-	%	- resample spikes and torque data into units of binsize (seconds)
-	%	- extract cursor data from labview mat file during nev recording
-	%	- apply a temporal offset between the two
-	%	- apply a threshold on average firing rate, below which, unit is not returned
-	%	- smooth torque data by fitting a cubic spline to data. Compute velocity and accel 'analytically' from the spline
+	%- resample spikes and torque data into units of binsize (seconds)
+	%- apply a Guassian filter of width sigma_fr to the binned spikes to compute a firing rate
+	%- apply a Gaussian filter of width sigma_trq to the torque channels to smooth torque input
+	%- apply a threshold on average firing rate, below which, unit is not returned
+	%- apply a temporal offset between the two
+	%- plot some diagnostics if desired
 	%
 	%Usage:
-	%	processed = preprocess_spline_lv(nevfile, binsize, threshold, offset, fn_out, verbose, units)
+	%		processed = preprocess_smooth_lv(nevfile, matfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out, verbose, units)
 	%
 	%Input:
 	%		nevfile = file to process. For loading torque data, assumes that an .nsx file of the same name and location exists.
-	%		matfile = labview file containing nev file info, nev time offset and cursor information
+	%		matfile = matfile containing cursor information for nev file
 	%		binsize = (optional, default = 0.05) size of timebins over which to compute regression
+	%		sigma_fr = (optional, default = 0.25) width of gaussian filter to apply to spikes for firing rate. If 0 then no filter applied
+	%		sigma_trq = (optional, default = 0.25) width of gaussian filter to apply to torque. If 0 then no filter applied
+	%			Note: Note: both sigmas are in units of seconds, and then are scaled according to binsize
 	%		threshold = (optional, default = 5) threshold firing rate below which unit is ignored
 	%		offset = (optional, default = 0) number of seconds to add to spike data before comparing with torque
-	%		fn_out = (optional) file to output diagnostic plots to, if desired
+	%		fn_out = (optional) If provided then plot/print extra info
 	%		verbose = (optional) if provided then will output info about firing of units
 	%		units = (optional) if a cell array of unit names is provided then will load only these, and ignore the threshold constraint
-	%		
+	%	
 	%Output:
 	%	processed is a structure containing the following fields:
 	%		binnedspikes = [nB x nU] array with spikes from all channels binned according to binsize. nB = no. bins, nU = no. units.
@@ -27,9 +31,9 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	%		torque = [nB x 2] array of torque inputs 
 	%		dtorque = [nB x 2] array of diff of torque inputs (approximation of velocity)
 	%		ddtorque = [nB x 2] array of diff of diff of torque inputs (approximation of acceleration)
-	%		cursor = [nB x 2] array of cursor position 
-	%		dcursor = [nB x 2] array of diff of cursor position (approximation of velocity)
-	%		ddcursor = [nB x 2] array of diff of diff of cursor position (approximation of acceleration)
+	%		cursor = [nB x 2] array of cursor outputs 
+	%		dcursor = [nB x 2] array of diff of cursor outputs (approximation of velocity)
+	%		ddcursor = [nB x 2] array of diff of diff of cursor outputs (approximation of acceleration)
 	%		unitnames = String of the format Electrode.SortCode used to distinguish individual units from multi-unit electrode activity
 	%		tspks = cell array containing spike times for each active channel
 	%		binsize = binsize used
@@ -37,34 +41,52 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	%Test code:
 	%		nevfile = './testdata/20130117SpankyUtah001.nev';
 	%		matfile = './testdata/Spanky_2013-01-17-1325.mat';
-	%		binsize = 0.002;
-	%		offset = 0.0;
+	%		binsize = 0.05;
+	%		sigma_fr = 0.25;
+	%		sigma_trq = 0.25;
+	%		offset = 0;
 	%		threshold = 5;
-	%		fn_out = './worksheets/diagnostics/plots/test_spline_pre.eps';
+	%		fn_out = './worksheets/diagnostics/plots/test_smooth_pre.eps';
 	%		verbose = 0;
-	%		processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, offset, fn_out, verbose);
-	
+	%		processed = preprocess_smooth_lv(nevfile, matfile, binsize, sigma_fr, sigma_trq, threshold, offset, fn_out, verbose);
+
 	%Optional arguments
 	if (nargin < 3) binsize = 0.05; end
-	if (nargin < 4) threshold = 5; end		
-	if (nargin < 5) offset = 0; end
-	if (nargin < 6) fn_out = 0; end
-	if (nargin < 7) verbose = 0; end
-	if (nargin < 8) units = {}; end
-	%Total number of possible units recorded from
+	if (nargin < 4) sigma_fr = 0.25; end
+	if (nargin < 5) sigma_trq = 0.25; end
+	if (nargin < 6) threshold = 5; end		
+	if (nargin < 7) offset = 0; end
+	if (nargin < 8) fn_out = 0; end
+	if (nargin < 9) verbose = 0; end
+	if (nargin < 10) units = {}; end
+
 	nE = 128;
 	nunits = 5; 
+	%Total number of possible units recorded from
 	nU = nE*nunits;
 	samplerate = 1/binsize;
 	%Make sure we can perform the sample rate conversion easily
 	assert(rem(samplerate,1) == 0, 'Select a binsize corresponding to an integer sample rate.');
 	ns3file = [nevfile(1:end-3) 'ns3'];
-
+	%Create Filters
+	if sigma_fr > 0
+		sigma_fr = sigma_fr*samplerate;
+		sz = sigma_fr*3*2;
+		x = linspace(-sz/2, sz/2, sz);
+		gaussFilter_fr = exp(-x.^2/(2*sigma_fr^2));
+		gaussFilter_fr = gaussFilter_fr/sum(gaussFilter_fr);
+	end
+	if sigma_trq > 0
+		sigma_trq = sigma_trq*samplerate;
+		sz = sigma_trq*3*2;
+		x = linspace(-sz/2, sz/2, sz);
+		gaussFilter_trq = exp(-x.^2/(2*sigma_trq^2));
+		gaussFilter_trq = gaussFilter_trq/sum(gaussFilter_trq);
+	end
 	%%%%%%%%%%%%%%%%%%%%%%
 	%Process spiking data%
 	%%%%%%%%%%%%%%%%%%%%%%
-	display(['Opening ' nevfile])
-	NEV = openNEV(nevfile, 'nosave');
+	NEV = openNEV(nevfile);
 	%Find the duration and sample rate of the nev file recording
 	nevsamplerate = NEV.MetaTags.TimeRes;
 	dur = NEV.MetaTags.DataDuration/nevsamplerate;
@@ -118,15 +140,20 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 		nU = sum(indices);
 	end
 
-
 	%Bin spikes (chronux function)
 	binnedspikes = binspikes(spikemuas, samplerate);
 	%From this apply gaussian filter to spike train for each electrode
 	for idx=1:nU
-		rates(:,idx) = binnedspikes(:,idx)*samplerate;
+		if sigma_fr > 0
+			gf = conv(binnedspikes(:,idx), gaussFilter_fr, 'same');
+			rates(:,idx)=gf*samplerate;
+			binnedspikes(:,idx) = rates(:,idx)/samplerate;
+		else
+			rates(:,idx) = binnedspikes(:,idx)*samplerate;
+		end
 	end
-	%Return spike times for each active channel
 	tspks = spikemuas;
+
 	%%%%%%%%%%%%%%%%%%%%%
 	%Process torque data%
 	%%%%%%%%%%%%%%%%%%%%%
@@ -157,64 +184,45 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	lvtorque = data.stateHist.cursor(withinnev,:);
 	lvdtorque = [diff(lvtorque); 0, 0]*labviewsamplerate;
 	lvddtorque = [diff(lvdtorque); 0, 0]*labviewsamplerate;
+
 	%Resample at desired rate
 	lvtorque = resample(lvtorque, samplerate, labviewsamplerate);
 	lvdtorque = resample(lvdtorque, samplerate, labviewsamplerate);
 	lvddtorque = resample(lvddtorque, samplerate, labviewsamplerate);
 
-	%If can't find NSx file then go ahead with zeros...
-	if exist(ns3file, 'file')
-		chans = findTorqueChannels(nevfile);
-		NS3 = openNSx(ns3file, 'read', ['c:' num2str(chans(1)) ':' num2str(chans(2))]);
-		nsxtorque = double(NS3.Data);
-		nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
-		%Switch sign of FE axis for coordinate consistency
-		nsxtorque(1,:)=-nsxtorque(1,:);
-		nsxpts = ((1:size(nsxtorque,2))-1)/nsxsamplerate;
-		pts = ((1:size(binnedspikes,1))-1)/samplerate;
-	
-		%Smoothing parameter
-		%p = 1/(1+binsize^3/0.001);
-		p = 0.9999;
-		for j=1:2
-			%Scale from uint16 value to proportion
-			nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
-			%Subtract mean
-			nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
-			%Smooth w spline
-			sp = csaps(nsxpts, nsxtorque(j,:), p);
-			torque(:,j) = fnval(sp, pts);
-			%Compute velocity of spline
-			vel = fnder(sp);
-			dtorque(:,j) = fnval(vel, pts);
-			%Compute accel of spline
-			accel = fnder(vel);
-			ddtorque(:,j) = fnval(accel, pts);
-		end
-	
-		if isstr(fn_out)
-			%Check smoothness of spline smoothing
-			clf
-			subplot(2,2,1)
-			hold on
-			t = 220;
-			unit = min(18, nU);
-			dt = 2;
-			plot(nsxtorque(1,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), nsxtorque(2,(t*nsxsamplerate):(t*nsxsamplerate+dt*nsxsamplerate)), 'b');
-			plot(torque((t*samplerate):(t*samplerate+dt*samplerate),1), torque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-			xlabel('x'); ylabel('y');
-			subplot(2,2,2)
-			plot(dtorque((t*samplerate):(t*samplerate+dt*samplerate),1), dtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-			xlabel('dx'); ylabel('dy');
-			subplot(2,2,3)
-			plot(ddtorque((t*samplerate):(t*samplerate+dt*samplerate),1), ddtorque((t*samplerate):(t*samplerate+dt*samplerate),2), 'r');
-			xlabel('d^2x'); ylabel('d^2y');
-			saveplot(gcf, [fn_out '_spline.eps'], 'eps', [6 6])
-		end
-	else
-		torque = zeros(size(lvtorque));
-		dtorque = zeros(size(lvdtorque));
-		ddtorque = zeros(size(lvddtorque));
+	%Smooth with same filter...
+	%for j = 1:2
+	%	lvtorque(:,j) = conv(lvtorque(:,j),gaussFilter_trq,'same');
+	%	lvdtorque(:,j) = conv(lvdtorque(:,j),gaussFilter_trq,'same');
+	%	lvddtorque(:,j) = conv(lvddtorque(:,j),gaussFilter_trq,'same');
+	%end
+
+	%%%%%%%%%%%%%%%%%%
+	%Load torque data%
+	%%%%%%%%%%%%%%%%%%
+
+	%Torque data are in last two channels
+	chans = findTorqueChannels(nevfile);
+	NS3 = openNSx(ns3file, 'read', ['c:' num2str(chans(1)) ':' num2str(chans(2))]);
+	nsxtorque = double(NS3.Data);
+	nsxsamplerate = double(NS3.MetaTags.SamplingFreq);
+	%Switch sign of FE axis for coordinate consistency
+	nsxtorque(1,:)=-nsxtorque(1,:);
+	for j=1:2
+		%Scale from uint16 value to proportion
+		nsxtorque(j,:) = nsxtorque(j,:)/(2^15);
+		%Subtract mean
+		nsxtorque(j,:) = nsxtorque(j,:)-mean(nsxtorque(j,:));
+		%Smooth
+		torque(:,j) = conv(nsxtorque(j,:),gaussFilter_trq,'same');
+	end
+	%Resample at rate of binsize
+	torque=resample(torque,samplerate,nsxsamplerate);
+	%Compute dtorque and ddtorque
+	dtorque = [diff(torque); 0 0];
+	ddtorque = [diff(diff(torque)); 0 0; 0 0];
+	if isstr(fn_out)
+		plot(torque(1:100,1), torque(1:100,2));
 	end
 
 	%Check they're the same length, and trim
@@ -248,15 +256,27 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 		lvdtorque = lvdtorque(1-delaysamples:end,:);
 		lvddtorque = lvddtorque(1-delaysamples:end,:);
 	end
+	
 	if isstr(fn_out)
 		%Plot a bunch of preprocessing diagnostics
 		figure
-		subplot(2,2,1)
+		subplot(3,2,1)
+		%Plot the kernel used
+		plot((1:sz)/nsxsamplerate,gaussFilter_trq)
+		title('Gaussian filter used torque')
+		%And make a plot of smoothed data compared with binned spikes
+		subplot(3,2,2);
+		t = 50; 
+		unit = min(18, nU);
+		times = (1:(t*samplerate))*binsize;
+		plot(times, rates(1:(t*samplerate), unit)*binsize, times, binnedspikes(1:(t*samplerate),unit))
+		title('Smoothed rate vs binned spikes');
+		subplot(3,2,3)
 		t = 10;
 		times = (1:(t*samplerate))*binsize;
 		plot(times, torque(1:(t*samplerate),1),times, torque(1:(t*samplerate),2))
 		title('Smoothed torque');		
-		subplot(2,2,2)
+		subplot(3,2,4)
 		%Compute auto- and cross-correlation in torque and example firing rate
 		maxlag = 90;
 		autotorqueFE = xcov(torque(:,1),samplerate*maxlag);%, 'coeff');
@@ -269,32 +289,13 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 		tt = -maxlag:binsize:maxlag;
 		plot(tt, covFE);
 		title(['cross-corr FE, unit ' num2str(unitnames{unit})]);		
-		subplot(2,2,3)
+		subplot(3,2,5)
 		plot(tt, autotorqueFE)
 		title('auto-corr torque FE');
-		subplot(2,2,4)
+		subplot(3,2,6)
 		plot(tt, autorate);
 		title(['auto-corr rate, unit ' num2str(unitnames{unit})])
-		saveplot(gcf, [fn_out '_preprocess.eps'], 'eps', [6 6]);
-
-		%Check that labview and blackrock torque info lines up, more or less
-		clf
-		t = 10;
-		ii = 1:(t*samplerate);
-		tt = ii*binsize;
-		subplot(3,1,1)
-		plot(tt, -torque(ii,1),tt, -torque(ii,2), tt, lvtorque(ii,1),tt, lvtorque(ii,2))
-		title('Labview and blackrock torque comparison')
-		legend('Torque 1', 'Torque 2', 'Cursor 1', 'Cursor 2')
-		ylabel('Torque/cursor position')
-		subplot(3,1,2)
-		plot(tt, -dtorque(ii,1),tt, -dtorque(ii,2), tt, lvdtorque(ii,1),tt, lvdtorque(ii,2))
-		ylabel('Change in torque/cursor position')
-		subplot(3,1,3)
-		plot(tt, -ddtorque(ii,1),tt, -ddtorque(ii,2), tt, lvddtorque(ii,1),tt, lvddtorque(ii,2))
-		ylabel('Change in change in torque/cursor position')
-		xlabel('times (s)')
-		saveplot(gcf, [fn_out '_lvcomp.eps'], 'eps', [9 6]);
+		saveplot(gcf, fn_out, 'eps', [3 6]);
 	end
 
 	%Return data

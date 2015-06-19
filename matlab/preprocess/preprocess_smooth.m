@@ -81,7 +81,7 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	%%%%%%%%%%%%%%%%%%%%%%
 	%Process spiking data%
 	%%%%%%%%%%%%%%%%%%%%%%
-	NEV = openNEV(nevfile);
+	NEV = openNEV(nevfile, 'nosave');
 	%Find the duration and sample rate of the nev file recording
 	nevsamplerate = NEV.MetaTags.TimeRes;
 	dur = NEV.MetaTags.DataDuration/nevsamplerate;
