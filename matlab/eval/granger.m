@@ -1,4 +1,4 @@
-function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
+function [GCdev, GCpval, GCsig, fulldeviances] = granger(processed, data, fn_out, pval)
 	%Computes Granger-causality matrices for set of spike and cursor trajectory data
 	%
 	%Usage:
@@ -43,6 +43,7 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	for i = 1:nU
 		devs(i) = -model.dev{i};
 	end
+	fulldeviances = -devs;
 	GCdev = repmat(devs,nU,1);
 
 	%Modify data matrix in turn for each unit
@@ -71,52 +72,54 @@ function [GCdev, GCpval, GCsig] = granger(processed, data, fn_out, pval)
 	GCpval = 1-chi2cdf(GCdev, nK_sp);
 	%Threshold to compute result of significance test
 	%pval = 0.05;
-	GCsig = GCpval < pval;
+	%GCsig = GCpval < pval;
 	GCsig = multiple_sig(GCpval, pval);
 
 	for i = 1:nU
 		GCdev(i,i) = 0;
+		GCsig(i,i) = 0;
 	end
 
-	%Plot results
-	clf
-	subplot(3,1,1)
-	colormap(bone);
-	imagesc(GCdev)
-	title('Change in deviance')
-	ylabel('Unit')
-	xlabel('Unit')
-	set(gca,'XTick',1:nU);
-	set(gca,'YTick',1:nU);
-	set(gca,'XTickLabel',processed.unitnames);
-	set(gca,'YTickLabel',processed.unitnames);
-	rotateXLabels(gca, 90);
-	colorbar
-	subplot(3,1,2)
-	imagesc(GCpval)
-	title(['p-value'])
-	ylabel('Unit')
-	xlabel('Unit')
-	set(gca,'XTick',1:nU);
-	set(gca,'YTick',1:nU);
-	set(gca,'XTickLabel',processed.unitnames);
-	set(gca,'YTickLabel',processed.unitnames);
-	%rotate x labels
-	rotateXLabels(gca, 90);
-	colorbar
-	subplot(3,1,3)
-	imagesc(GCsig)
-	title(['Significance test @ p<' num2str(pval)])
-	ylabel('Unit')
-	xlabel('Unit')
-	set(gca,'XTick',1:nU);
-	set(gca,'YTick',1:nU);
-	set(gca,'XTickLabel',processed.unitnames);
-	set(gca,'YTickLabel',processed.unitnames);
-	rotateXLabels(gca, 90);
-	colorbar
-	saveplot(gcf, fn_out, 'eps', [6 18])
-
+	if isstr(fn_out)
+		%Plot results
+		clf
+		subplot(3,1,1)
+		colormap(bone);
+		imagesc(GCdev)
+		title('Change in deviance')
+		ylabel('Unit')
+		xlabel('Unit')
+		set(gca,'XTick',1:nU);
+		set(gca,'YTick',1:nU);
+		set(gca,'XTickLabel',processed.unitnames);
+		set(gca,'YTickLabel',processed.unitnames);
+		rotateXLabels(gca, 90);
+		colorbar
+		subplot(3,1,2)
+		imagesc(GCpval)
+		title(['p-value'])
+		ylabel('Unit')
+		xlabel('Unit')
+		set(gca,'XTick',1:nU);
+		set(gca,'YTick',1:nU);
+		set(gca,'XTickLabel',processed.unitnames);
+		set(gca,'YTickLabel',processed.unitnames);
+		%rotate x labels
+		rotateXLabels(gca, 90);
+		colorbar
+		subplot(3,1,3)
+		imagesc(GCsig)
+		title(['Significance test @ p<' num2str(pval)])
+		ylabel('Unit')
+		xlabel('Unit')
+		set(gca,'XTick',1:nU);
+		set(gca,'YTick',1:nU);
+		set(gca,'XTickLabel',processed.unitnames);
+		set(gca,'YTickLabel',processed.unitnames);
+		rotateXLabels(gca, 90);
+		colorbar
+		saveplot(gcf, fn_out, 'eps', [6 18])
+	end
 	%Cluser the results and plot the clustered matrices
 	%fn_out_c = [fn_out '.cluster'];
 	%granger_cluster(GCdev, GCpval, GCsig, processed.unitnames, fn_out_c);
