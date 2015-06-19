@@ -29,6 +29,10 @@ addpath_recurse([homedir 'lansdell/matlab/Tubeplot']);
 addpath_recurse([homedir 'lansdell/matlab/plot2svg']);
 addpath_recurse([homedir 'lansdell/matlab/arfit']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
+
+addpath([homedir '/lansdell/matlab/mvgc_v1.0']);
+mvgcstartup
+
 %Add extra color
 %my_ColorOrder = [   0.00000   0.00000   1.00000;
 %   0.00000   0.50000   0.00000;
