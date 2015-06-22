@@ -6,11 +6,23 @@ data = fetch(data);
 data = data.Data;
 
 hold on 
+x = [];
+y = [];
+c = [];
 for idx = 1:(size(data,1)-1)
 	if strcmp(data{idx, 4}, data{idx+1, 4})
-		x = data{idx,7}
-		y = data{idx+1,7};
-		c = abs(data{idx,2}-data{idx+1,2});
-		scatter(x,y,[],c);
+		x = [x, data{idx,7}];
+		y = [y, data{idx+1,7}];
+		c = [c, (data{idx,2}-data{idx+1,2})];
 	end
 end
+%Make between pi and -pi
+x = mod(x, 2*pi);
+y = mod(y, 2*pi);
+x(x>pi) = x(x>pi)-2*pi;
+y(y>pi) = y(y>pi)-2*pi;
+clf
+scatter(x,y,[],c, 'filled');
+xlabel('Delta angle 1')
+ylabel('Delta angle 2')
+colorbar
