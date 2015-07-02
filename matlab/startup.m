@@ -33,6 +33,8 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
 addpath([homedir '/lansdell/matlab/mvgc_v1.0']);
 mvgcstartup
 
+javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
+
 %Add extra color
 %my_ColorOrder = [   0.00000   0.00000   1.00000;
 %   0.00000   0.50000   0.00000;
