@@ -1,16 +1,23 @@
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
 threshold = 0;
-toprocess = exec(conn,'select `nev file` from `Recordings`');
+toprocess = exec(conn,'select `nev file` from `Recordings` WHERE `nev date` > "2013-12-06"');
 toprocess = fetch(toprocess);
 nFiles = size(toprocess.Data,1);
 tablename = 'Units';
 colnames = {'`nev file`', 'unit', 'firingrate'};
+
+cannotfind = {};
 
 for idx = 1:nFiles
 	%Find missing data in matfiles
 	nevfile = toprocess.Data{idx,1};
 	nevpath = ['./blackrock/' nevfile];
 	display(['Processing ' nevfile])
+	if ~exist(nevpath, 'file')
+		display(['Cannot find ' nevfile])
+		cannotfind = {cannotfind{:}, nevfile};
+		continue
+	end
 	NEV = openNEV(nevpath, 'nosave');
 	nevsamplerate = NEV.MetaTags.TimeRes;
 	display('Making structures')
@@ -50,6 +57,9 @@ for idx = 1:nFiles
 	%Set a threshold firing rate, below which we ignore that unit
 	abovethresh = (averate > threshold) & isvalid;
 	nU = sum(abovethresh);
+	%Add also the number of units above 5Hz
+	abovefive = (averate > 5) & isvalid;
+	nU5 = sum(abovefive);
 	display([num2str(nU) ' units above ' num2str(threshold) 'Hz in ' nevfile])
 	unitnames = unitnames(abovethresh);
 	averate = averate(abovethresh);
@@ -60,4 +70,7 @@ for idx = 1:nFiles
 		data = {nevfile, unit, firingrate};
 		datainsert(conn,tablename,colnames,data);
 	end
+	whereclause = ['WHERE `nev file` = "' nevfile '"'];
+	update(conn, 'Recordings', {'abovefive'}, {nU5}, whereclause)	
+	display([num2str(nU5) ' units above 5Hz in ' nevfile])
 end

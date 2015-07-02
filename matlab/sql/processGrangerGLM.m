@@ -40,24 +40,25 @@ function processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, thresho
 		%Extract deviance
 		dev = fulldevs(idx);
 
-		%Get the fitID
-		%fitid = getFitID(conn);
-		fitid = randi(1e9);
 		%Insert into Fits
 		tablename = 'Fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'fitID', 'ncoeff', 'dev', 'computer', '`analysis date`', 'commit'};
-		sqldata = { modelID, nevfile, unit, idx, fitid, nC, dev, host, stamp, comm};
+		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'dev', 'computer', '`analysis date`', 'commit'};
+		sqldata = { modelID, nevfile, unit, idx, nC, dev, host, stamp, comm};
+		%sqldata = { 1, '20130920SpankyUtah001.nev', 999, 1, 3, 3, '3', '2013-12-09 12:12:12', '12'};
 		datainsert(conn,tablename,fitcols,sqldata);
+		%Get the fit id used
+		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
+		fitid = fitid.Data{1};
 
 		%Insert into FitsGranger
 		tablename = 'FitsGranger';
-		fitcols = {'fitID', 'alpha', 'units', 'causaldensity'};
+		fitcols = {'id', 'alpha', 'units', 'causaldensity'};
 		sqldata = { fitid, pval, nU, causaldensity};
 		datainsert(conn,tablename,fitcols,sqldata);
 
 		%Insert into NetworkEstimates
 		tablename = 'GrangerEstimates';
-		fitcols = {'fitID', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
+		fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 		for j = 1:nU
 			if j ~= idx
 				unitj = processed.unitnames{j};

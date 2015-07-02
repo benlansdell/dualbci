@@ -66,25 +66,28 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 
 	%Get the fitID
 	%fitid = getFitID(conn);
-	fitid = randi(1e9);
+	%fitid = randi(1e9);
 	unit = 'curs';
 	unitnum = 1;
 
 	%Insert into Fits
 	tablename = 'Fits';
-	fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'fitID', 'ncoeff', 'computer', '`analysis date`', 'commit'};
-	sqldata = { modelID, nevfile, unit, unitnum, fitid, nC, host, stamp, comm};
+	fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
+	sqldata = { modelID, nevfile, unit, unitnum, nC, host, stamp, comm};
 	datainsert(conn,tablename,fitcols,sqldata);
+	%Get the fit id used
+	fitid = fetch(exec('SELECT LAST_INSERT_ID()'));
+	fitid = fitid.Data{1};
 
 	%Insert into FitsMVGC
 	tablename = 'FitsMVGC';
-	fitcols = {'fitID', 'alpha', 'units', 'causaldensity'};
+	fitcols = {'id', 'alpha', 'units', 'causaldensity'};
 	sqldata = { fitid, pval, nUtotal, causaldensity};
 	datainsert(conn,tablename,fitcols,sqldata);
 
 	%For each unit, save the results 
 	tablename = 'GrangerEstimates';
-	fitcols = {'fitID', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
+	fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 	for j = 2:(nUtotal+1)
 		%Extract and save regression fiticients
 		unit = processed.unitnames{j-1};

@@ -48,16 +48,20 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 
 		%Get the fitID
 		%fitid = getFitID(conn);
-		fitid = randi(1e9);
+		%fitid = randi(1e9);
 		%Insert into Fits
 		tablename = 'Fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'fitID', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit'};
-		sqldata = { modelID, nevfile, unit, fitid, nC, dev, mseout, host, stamp, comm};
+		fitcols = {'modelID', '`nev file`', 'unit', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit'};
+		sqldata = { modelID, nevfile, unit, nC, dev, mseout, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
+
+		%Get the fit id used
+		fitid = fetch(exec('SELECT LAST_INSERT_ID()'));
+		fitid = fitid.Data{1};
 
 		%Insert into FitsLinear
 		tablename = 'FitsLinear';
-		fitcols = {'fitID', 'dir', 'size'};
+		fitcols = {'id', 'dir', 'size'};
 		regrRU = model.b_hat(idx,2);
 		regrFE = model.b_hat(idx,3);
 		[direction, tuningsize] = unitTheta(regrRU, regrFE);
@@ -66,7 +70,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 
 		%Insert into ParameterEstimates
 		tablename = 'ParameterEstimates';
-		fitcols = {'fitID', 'num', 'label', 'value', 'se'};
+		fitcols = {'id', 'num', 'label', 'value', 'se'};
 		for j = 1:nC
 			num = j;
 			if strcmp(const, 'on')

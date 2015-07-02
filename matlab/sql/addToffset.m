@@ -1,3 +1,8 @@
+
+%%%%%%%%%%%%%
+%Add Toffset%
+%%%%%%%%%%%%%
+
 %Add missing columns to Recordings table
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
 tablename = 'Recordings';
@@ -33,6 +38,10 @@ for idx = 1:nFiles
 end
 
 %Do the same with:
+
+%%%%%%%%%%%%
+%Add trials%
+%%%%%%%%%%%%
 
 %Performance. Trial info.
 %Add missing columns to Recordings table
@@ -97,9 +106,9 @@ for i = 1:length(matfiles)
 	clear data
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Add BCI units (somehow...)%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Add BCI units to recordings%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
 
 tablename = 'Recordings';

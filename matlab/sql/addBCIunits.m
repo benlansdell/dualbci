@@ -2,13 +2,13 @@
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
 tablenameUnits = 'BCIUnits';
-colnames = {'ID', 'unit', 'direction'};
+colnames = {'ID', 'unit', 'direction', 'angle'};
 
 %Get a unique list of mat files
 %toprocess = exec(conn,['select DISTINCT `labview file` from Recordings where not exists'...
 % ' (select * from BCIUnits where ID = `nev file`) and `labview file`="Spanky_2013-03-19-1408.mat"']);
 toprocess = exec(conn,['select DISTINCT `labview file` from Recordings where not exists'...
- ' (select * from BCIUnits where ID = `nev file`)']);
+ ' (select * from BCIUnits where ID = `nev file`) AND `nev date` > "2013-12-05"']);
 toprocess = fetch(toprocess);
 nFiles = size(toprocess.Data,1);
 if nFiles == 0
@@ -98,8 +98,12 @@ for idx = 1:nFiles
 					'). Charlie''s code labels file as ' nevfiles.Data{j,2}])
 				changes	
 			end
-			%Add to conflict table
-			datainsert(conn, 'ConflictedRecordings', {'ID'}, {nevfile});
+			%Add to conflict table, if not already in there
+			isconflict = fetch(exec(conn, ['SELECT ID FROM `ConflictedRecordings` WHERE ID = "' nevfile '"']));
+			isconflict = isconflict.Data;
+			if strcmp(isconflict, 'No Data')
+				datainsert(conn, 'ConflictedRecordings', {'ID'}, {nevfile});
+			end
 		else
 			%Determine direction for BCI units, and add these...
 			for k = 1:4
@@ -109,20 +113,28 @@ for idx = 1:nFiles
 				switch theta
 				case 180
 					direction = 'west';
+					thta = pi;
 				case 0
 					direction = 'east';
+					thta = 0;
 				case 90
 					direction = 'north';
+					thta = pi/2;
 				case 270
 					direction = 'south';
+					thta = 3*pi/2;
 				end
 				enabled = unambigmapping{4}(k);
 				%If the channel is enabled add it
 				if enabled & (chan > 0)
-					mappedunit = {nevfile, chan, direction};
-					%datainsert(conn, tablenameUnits, colnames, mappedunit);
+					mappedunit = {nevfile, chan, direction, thta};
+					datainsert(conn, tablenameUnits, colnames, mappedunit);
 				end
 			end
 		end
 	end
 end
+
+%Were these added twice? Yes :(
+%Processing Spanky_2013-12-04-1239.mat
+%Processing Spanky_2013-12-05-1400.mat
