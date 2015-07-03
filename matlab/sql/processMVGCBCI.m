@@ -9,7 +9,8 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	if size(bcunits,1) < 2
 		display(['Warning: fewer than 2 BCI units are labeled within ' nevfile])
 	end
-	matfile = fetch(exec(conn, ['SELECT `labview file` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	duration = matfile.Data{2};
 	matfile = matfile.Data{1};
 	matpath = [labviewpath matfile];
 	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
@@ -18,6 +19,10 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	%%Still processing...
 	%abovethresh = fetch(exec(conn, ['SELECT `unit` FROM `Units` WHERE `nev file` = "' nevfile '" AND `firingrate` > ' num2str(threshold)]))
 	%abovethresh = abovethresh.Data;
+	if duration < dur
+		display(['Recording is shorter than specified ' num2str(dur) ' seconds. Skipping'])
+		return
+	end
 
 	%%Preprocess data
 	%processed = preprocess_smooth_lv(nevpath, matfile, binsize, sigma_fr, sigma_trq, threshold, offset, [], [], units);

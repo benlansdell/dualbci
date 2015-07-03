@@ -40,7 +40,14 @@ function processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, thresho
 		%Extract deviance
 		dev = fulldevs(idx);
 
-		%Insert into Fits
+		%If already in database, skip
+		unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
+		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		if ~strcmp(previous.Data{1}, 'No Data')
+			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
+			continue
+		end
+
 		tablename = 'Fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'dev', 'computer', '`analysis date`', 'commit'};
 		sqldata = { modelID, nevfile, unit, idx, nC, dev, host, stamp, comm};
