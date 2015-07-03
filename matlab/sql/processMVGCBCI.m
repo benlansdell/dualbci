@@ -4,7 +4,8 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	eval(paramcode);
 	%Get which units are BCI units, get the mat file for this nev file
 	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `BCIUnits` WHERE `ID` = "' nevfile '"']));
-	bcunits = num2str(cell2mat(bcunits.Data));
+	%bcunits = num2str(cell2mat(bcunits.Data));
+	bcunits = bcunits.Data;
 	if size(bcunits,1) < 2
 		display(['Warning: fewer than 2 BCI units are labeled within ' nevfile])
 	end
