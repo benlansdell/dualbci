@@ -76,7 +76,7 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	sqldata = { modelID, nevfile, unit, unitnum, nC, host, stamp, comm};
 	datainsert(conn,tablename,fitcols,sqldata);
 	%Get the fit id used
-	fitid = fetch(exec('SELECT LAST_INSERT_ID()'));
+	fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 	fitid = fitid.Data{1};
 
 	%Insert into FitsMVGC
