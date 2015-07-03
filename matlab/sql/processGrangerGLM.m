@@ -41,7 +41,7 @@ function processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, thresho
 		dev = fulldevs(idx);
 
 		%If already in database, skip
-		unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
+		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
 		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])

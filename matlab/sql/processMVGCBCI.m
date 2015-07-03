@@ -76,6 +76,12 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	unit = 'curs';
 	unitnum = 1;
 
+	previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+	if ~strcmp(previous.Data{1}, 'No Data')
+		display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
+		continue
+	end
+
 	%Insert into Fits
 	tablename = 'Fits';
 	fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
