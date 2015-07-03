@@ -36,13 +36,13 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 	for idx = 1:nU
 		%If already in database, skip
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
+		%Extract and save regression fiticients
+		unit = processed.unitnames{idx};
 		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
 		end
-		%Extract and save regression fiticients
-		unit = processed.unitnames{idx};
 		%Extract deviance
 		dev = model.dev{idx, 1};
 		%Extract SE
