@@ -3,8 +3,9 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 	%Load parameters
 	eval(paramcode);
 	%Preprocess data
-	if nargin < 6
+	if nargin < 7
 		processed = preprocess_spline(nevpath, binsize, threshold, offset);
+		units = 0;
 	else
 		processed = preprocess_spline(nevpath, binsize, threshold, offset, 0, 0, units);
 	end
@@ -20,10 +21,10 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 	end
 
 	%Fit a linear model to training data
-	data = filters_sprc_pos(processed, nK_sp, nK_pos);
+	data = filters_sprc_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos);
 	model = MLE_glmfit(data, const);
 	%%Compute MSE on test data
-	datanovel = filters_sp_pos(processed_novel, nK_sp, nK_pos);
+	datanovel = filters_sprc_pos(processed_novel, nK_sp, nK_pos, dt_sp, dt_pos);
 	nBout = size(datanovel.y,2);
 	nBin = size(data.y,2);
 
@@ -66,14 +67,14 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 
-		%Insert into FitsLinear
-		tablename = 'FitsLinear';
-		fitcols = {'id', 'dir', 'size'};
-		regrRU = model.b_hat(idx,2);
-		regrFE = model.b_hat(idx,3);
-		[direction, tuningsize] = unitTheta(regrRU, regrFE);
-		sqldata = { fitid, direction, tuningsize};
-		datainsert(conn,tablename,fitcols,sqldata);
+		%Insert into FitsGLM
+		%tablename = 'FitsGLM';
+		%fitcols = {'id', 'dir', 'size'};
+		%regrRU = model.b_hat(idx,2);
+		%regrFE = model.b_hat(idx,3);
+		%[direction, tuningsize] = unitTheta(regrRU, regrFE);
+		%sqldata = { fitid, direction, tuningsize};
+		%datainsert(conn,tablename,fitcols,sqldata);
 
 		%Insert into ParameterEstimates
 		tablename = 'ParameterEstimates';
