@@ -1,4 +1,4 @@
-function processGLM(conn, modelID, blackrock, nevfile, paramcode, units)
+function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, units)
 	nevpath = [blackrock nevfile];
 	%Load parameters
 	eval(paramcode);
@@ -20,7 +20,7 @@ function processGLM(conn, modelID, blackrock, nevfile, paramcode, units)
 	end
 
 	%Fit a linear model to training data
-	data = filters_sp_pos(processed, nK_sp, nK_pos);
+	data = filters_sprc_pos(processed, nK_sp, nK_pos);
 	model = MLE_glmfit(data, const);
 	%%Compute MSE on test data
 	datanovel = filters_sp_pos(processed_novel, nK_sp, nK_pos);
