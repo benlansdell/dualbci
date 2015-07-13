@@ -51,6 +51,8 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 		%Extract MSE. Need to add cross-validation code to do this... add later
 		b_hat = model.b_hat(idx,:);
 		rho_hat = glmval(b_hat', squeeze(datanovel.X(idx,:,:)), 'log');
+		converged = model.converged(idx);
+		conditioned = model.conditioned(idx);
 
 		mseout = sum((datanovel.y(idx,:)-rho_hat').^2)/nBout;
 
@@ -59,8 +61,8 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 		%fitid = randi(1e9);
 		%Insert into Fits
 		tablename = 'Fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit'};
-		sqldata = { modelID, nevfile, unit, nC, dev, mseout, host, stamp, comm};
+		fitcols = {'modelID', '`nev file`', 'unit', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit', 'conv', 'cond'};
+		sqldata = { modelID, nevfile, unit, nC, dev, mseout, host, stamp, comm, converged, conditioned};
 		datainsert(conn,tablename,fitcols,sqldata);
 
 		%Get the fit id used

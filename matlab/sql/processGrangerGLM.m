@@ -9,14 +9,16 @@ function processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, thresho
 	processed = truncate_recording(processed, dur);
 	%Truncate to top 15 units by firing rate
 	[totalspikes, indices] = sort(sum(processed.binnedspikes,1), 2, 'descend');
-	nU = 15; %size(processed.binnedspikes,2);
-	nUabove = length(processed.unitnames);
+	%Redo thresholding on firing rate now truncated
+	firingrate = totalspikes/dur;	
+	%nU = 15; %size(processed.binnedspikes,2);
+	nUabove = sum(firingrate > threshold);
 	if nUabove < nU
 		display(['Warning: nev file ' nevfile ' contains only ' num2str(nUabove)...
-		 ' units above ' num2str(threshold) ' when ' num2str(nU) ' was requested.'])
+		 ' units above ' num2str(threshold) 'Hz when ' num2str(nU) 'Hz was requested.'])
 		nU = nUabove;
 	end
-	top = indices(1:nU);
+	top = indices(1:nUabove);
 	processed.binnedspikes = processed.binnedspikes(:,top);
 	processed.rates = processed.rates(:,top);              
 	processed.unitnames = processed.unitnames(top);
