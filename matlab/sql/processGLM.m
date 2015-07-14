@@ -55,6 +55,8 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 		conditioned = model.conditioned(idx);
 
 		mseout = sum((datanovel.y(idx,:)-rho_hat').^2)/nBout;
+		mseout = min(mseout, 1e30);
+		dev = min(dev, 1e30);
 
 		%Get the fitID
 		%fitid = getFitID(conn);
