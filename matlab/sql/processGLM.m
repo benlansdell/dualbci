@@ -103,7 +103,9 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 				labidx = j;
 				label = findLabel(labidx, data.k);
 			end
-			sqldata = {fitid, num, label, model.b_hat(idx, j), stats.se(j)};
+			val = max(min(model.b_hat(idx,j), 1e10), -1e10);
+			se = min(stats.se(j), 1e10);
+			sqldata = {fitid, num, label, val, se};
 			datainsert(conn,tablename,fitcols,sqldata);
 		end
 	end
