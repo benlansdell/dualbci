@@ -11,7 +11,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, par
 		return
 	end
 	%Preprocess data
-	if nargin < 7
+	if nargin < 8
 		processed = preprocess_spline_target(nevpath, matpath, binsize, threshold, offset);
 		units = 0;
 	else
