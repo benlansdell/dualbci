@@ -2,6 +2,13 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 	nevpath = [blackrock nevfile];
 	%Load parameters
 	eval(paramcode);
+	%If too short then skip this file...
+	duration = fetch(exec(conn, ['SELECT `duration` FROM Recordings WHERE `nev file` = "' nevfile '"']));
+	duration = duration.Data{1};
+	if duration < dur+testdur
+		display(['Duration of ' nevfile '(' num2str(duration) 's) is less than requested ' num2str(dur+testdur) 's. Continuing'])		
+		return
+	end
 	%Preprocess data
 	if nargin < 7
 		processed = preprocess_spline(nevpath, binsize, threshold, offset);
@@ -13,13 +20,6 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 	processed = removeProcessedUnits(processed, conn, modelID);
 	nU = length(processed.unitnames);
 	%Truncate to specified duration
-	%If too short then skip this file...
-	duration = fetch(exec(conn, ['SELECT `duration` FROM Recordings WHERE `nev file` = ' nevfile '"']));
-	duration = duration.Data{1};
-	if duration < dur+testdur
-		display(['Duration of ' nevfile ' is less than requested ' num2str(dur+testdur) '. Continuing'])		
-		return
-	end
 	[processed, processed_novel] = split_recording(processed, dur, dur+testdur);
 	%If all units have been analyzed then return
 	if nU == 0
