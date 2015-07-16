@@ -1,5 +1,5 @@
 %Script to run simple linear regression on manual control between 2013-09-20 and 2014-01-01
-modelID = 4;
+modelID = 5;
 blackrock = './blackrock/';
 labviewpath = './labview/';
 
