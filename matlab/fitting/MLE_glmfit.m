@@ -38,13 +38,14 @@ function model = MLE_glmfit(data, const)
 	model.stats = cell(nU,1);
 	model.converged = ones(nU,1);
 	model.conditioned = ones(nU,1);
+	cutoff = 1e-10;
 	%For each unit, fit a GLM to the torque data
 	display(['Fitting GLM by MLE with IRLS. Fitting ' num2str(nU) ' units.'])
 	for idx=1:nU 
 		display(['Fitting unit ' num2str(idx)])
 		%Mask columns that don't vary... they cannot be estimated.
 		d = squeeze(data.X(idx,:,:));
-		mask = (std(d) > 0);
+		mask = (std(d) > cutoff);
 		if strcmp(const, 'off')
 			m = mask;
 		else

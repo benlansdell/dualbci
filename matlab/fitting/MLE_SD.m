@@ -38,6 +38,8 @@ function [model, intermediates] = MLE_SD(data, const, fn_out)
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
 
+	cutoff = 1e-10;
+
 	%b0= [-3.2023; 0.5575; -0.5688];
 	%b0= [0.5575; -0.5688];
 	%b0 = zeros(2,1);
@@ -45,7 +47,7 @@ function [model, intermediates] = MLE_SD(data, const, fn_out)
 	for idx=1:nU 
 		%Mask columns that don't vary... they cannot be estimated.
 		d = squeeze(data.X(idx,:,:));
-		mask = (std(d) > 0);
+		mask = (std(d) > cutoff);
 		if strcmp(const, 'off')
 			m = mask;
 		else
