@@ -89,7 +89,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 
 		%Insert into ParameterEstimates
 		tablename = 'ParameterEstimates';
-		fitcols = {'id', 'num', 'label', 'value', 'se'};
+		fitcols = {'id', 'num', 'label', 'value', 'se', 'mask'};
 		for j = 1:nC
 			num = j;
 			if strcmp(const, 'on')
@@ -105,7 +105,8 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 			end
 			val = max(min(model.b_hat(idx,j), 1e10), -1e10);
 			se = min(stats.se(j), 1e10);
-			sqldata = {fitid, num, label, val, se};
+			mask = model.mask(idx,j);			
+			sqldata = {fitid, num, label, val, se, mask};
 			datainsert(conn,tablename,fitcols,sqldata);
 		end
 	end

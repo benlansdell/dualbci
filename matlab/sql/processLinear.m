@@ -77,7 +77,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 
 		%Insert into ParameterEstimates
 		tablename = 'ParameterEstimates';
-		fitcols = {'id', 'num', 'label', 'value', 'se'};
+		fitcols = {'id', 'num', 'label', 'value', 'se', 'mask'};
 		for j = 1:nC
 			num = j;
 			if strcmp(const, 'on')
@@ -91,7 +91,8 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 				labidx = j;
 				label = findLabel(labidx, data.k);
 			end
-			sqldata = {fitid, num, label, model.b_hat(idx, j), stats.se(j)};
+			mask = model.mask(idx,j);			
+			sqldata = {fitid, num, label, model.b_hat(idx, j), stats.se(j), mask};
 			datainsert(conn,tablename,fitcols,sqldata);
 		end
 	end
