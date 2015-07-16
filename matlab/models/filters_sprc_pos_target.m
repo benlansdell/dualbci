@@ -42,9 +42,11 @@ function data = filters_sprc_pos_target(processed, nK_sp, nK_pos, nK_tar, dt_sp,
 	%	pre = load('./testdata/test_preprocess_spline_short.mat');
 	%	nK_sp = 50; 
 	%	nK_pos = 10;
+	%	nK_tar = 10;
 	%	dt_sp = 0.002;
 	%	dt_pos = 0.05;
-	%	data = filters_sprc_pos_target(pre.processed, nK_sp, nK_pos, dt_sp, dt_pos);
+	%	dt_tar = 0.05;
+	%	data = filters_sprc_pos_target(pre.processed, nK_sp, nK_pos, nK_tar, dt_sp, dt_pos, dt_tar);
 
 	if (nargin < 5) dt_sp = processed.binsize; end
 	if (nargin < 6) dt_pos = processed.binsize; end
