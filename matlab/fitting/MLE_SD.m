@@ -15,7 +15,7 @@ function [model, intermediates] = MLE_SD(data, const, fn_out)
 	%	intermediates is an array of intermediate estimate values of b_hat at each iteration
 	%
 	%Test code:
-	%	const = 'off';
+	%	const = 'on';
 	%	nK_sp = 0; 
 	%	nK_pos = 1;
 	%	%Load test preprocessed data
@@ -30,22 +30,32 @@ function [model, intermediates] = MLE_SD(data, const, fn_out)
 	nK = size(data.X,3);
 	if strcmp(const, 'on')
 		model.b_hat = zeros(nU, nK+1);
+		model.mask = zeros(nU, nK+1);
 	else
 		model.b_hat = zeros(nU, nK);
+		model.mask = zeros(nU, nK);
 	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
 
-	b0 = -1*ones(size(model.b_hat))';
 	%b0= [-3.2023; 0.5575; -0.5688];
 	%b0= [0.5575; -0.5688];
 	%b0 = zeros(2,1);
-
 	%For each unit, fit a GLM to the torque data
 	for idx=1:nU 
-		[b, dev] = glmfit_SD(squeeze(data.X(idx,:,:)),data.y(idx,:), const, b0);
+		%Mask columns that don't vary... they cannot be estimated.
+		d = squeeze(data.X(idx,:,:));
+		mask = (std(d) > 0);
+		if strcmp(const, 'off')
+			m = mask;
+		else
+			m = [1==1 mask];
+		end		
+		model.mask(idx,:) = m;
+		b0 = -1*ones(1,sum(m))';
+		[b, dev] = glmfit_SD(d(:,mask),data.y(idx,:), const, b0);
 		%Extract filters fitted...
-		model.b_hat(idx,:) = b;	
+		model.b_hat(idx,m) = b;		
 		model.dev{idx} = dev;
 		model.stats{idx} = 0;
 	end
@@ -108,6 +118,9 @@ end
 
 function ll = l(X,y,b_hat)
 	%Log likelihood
+	%size(X)
+	%size(y)
+	%size(b_hat)
 	ll = y*X*b_hat-sum(exp(X*b_hat)+log(y+0.00001)');
 end
 

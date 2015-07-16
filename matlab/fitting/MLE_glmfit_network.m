@@ -21,15 +21,17 @@ function model = MLE_glmfit_network(data, const)
 	%	%Load test preprocessed data
 	%	pre = load('./testdata/test_preprocess_spline_60hz_short24.mat');
 	%	data = filters_sp_pos_network(pre.processed, nK_sp, nK_pos);
-	%	model = MLE_glmfit(data, const);
+	%	model = MLE_glmfit_network(data, const);
 
 	if (nargin < 2) const = 'on'; end
 	nU = size(data.y,1);
 	nK = size(data.X,2);
 	if strcmp(const, 'on')
 		model.b_hat = zeros(nU, nK+1);
+		model.mask = zeros(nU, nK+1);
 	else
 		model.b_hat = zeros(nU, nK);
+		model.mask = zeros(nU, nK);
 	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
@@ -39,7 +41,15 @@ function model = MLE_glmfit_network(data, const)
 	display(['Fitting GLM by MLE with IRLS. Fitting ' num2str(nU) ' units.'])
 	for idx=1:nU 
 		display(['Fitting unit ' num2str(idx)])
-		[b, dev, stats] = glmfit(data.X,data.y(idx,:),'poisson', 'constant', const);
+		%Mask columns that don't vary... they cannot be estimated.
+		mask = (std(data.X) > 0);
+		if strcmp(const, 'off')
+			m = mask;
+		else
+			m = [1==1 mask];
+		end
+		model.mask(idx,:) = m;
+		[b, dev, stats] = glmfit(data.X(:,mask),data.y(idx,:),'poisson', 'constant', const);
 		%Catch if a warning was raised about badly conditioned matrix
 		[warn, warnid] = lastwarn;
 		if ~strcmp(warn, '')
@@ -52,7 +62,7 @@ function model = MLE_glmfit_network(data, const)
 	    end
 	    lastwarn('')
 	    %Extract filters fitted...
-		model.b_hat(idx,:) = b;	
+		model.b_hat(idx,m) = b;	
 		model.dev{idx} = dev;
 		%Remove residual components since these take up a lot of memory
 		model.N = size(stats.resid,1);

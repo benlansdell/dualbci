@@ -21,7 +21,7 @@ function model = MLE_glmfit(data, const)
 	%	%Load test preprocessed data
 	%	pre = load('./testdata/test_preprocess_spline_short.mat');
 	%	data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
-	%	model = MLE_glmfit(data, const);
+	%	model = MLE_glmfit_GPU(data, const);
 
 	if (nargin < 2) const = 'on'; end
 
@@ -29,8 +29,10 @@ function model = MLE_glmfit(data, const)
 	nK = size(data.X,3);
 	if strcmp(const, 'on')
 		model.b_hat = zeros(nU, nK+1);
+		model.mask = zeros(nU, nK+1);
 	else
 		model.b_hat = zeros(nU, nK);
+		model.mask = zeros(nU, nK);
 	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
@@ -41,7 +43,16 @@ function model = MLE_glmfit(data, const)
 
 	for idx=1:nU 
 		display(['Fitting unit ' num2str(idx)])
-		[b, dev, stats] = glmfit_matlab_GPU(squeeze(data.X(idx,:,:)),data.y(idx,:),'poisson', 'constant', const);
+		%Mask columns that don't vary... they cannot be estimated.
+		d = squeeze(data.X(idx,:,:));
+		mask = (std(d) > 0);
+		if strcmp(const, 'off')
+			m = mask;
+		else
+			m = [1==1 mask];
+		end
+		model.mask(idx,:) = m;
+		[b, dev, stats] = glmfit_matlab_GPU(d(:,mask),data.y(idx,:),'poisson', 'constant', const);
 		%Catch if a warning was raised about badly conditioned matrix
 		[warn, warnid] = lastwarn;
 		if ~strcmp(warn, '')
@@ -54,7 +65,7 @@ function model = MLE_glmfit(data, const)
 	    end
 	    lastwarn('')
 		%Extract filters fitted...
-		model.b_hat(idx,:) = b;	
+		model.b_hat(idx,m) = b;	
 		model.dev{idx} = dev;
 		%Remove residual components since these take up a lot of memory
 		model.N = size(stats.resid,1);

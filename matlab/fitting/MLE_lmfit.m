@@ -29,8 +29,10 @@ function model = MLE_lmfit(data, const)
 	nK = size(data.X,3);
 	if strcmp(const, 'on')
 		model.b_hat = zeros(nU, nK+1);
+		model.mask = zeros(nU, nK+1);
 	else
 		model.b_hat = zeros(nU, nK);
+		model.mask = zeros(nU, nK);
 	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
@@ -40,7 +42,16 @@ function model = MLE_lmfit(data, const)
 	display(['Fitting GLM by MLE with IRLS. Fitting ' num2str(nU) ' units.'])
 	for idx=1:nU 
 		display(['Fitting unit ' num2str(idx)])
-		[b, dev, stats] = glmfit(squeeze(data.X(idx,:,:)),data.y(idx,:),'normal', 'constant', const, 'link', 'identity');
+		%Mask columns that don't vary... they cannot be estimated.
+		d = squeeze(data.X(idx,:,:));
+		mask = (std(d) > 0);
+		if strcmp(const, 'off')
+			m = mask;
+		else
+			m = [1==1 mask];
+		end
+		model.mask(idx,:) = m;
+		[b, dev, stats] = glmfit(d(:,mask),data.y(idx,:),'normal', 'constant', const, 'link', 'identity');
 		%Catch if a warning was raised about badly conditioned matrix
 		[warn, warnid] = lastwarn;
 		if ~strcmp(warn, '')
@@ -53,7 +64,7 @@ function model = MLE_lmfit(data, const)
 	    end
 	    lastwarn('')
 	    %Extract filters fitted...
-		model.b_hat(idx,:) = b;	
+		model.b_hat(idx,m) = b;	
 		model.dev{idx} = dev;
 		model.sigma(idx) = std(stats.resid(:));
 		%Compute likelihood, also

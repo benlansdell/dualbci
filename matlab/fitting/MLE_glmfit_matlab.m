@@ -30,8 +30,10 @@ function model = MLE_glmfit_matlab(data, const)
 	nK = size(data.X,3);
 	if strcmp(const, 'on')
 		model.b_hat = zeros(nU, nK+1);
+		model.mask = zeros(nU, nK+1);
 	else
 		model.b_hat = zeros(nU, nK);
+		model.mask = zeros(nU, nK);
 	end
 	model.dev = cell(nU,1);
 	model.stats = cell(nU,1);
@@ -39,7 +41,16 @@ function model = MLE_glmfit_matlab(data, const)
 	model.conditioned = ones(nU,1);
 	%For each unit, fit a GLM to the torque data
 	for idx=1:nU
-		[b, dev, stats] = glmfit_matlab(squeeze(data.X(idx,:,:)),data.y(idx,:),'poisson', 'constant', const, 'k', data.k);
+		%Mask columns that don't vary... they cannot be estimated.
+		d = squeeze(data.X(idx,:,:));
+		mask = (std(d) > 0);
+		if strcmp(const, 'off')
+			m = mask;
+		else
+			m = [1==1 mask];
+		end
+		model.mask(idx,:) = m;
+		[b, dev, stats] = glmfit_matlab(d(:,mask),data.y(idx,:),'poisson', 'constant', const);
 		%Catch if a warning was raised about badly conditioned matrix
 		[warn, warnid] = lastwarn;
 		if ~strcmp(warn, '')
@@ -53,7 +64,7 @@ function model = MLE_glmfit_matlab(data, const)
 	    lastwarn('')
 
 	    %Extract filters fitted...
-		model.b_hat(idx,:) = b;	
+		model.b_hat(idx,m) = b;	
 		model.dev{idx} = dev;
 		model.stats{idx} = stats;
 	end
