@@ -21,10 +21,10 @@ function processLinear(conn, modelID, blackrock, labview, nevfile, matfile, para
 	end
 
 	%Fit a linear model to training data
-	data = filters_sp_pos_lv(processed, nK_sp, nK_pos, dt_sp, dt_pos);
+	data = filters_sp_pos_lv(processed, nK_sp, nK_pos);
 	model = MLE_lmfit(data, const);
 	%%Compute MSE on test data
-	datanovel = filters_sp_pos_lv(processed_novel, nK_sp, nK_pos, dt_sp, dt_pos);
+	datanovel = filters_sp_pos_lv(processed_novel, nK_sp, nK_pos);
 	nBout = size(datanovel.y,2);
 	nBin = size(data.y,2);
 
