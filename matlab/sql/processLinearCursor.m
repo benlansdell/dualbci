@@ -4,7 +4,7 @@ function processLinear(conn, modelID, blackrock, labview, nevfile, matfile, para
 	%Load parameters
 	eval(paramcode);
 	%Preprocess data
-	if nargin < 7
+	if nargin < 9
 		processed = preprocess_spline_lv(nevpath, matpath, binsize, threshold, offset);
 	else
 		processed = preprocess_spline_lv(nevpath, matpath, binsize, threshold, offset, 0, 0, units);
