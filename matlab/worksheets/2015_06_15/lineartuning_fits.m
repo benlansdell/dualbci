@@ -2,9 +2,9 @@
 modelID = 1;
 blackrock = './blackrock/';
 threshold = 5;
-after = '2013-09-20';
-before = '2014-01-01';
-tasktype = 'manual';
+after = '2014-01-01';
+before = '2014-09-20';
+tasktype = 'brain';
 duration = 180;
 
 %Fetch paramcode to load
@@ -24,5 +24,9 @@ nR = size(toprocess,1);
 for idx = 1:nR
 	nevfile = toprocess{idx, 1};
 	display(['Processing ' nevfile])
-	processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold);
+	if exist([blackrock nevfile], 'file')
+		processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold);
+	else
+		display('Cannot find file, continuing')
+	end
 end
