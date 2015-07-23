@@ -38,8 +38,8 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 	nC = size(model.b_hat,2);
 	%Tag with computer run on, date, last git commit
 	host = hostname();
-	comm = currCommit();
 	stamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
+	comm = currCommit();
 	%For each unit, save the results 
 	for idx = 1:nU
 		%If already in database, skip
