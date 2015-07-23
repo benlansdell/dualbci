@@ -16,17 +16,22 @@ paramcode = paramcode.Data{1};
 %Fetch each pair of nev files to run
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-tablename = 'AnalysisLinear';
-tablename = 'AnalysisLinear2';
-toprocess = exec(conn, ['SELECT `1DBCrecording` FROM ' tablename]);
+tablename = '`Analysis Feb-Aug 2014 Tuning Change`';
+colnames = {'`File name MCP 1`', '`File name MCP 2`','`File name MCV`','`File name BC`'};
+toprocess = exec(conn, ['SELECT `File name BC` FROM ' tablename]);
+%toprocess = exec(conn, ['SELECT `1DBCrecording` FROM ' tablename]);
 toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 nR = size(toprocess,1);
 
 rng('shuffle')
-for idx = 74:nR
+for idx = 34:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
-	processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcode, threshold);
+	if exist([blackrock nevfile], 'file')
+		processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcode, threshold);
+	else
+		display('Cannot find file, continuing')
+	end
 end
 
