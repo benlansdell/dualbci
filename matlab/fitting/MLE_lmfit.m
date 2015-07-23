@@ -72,6 +72,9 @@ function model = MLE_lmfit(data, const)
 		%Remove residual components since these take up a lot of memory
 		model.N = size(stats.resid,1);
 		stats = rmfield(stats, {'resid', 'residp', 'residd', 'resida', 'wts'});
+		se = zeros(size(model.b_hat,2));
+		se(m,m) = stats.se;
+		stats.se = se;
 		model.stats{idx} = stats;
 	end
 	model.logli = ll(model, data, 'normal');
