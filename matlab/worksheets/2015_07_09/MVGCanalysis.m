@@ -23,15 +23,16 @@ set(get(gca,'child'),'FaceColor',[0 0.5 0.5],'EdgeColor','w');
 hold on
 hist(log10(mvgc(~bcindices)));
 legend('BCI units', 'Non-BCI units')
-xlabel('log10(GC score)')
-ylabel('frequency')
+xlabel('log_{10}(Granger score)')
+ylabel('frequency (number of units)')
 saveplot(gcf, './worksheets/2015_07_09/MVGCanalysis1.eps')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Proportion of GC score versus linear tuning%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`, fl.dir, bci.angle, MOD(fl.dir-bci.angle, 2*PI()), fl.size, u.firingrate, f1.`mse out` '...
+data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,'...
+	' fl.dir, bci.angle, MOD(fl.dir-bci.angle, 2*PI()), fl.size, u.firingrate, f1.`mse out`, f1.`dev`, f2.`mse out`, f2.`dev` '...
 	'FROM GrangerEstimates ge '...
 	'INNER JOIN Fits f ON f.id = ge.id '...
 	'INNER JOIN Recordings rec ON rec.`nev file` = f.`nev file` '...
@@ -39,12 +40,15 @@ data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,
 	'INNER JOIN AnalysisLinear al ON al.`1DBCrecording` = f.`nev file` '...
 	'INNER JOIN Fits f1 ON f1.`nev file` = al.`manualrecording` AND f1.`modelID` = 1 and f1.unit = ge.fromunit '...
 	'INNER JOIN FitsLinear fl ON f1.`id` = fl.id '...
-	'INNER JOIN Units u ON u.`nev file` = f1.`nev file` AND u.`unit` = f1.unit WHERE f.modelID = 3 ']);
+	'INNER JOIN Units u ON u.`nev file` = f1.`nev file` AND u.`unit` = f1.unit '...
+	'INNER JOIN Fits f2 ON f2.`nev file` = al.`1DBCrecording` AND f2.`modelID` = 1 AND f2.unit = ge.fromunit WHERE f.modelID = 3 ']);
 
 data = fetch(data);
 data = data.Data;
 
 gc = [];
+gc1 = [];
+gc2 = [];
 gcnorm = [];
 delangle1 = [];
 tuningsize1 = [];
@@ -55,11 +59,19 @@ firing2 = [];
 performance = [];
 mseout1 = [];
 mseout2 = [];
+dev1 = [];
+dev2 = [];
+dev1BC = [];
+dev2BC = [];
+mseout1BC = [];
+mseout2BC = [];
 
 for i = 1:(size(data,1)-1)
 	if strcmp(data{i, 4}, data{i+1, 4})
 		idx = length(gc)+1;
 		%delangle(idx+1) = data{i+1,7};
+		gc1(idx) = data{i,2};
+		gc2(idx) = data{i+1,2};
 		total = data{i,2}+data{i+1,2};
 		gc(idx) = data{i,2}-data{i+1,2};
 		gcnorm(idx) = gc(idx)/total;
@@ -71,6 +83,12 @@ for i = 1:(size(data,1)-1)
 		firing2(idx) = data{i+1,9};
 		mseout1(idx) = data{i,10};
 		mseout2(idx) = data{i+1,10};
+		dev1(idx) = data{i,11};
+		dev2(idx) = data{i+1,11};
+		mseout1BC(idx) = data{i,12};
+		mseout2BC(idx) = data{i+1,12};
+		dev1BC(idx) = data{i,13};
+		dev2BC(idx) = data{i+1,13};
 		performance(idx) = data{i, 3};
 	end
 end
@@ -96,21 +114,90 @@ figure
 x = tuningsize1; y = tuningsize2; c = gcnorm;
 scatter(x,y,[],c, 'filled');
 hold on
-plot([0 4], [0 4])
-xlabel('Tuning size1')
-ylabel('Tuning size2')
+plot([0 4], [0 4], 'k')
+xlabel('Tuning size. Unit 1 (Manual control)')
+ylabel('Tuning size. Unit 2 (Manual control)')
+title('\Delta Granger (Brain control)')
 colorbar
 saveplot(gcf, './worksheets/2015_07_09/tuningsizeVsGranger.eps')
 
 figure
-x = mseout1; y = mseout2; c = gcnorm;
+x = mseout1; y = mseout2; c = gcnorm; a = 100*performance+20;
+scatter(x,y,[],c, 'filled');
+hold on
+plot([0 .4], [0 .4], 'k')
+xlabel('MSE. Unit 1')
+ylabel('MSE. Unit 2')
+title('\Delta Granger (Brain control)')
+caxis([-.6 .6])
+colorbar
+saveplot(gcf, './worksheets/2015_07_09/mseoutVsGranger.eps')
+
+figure
+x = gc1; y = gc2; c = performance;
 scatter(x,y,[],c, 'filled');
 hold on
 %plot([0 4], [0 4])
-xlabel('MSE out of sample1')
-ylabel('MSE out of sample2')
+xlabel('Granger score. Unit 1')
+ylabel('Granger score. Unit 2')
+title('Performance (successes/second)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09/mseoutVsGranger.eps')
+saveplot(gcf, './worksheets/2015_07_09/GrangervsPerformance.eps')
+
+figure
+x = mseout1; y = mseout2; c = performance; a = min(gcnorm)+10+10*gcnorm;
+scatter(x,y,[],c, 'filled');
+hold on
+%plot([0 4], [0 4])
+xlabel('MSE. Unit 1')
+ylabel('MSE. Unit 2')
+title('Performance (successes/second)')
+colorbar
+saveplot(gcf, './worksheets/2015_07_09/mseoutvsPerformance.eps')
+
+figure
+x = mseout1; y = mseout2; c = performance;
+plot([x y], [performance performance], '.');
+%plot([0 4], [0 4])
+xlabel('mse')
+ylabel('performance')
+saveplot(gcf, './worksheets/2015_07_09/mseoutvsPerformanceA.eps')
+
+figure
+x = tuningsize1; y = tuningsize2; c = performance;
+scatter(x,y,[],c, 'filled');
+hold on
+%plot([0 4], [0 4])
+xlabel('Tuning size. Unit 1')
+ylabel('Tuning size. Unit 2')
+title('Performance (successes/second)')
+colorbar
+saveplot(gcf, './worksheets/2015_07_09/tuningsizevsPerformance.eps')
+
+figure
+x = firing1; y = firing2; c = performance;
+scatter(x,y,[],c, 'filled');
+hold on
+%plot([0 4], [0 4])
+xlabel('firing 1')
+ylabel('firing 2')
+colorbar
+saveplot(gcf, './worksheets/2015_07_09/firingvsPerformance.eps')
+
+figure
+x = firing1; y = firing2; c = gcnorm;
+scatter(x,y,[],c, 'filled');
+hold on
+plot([0 50], [0 50])
+xlabel('firing 1')
+ylabel('firing 2')
+colorbar
+saveplot(gcf, './worksheets/2015_07_09/firingratevsGranger.eps')
+
+figure
+plot([mseout1, mseout2], [tuningsize1, tuningsize2], '.')
+xlabel('MSE'); ylabel('Tuning size')
+saveplot(gcf, './worksheets/2015_07_09/tuningsizeVsMSE.eps')
 
 figure
 x = firing1; y = firing2; c = gcnorm;
@@ -136,3 +223,17 @@ xlabel('GC balance')
 ylabel('Performance (successes/min)')
 saveplot(gcf, './worksheets/2015_07_09/GCvsperformance.eps')
 
+%%%%%%%%%%Linear regression of BC %%%%%%%%%%%%%%%%
+figure
+plot([mseout1 mseout2], [mseout1BC mseout2BC], '.')
+
+figure
+x = mseout1; y = mseout2; c = mseout1BC - mseout2BC; a = 100*performance+20;
+scatter(x,y,[],c, 'filled');
+hold on
+%plot([0 4], [0 4])
+xlabel('MSE out of sample1')
+ylabel('MSE out of sample2')
+caxis([-.35 0.35])
+colorbar
+saveplot(gcf, './worksheets/2015_07_09/mseoutVsmseoutBC.eps')
