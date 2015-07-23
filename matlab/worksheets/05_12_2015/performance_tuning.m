@@ -17,6 +17,7 @@ torqueRU1 = data(indices,11);
 torqueFE2 = data(indices,12);
 torqueRU2 = data(indices,13);
 
+torqueFE1 = -torqueFE1;
 torqueH1 = atan(torqueRU1./torqueFE1); %theta
 torqueS1 = sqrt(torqueRU1.^2 + torqueFE1.^2); %speed
 piplus = torqueFE1 < 0 & torqueRU1 > 0;
@@ -25,13 +26,14 @@ torqueH1(piplus) = torqueH1(piplus) + pi;
 torqueH1(piminus) = torqueH1(piminus) - pi;
 torqueH1(torqueH1<0) = torqueH1(torqueH1<0)+2*pi;
 
+torqueFE2 = -torqueFE2;
 torqueH2 = atan(torqueRU2./torqueFE2); %theta
 torqueS2 = sqrt(torqueRU2.^2 + torqueFE2.^2); %speed
 piplus = torqueFE2 < 0 & torqueRU2 > 0;
 piminus = torqueFE2 < 0 & torqueRU2 < 0;
 torqueH2(piplus) = torqueH2(piplus) + pi;
 torqueH2(piminus) = torqueH2(piminus) - pi;
-torqueH2(torqueH1<0) = torqueH2(torqueH1<0)+2*pi;
+torqueH2(torqueH2<0) = torqueH2(torqueH2<0)+2*pi;
 
 %Compute angles used in BC task
 taskH1 = (data(indices, 5)==1)*pi+(data(indices, 5)==2)*pi/2;
