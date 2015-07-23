@@ -27,7 +27,7 @@ for idx = 1:nR
 	matfile = matfile.Data{1};
 	display(['Processing ' nevfile])
 	if exist([blackrock nevfile], 'file')
-		processTorqueGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, paramcode);
+		processTargetGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, paramcode);
 	else
 		display('Cannot find file, continuing')
 	end
