@@ -24,10 +24,12 @@ toprocess = toprocess.Data;
 toprocess = reshape(toprocess,1,[]);
 nR = size(toprocess,2);
 
-rng('shuffle')
+%rng('shuffle')
 for idx = 1:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
-	processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, threshold);
+	if ~strcmp(nevfile, 'null')
+		processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, threshold);
+	end
 end
 
