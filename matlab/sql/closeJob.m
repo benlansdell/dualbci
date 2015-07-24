@@ -3,7 +3,7 @@ function closejob(conn, id)
 	status = 1;
 	tablename = 'Jobs';
 	colnames = {'`end date`', 'status'};
-	sqldata = { comm, status};
+	sqldata = { stamp, status};
 	whereclause = ['WHERE id = ' num2str(id)];
 	update(conn,tablename,colnames,sqldata,whereclause);
 end
