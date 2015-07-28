@@ -18,17 +18,38 @@ function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnev
 	%Get how many units are above threshold from Units
 	units = fetch(exec(conn, ['SELECT `unit` FROM `Units` WHERE `nev file` = "' nevfile '" AND `firingrate` > ' num2str(threshold)]));
 	units = units.Data;
+	%If more than 30 units...take a random sample
+	if length(units) > nU
+		units = randsample(units, nU);
+	end
+	%Add the BCI units if not already there
 	units = unique([units; bcunits]);
 	if duration < dur
 		display(['Recording is shorter than specified ' num2str(dur) ' seconds. Skipping'])
 		return
 	end
 
+	%Check if the requisite number of units have already been analysed in this file...
+	analysedunits = fetch(exec(conn, ['SELECT `unit` FROM Fits WHERE modelID = ' num2str(modelID) ' AND `nev file` = "' nevfile '"']));
+	analysedunits = analysedunits.Data;
+	if all(~strcmp(analysedunits, 'No Data'))
+		display('Already analysed this file with this model. Continuing')
+		return
+	end	
+
 	%%Preprocess data
 	processed = preprocess_spline_lv(nevpath, matfile, binsize, threshold, offset, [], [], units);
 	%Truncate to specified duration
 	processed = truncate_recording(processed, dur);
+
+	%Truncate to units that haven't been analyzed before using this model
+	processed = removeProcessedUnits(processed, conn, modelID);
 	nUtotal = length(processed.unitnames);
+	%If all units have been analyzed then return
+	if nUtotal == 0
+		display(['All units in ' nevfile ' have been analyzed by model number ' modelID '. Continuing'])
+		return
+	end
 
 	%Make data matrix
 	if strcmp(taskaxes, 'horiz')
@@ -38,7 +59,8 @@ function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnev
 	elseif strcmp(taskaxes, '2D')
 		idx = [1, 2];
 	else
-		error([nevfile ' does not specify the task axes.'])
+		display([nevfile ' does not specify the task axes.'])
+		return;
 	end
 
 	%MVGC
