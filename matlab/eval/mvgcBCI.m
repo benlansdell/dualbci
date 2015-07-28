@@ -97,6 +97,7 @@ function results = mvgcBCI(X, tstat, nK, alpha)
 	ptic('*** var_to_autocov... ');
 	[G,info] = var_to_autocov(A,SIG,acmaxlags);	
 	ptoc;
+	results.G = G;
 	results.info = info;
 	var_info(info,true); % report results (and bail out on error)
 
