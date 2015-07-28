@@ -34,28 +34,31 @@ function [F, Q, mu] = fit_AR(data, order, horizon, every)
 	if (nargin < 2) order = 1; end
 	if (nargin < 3) horizon = 1; end
 	if (nargin < 4) every = 1; end
-	F = zeros(horizon, order*2, 2);
-	mu = zeros(horizon, 2);
+	nD = size(data,2);
+	F = zeros(horizon, order*nD, nD);
+	mu = zeros(horizon, nD);
 	residuals = zeros(size(data,1)-order, size(data,2));
 
 	for h = 1:horizon
-		for idx = 1:2
+		for idx = 1:nD
+			X = [];
 			Y = data(order+1:end,idx);
 			%Set up matrices
-			c = data(order:end-h, 1);
-			r = data(order:-1:1,1);
-			X_RU = toeplitz(c,r);
-			c = data(order:end-h,2);
-			r = data(order:-1:1,2);
-			X_FE = toeplitz(c,r);
+			for j = 1:nD
+				c = data(order:end-h,j);
+				r = data(order:-1:1,j);
+				X = horzcat(X, toeplitz(c,r));
+			end
 			%Fit a constant term
-			X = [ones(size(X_RU,1),1), X_RU, X_FE];
+			X = horzcat(ones(size(X,1),1), X);
 			%Do the least squares fit:
 			beta_hat = (transpose(X)*X)\(transpose(X)*Y);
 			mu(h, idx) = beta_hat(1);
-			F(h,1:2*order,idx) = beta_hat(2:end);
+			F(h,1:nD*order,idx) = beta_hat(2:end);
 			residuals(:,idx) = Y - X*beta_hat;
 		end
 	end
 	%Compute the variance/covariance of residuals, Q.
-	Q = cov(residuals(:,1), residuals(:,2));
+
+	%Q = cov(residuals(:,1), residuals(:,2));
+	Q = cov(residuals);
