@@ -2,6 +2,8 @@
 modelID = 9;
 blackrock = './blackrock/';
 labviewpath = './labview/';
+scriptname = './2015_07_23-MVGC_manual/MVGC_manual.m';
+scriptdesc = 'Performing MVGC on cursor pos from manual control dataset to compare to MVGC on BC. Finish the job on the other files.';
 
 %Fetch paramcode to load
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
@@ -9,17 +11,18 @@ conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 paramcode = exec(conn, ['SELECT `description` FROM Models WHERE modelID = ' num2str(modelID)]);
 paramcode = fetch(paramcode);
 paramcode = paramcode.Data{1};
+id = logJob(conn, scriptname, scriptdesc);
 
 %Fetch each pair of nev files to run
-tablename = '`Analysis Feb-Aug 2014 Tuning Change`';
-colnames = {'`File name MCP 1`', '`File name MCP 2`','`File name MCV`','`File name BC`'};
-toprocess = exec(conn, ['SELECT `File name BC`,`File name MCP 1`, `File name MCP 2` FROM ' tablename]);
+tablename = '`AnalysisLinear`';
+colnames = '`1DBCrecording`, `manualrecording`, `manualrecordingafter`';
+toprocess = exec(conn, ['SELECT ' colnames ' FROM ' tablename]);
 %toprocess = exec(conn, ['SELECT `1DBCrecording` FROM ' tablename]);
 toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 nR = size(toprocess,1);
 
-for idx = 2:nR
+for idx = 1:nR
 	BCnevfile = toprocess{idx,1};
 	nevfile1 = toprocess{idx,2};
 	nevfile2 = toprocess{idx,3};
@@ -37,3 +40,4 @@ for idx = 2:nR
 	end
 end
 
+closeJob(conn, id);

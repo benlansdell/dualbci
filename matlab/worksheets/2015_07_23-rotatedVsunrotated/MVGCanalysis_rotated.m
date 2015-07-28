@@ -120,7 +120,7 @@ ylabel('MSE. Unit 2')
 title('\Delta Granger (Brain control) (Rotated)')
 caxis([-.6 .6])
 colorbar
-saveplot(gcf, './worksheets/2015_07_09/mseoutVsGranger_rotated.eps')
+saveplot(gcf, './worksheets/2015_07_23-rotatedVsunrotated/mseoutVsGranger_rotated.eps')
 
 figure
 subplot(121)
@@ -141,7 +141,7 @@ xlabel('Granger score. Unit 1')
 ylabel('Granger score. Unit 2')
 title('Performance (successes/second) (rotated)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09/GrangervsPerformance_rotated.eps')
+saveplot(gcf, './worksheets/2015_07_23-rotatedVsunrotated/GrangervsPerformance_rotated.eps')
 
 figure
 subplot(121)
@@ -154,7 +154,7 @@ title('unrotated')
 subplot(122)
 hist(rotatedGC)
 title('rotated')
-saveplot(gcf, './worksheets/2015_07_09/Granger_rotated.eps')
+saveplot(gcf, './worksheets/2015_07_23-rotatedVsunrotated/Granger_rotated.eps')
 
 figure
 unrotatedperf = [performance(rotated~=1)]
@@ -168,7 +168,7 @@ subplot(122)
 hist(rotatedperf)
 xlabel('Performance')
 title('rotated')
-saveplot(gcf, './worksheets/2015_07_09/Performance_rotated.eps')
+saveplot(gcf, './worksheets/2015_07_23-rotatedVsunrotated/Performance_rotated.eps')
 
 figure
 subplot(121)
@@ -189,4 +189,4 @@ xlabel('MSE. Unit 1')
 ylabel('MSE. Unit 2')
 title('Performance (successes/second) (unrotated)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09/mseoutvsPerformance.eps')
+saveplot(gcf, './worksheets/2015_07_23-rotatedVsunrotated/mseoutvsPerformance.eps')

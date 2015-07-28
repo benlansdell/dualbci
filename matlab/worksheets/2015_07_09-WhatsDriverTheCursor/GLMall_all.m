@@ -1,5 +1,5 @@
 %Script to run simple linear regression on manual control between 2013-09-20 and 2014-01-01
-modelID = 5;
+modelID = 8;
 blackrock = './blackrock/';
 labviewpath = './labview/';
 
@@ -14,13 +14,13 @@ paramcode = paramcode.Data{1};
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
 tablename = '`AnalysisLinear`';
-toprocess = exec(conn, ['SELECT `1DBCrecording`, `manualrecording` FROM ' tablename]);
+toprocess = exec(conn, ['SELECT `1DBCrecording`, `manualrecording`, `manualrecordingafter` FROM ' tablename]);
 toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 toprocess = reshape(toprocess, [], 1);
 nR = size(toprocess,1);
 
-for idx = 1:nR
+for idx = 82:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
 	if exist([blackrock nevfile], 'file')
