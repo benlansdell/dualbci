@@ -98,6 +98,15 @@ function data = filters_sprc_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	data.dtorque = processed.dtorque((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
 	data.ddtorque = processed.ddtorque((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
 	
+	%If loaded then truncate the cursor too
+    if isfield(processed, 'dcursor')
+        data.dcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+        data.ddcursor = processed.ddcursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+    end
+    %If cursor exists
+    if isfield(processed, 'cursor')
+        data.cursor = processed.cursor((nK_sp*steps_sp+1):(nB-nK_pos*steps_pos),:);
+    end
 	data.rcbasis = rcbasis;
 	data.spbasis = spbasis;
 end
