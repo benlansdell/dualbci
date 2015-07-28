@@ -12,7 +12,7 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 	%	F = cursor dynamics from AR model
 	%	Q = covariance matrix from AR model
 	%	mu = average cursor data from AR model
-	%	fn_out = base file name to write plots to
+	%	fn_out = (optional) base file name to write plots to
 	%   
 	%Output:
 	%	output = Predicted decoded cursor from spike trains
@@ -30,9 +30,13 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 	%	order = 1;
 	%	data = filters_sp_pos(pre.processed, nK_sp, nK_pos, dt_sp, dt_pos);
 	%	model = MLE_glmfit(data, const);
-	%	[F, Q, mu] = fit_AR(data.torque, order);
+	%	[F, Q, mu] = fit_AR_LS(data.torque, order);
 	%	%load('./testdata/testglm.mat')
 	%	decoded_torque = glm_decode(pre.processed, data, model, F, Q, mu, fn_out);
+
+	if (nargin < 7)
+		fn_out = '';
+	end
 
 	binsize = processed.binsize;
 	output = zeros(size(data.torque));
@@ -40,7 +44,7 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 	N = size(data.X,2);
 	N_sub = 2000;
 	%Only decode a short sample...
-	N = 20000;
+	N = min(N, 20000);
 
 
 	%Make a Gaussian filter to smooth estimates
@@ -59,15 +63,24 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 
 	%GLM params
 	%Cursor filters
-	kx = model.b_hat(:,data.k{2,2}+1);
-	ky = model.b_hat(:,data.k{3,2}+1);
 
 	%Our initial estimate
 	%xk = mu';
 	%The actual point
-	xk = data.torque(1,:)';
-	Wk = Q;%eye(2);
-	gradloglambda = [kx, ky];
+	mask = model.mask(1,end-1:end)==1;
+	xk = data.torque(1,mask)';
+	if isfield(data, 'cursor')
+		xk = data.cursor(1,mask)';
+	end
+	Wk = Q; %eye(2);
+
+	gradloglambda = [];
+	for idx = 1:2
+		k = model.b_hat(:,data.k{end-2+idx,2}+1);
+		if mask(idx)
+			gradloglambda = horzcat(gradloglambda, k);
+		end
+	end
 	p = 0;
 
 	%At each time step
@@ -109,38 +122,63 @@ function output = glm_decode(processed, data, model, F, Q, mu, fn_out)
 		%Update position
 		xk = xk_p+Wk*updateX;
 		%Save result
-		output(idx,:) = xk;
+		output(idx,mask) = xk;
 		%display(['idx=' num2str(idx) ', time=' num2str(idx*binsize) ', lambda=' num2str(lambda)])
 		%xk
 		%Wk 
 		%pause
 	end
 
-	%Plot ten seconds worth of data
-	t_i = 0;
-	%t_f = 40;
-	t_f = 40; 
-	ii = 1:N;
-	tt = ii*binsize;
-	ii = ii(tt > t_i & tt < t_f);
-	tt = tt(ii);
-
-	%Plot cursor data
-	subplot(2,1,1);
-	plot(tt, output(ii,1), 'r--', tt, data.torque(ii,1), 'r')
-	xlim([t_i, t_f])
-	ylabel('Pred. RU')
-	%Take a random sample... so it doesn't take forever...
-	ii_sub = datasample(ii, N_sub, 'Replace', false);
-	corrRU = corr(output(ii_sub,1), data.torque(ii_sub,1))
-	corrFE = corr(output(ii_sub,2), data.torque(ii_sub,2))
-	title(['Correlation RU:' num2str(corrRU) ' Correlation FE: ' num2str(corrFE)])
-	subplot(2,1,2);
-	plot(tt, output(ii,2), 'r--', tt, data.torque(ii,2), 'r')
-	xlim([t_i, t_f])
-	ylabel('Pred. FE')
-	xlabel('time (s)')		
+	if length(fn_out) > 0
+		%Plot ten seconds worth of data
+		t_i = 0;
+		%t_f = 40;
+		t_f = 40; 
+		ii = 1:N;
+		tt = ii*binsize;
+		ii = ii(tt > t_i & tt < t_f);
+		tt = tt(ii);
 	
-	saveplot(gcf, fn_out, 'eps', [9 6]);
-	saveas(gcf, [fn_out])
+		%Plot cursor data
+		if isfield(data, 'cursor')
+			nP = 4;
+		else
+			nP = 2;
+		end
+		figure
+		subplot(nP,1,1);
+		plot(tt, output(ii,1), 'r--', tt, data.torque(ii,1), 'b')
+		xlim([t_i, t_f])
+		ylabel('Pred. RU')
+		%Take a random sample... so it doesn't take forever...
+		ii_sub = datasample(ii, N_sub, 'Replace', false);
+		corrRU = corr(output(ii_sub,1), data.torque(ii_sub,1));
+		corrFE = corr(output(ii_sub,2), data.torque(ii_sub,2));
+		title(['Correlation RU:' num2str(corrRU) ' Correlation FE: ' num2str(corrFE)])
+		subplot(nP,1,2);
+		plot(tt, output(ii,2), 'r--', tt, data.torque(ii,2), 'b')
+		xlim([t_i, t_f])
+		ylabel('Pred. FE')
+		xlabel('time (s)')		
+
+		if isfield(data, 'cursor')
+			%Plot cursor data
+			subplot(nP,1,3);
+			plot(tt, output(ii,1), 'r--', tt, data.cursor(ii,1), 'b')
+			xlim([t_i, t_f])
+			ylabel('Pred. RU')
+			%Take a random sample... so it doesn't take forever...
+			ii_sub = datasample(ii, N_sub, 'Replace', false);
+			corrRU = corr(output(ii_sub,1), data.cursor(ii_sub,1));
+			corrFE = corr(output(ii_sub,2), data.cursor(ii_sub,2));
+			title(['corr cursor x' num2str(corrRU) ' corr cursor y: ' num2str(corrFE)])
+			subplot(nP,1,4);
+			plot(tt, output(ii,2), 'r--', tt, data.cursor(ii,2), 'b')
+			xlim([t_i, t_f])
+			ylabel('Pred. FE')
+			xlabel('time (s)')		
+		end
+
+		saveplot(gcf, fn_out, 'eps', [12 6]);
+	end
 end
