@@ -57,7 +57,7 @@ function processGLMDecodingTorque(conn, modelID, blackrock, labview, nevfile, BC
 	nS = min(N_sub, size(data.X, 1));
 	%Train
 	model = MLE_glmfit(data, const);
-	[F, Q, mu] = fit_AR_LS(data.cursor, order);
+	[F, Q, mu] = fit_AR_LS(data.torque, order);
 	%Decode
 	data = filters_sprc_pos(processed_novel, nK_sp, nK_pos, dt_sp, dt_pos);
 	if verbose > 0
@@ -88,7 +88,7 @@ function processGLMDecodingTorque(conn, modelID, blackrock, labview, nevfile, BC
 	else
 		fn_out = '';
 	end
-	[F, Q, mu] = fit_AR_LS(data.cursor(:,mask), order);
+	[F, Q, mu] = fit_AR_LS(data.torque(:,mask), order);
 	masked = setDiff(mask, [1,2]);
 	modelmasked = model;
 	modelmasked.mask(:,2+masked) = zeros(nU,1);
@@ -113,7 +113,7 @@ function processGLMDecodingTorque(conn, modelID, blackrock, labview, nevfile, BC
 		%Truncate to specified duration
 		[processed, processed_novel] = split_recording(processed, dur, dur+testdur);
 		data = filters_sprc_pos(processed_novel, nK_sp, nK_pos, dt_sp, dt_pos);
-		[F, Q, mu] = fit_AR_LS(data.cursor, order);
+		[F, Q, mu] = fit_AR_LS(data.torque, order);
 		nS = min(N_sub, size(data.X, 1));
 		if verbose > 0
 			fn_out = ['./worksheets/2015_07_27/' nevfile '_GLMDecodingMCMC2.eps'];
@@ -142,7 +142,7 @@ function processGLMDecodingTorque(conn, modelID, blackrock, labview, nevfile, BC
 	data = filters_sprc_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos);
 	model = MLE_glmfit(data, const);
 	%Only fit AR to cursor components used in task
-	[F, Q, mu] = fit_AR_LS(data.cursor(:,mask), order);
+	[F, Q, mu] = fit_AR_LS(data.torque(:,mask), order);
 	%Decode
 	data = filters_sprc_pos(processed_novel, nK_sp, nK_pos, dt_sp, dt_pos);
 	nS = min(N_sub, size(data.X, 1));	
