@@ -63,7 +63,7 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	%%%%%%%%%%%%%%%%%%%%%%
 	%Process spiking data%
 	%%%%%%%%%%%%%%%%%%%%%%
-	display(['Opening ' nevfile])
+	display(['Opening ' nevfile ' from ' matfile])
 	NEV = openNEV(nevfile, 'nosave');
 	%Find the duration and sample rate of the nev file recording
 	nevsamplerate = NEV.MetaTags.TimeRes;
