@@ -66,6 +66,9 @@ function model = MLE_glmfit(data, const)
 	    lastwarn('')
 		%Extract filters fitted...
 		model.b_hat(idx,m) = b;	
+		se = zeros(size(model.b_hat,2));
+		se(idx,m) = stats.se;
+		stats.se = se;
 		model.dev{idx} = dev;
 		%Remove residual components since these take up a lot of memory
 		model.N = size(stats.resid,1);
