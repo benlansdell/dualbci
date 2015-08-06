@@ -25,7 +25,7 @@ function [y, tspks, rho, dev] = glmsim(processed, model, data, maxspks)
 	%	dt_pos = 0.05;
 	%	data = filters_sp_pos(pre.processed, nK_sp, nK_pos, dt_sp, dt_pos);
 	%	model = MLE_glmfit(data, const);
-	%	trains = glmsim(model, data);
+	%	trains = glmsim(processed, model, data);
 
 	if (nargin < 4) maxspks = 0; end
 	bs = processed.binsize;
