@@ -1,5 +1,5 @@
 %Script to run simple linear regression on manual control between 2013-09-20 and 2014-01-01
-modelID = 8;
+modelID = 14;
 blackrock = './blackrock/';
 labviewpath = './labview/';
 
@@ -19,12 +19,24 @@ toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 toprocess = reshape(toprocess, [], 1);
 nR = size(toprocess,1);
+eval(paramcode);
 
-for idx = 82:nR
+for idx = 252:nR
 	nevfile = toprocess{idx};
+	%Figure out which units to process, that haven't already been processed by this model
+	units = exec(conn, ['SELECT u.`unit` FROM Units u'...
+		' WHERE u.`nev file` = "' nevfile '" AND u.`firingrate` > ' num2str(threshold)...
+		' AND NOT EXISTS (SELECT * FROM Fits f WHERE f.`unit` = u.`unit` AND'...
+		' f.modelID = ' num2str(modelID) ' AND f.`nev file` = u.`nev file`)'	]);
+	units = fetch(units);
+	units = units.Data;
 	display(['Processing ' nevfile])
 	if exist([blackrock nevfile], 'file')
-		processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode);
+		if ~strcmp(units, 'No Data')
+			processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, units);
+		else
+			display('Already processed')
+		end
 	else
 		display('Cannot find file, continuing')
 	end
