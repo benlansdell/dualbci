@@ -28,7 +28,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 	end
 
 	%Fit a linear model to training data
-	data = filters_sprc_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos);
+	data = filters_sprc_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
 	model = MLE_glmfit(data, const);
 	%%Compute MSE on test data
 	datanovel = filters_sprc_pos(processed_novel, nK_sp, nK_pos, dt_sp, dt_pos);

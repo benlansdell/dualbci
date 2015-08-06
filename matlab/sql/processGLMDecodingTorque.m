@@ -204,6 +204,15 @@ function processGLMDecodingTorque(conn, modelID, blackrock, labview, nevfile, BC
 	%corrXBCBCBC = corr(decoded_cursor_BCBCBC(ii_sub,1), data.dcursor(ii_sub,1))
 	%corrYBCBCBC = corr(decoded_cursor_BCBCBC(ii_sub,2), data.dcursor(ii_sub,2))	%Eval performance
 
+	corrBCBCcurs(isnan(corrBCBCcurs)) = 0;
+	corrBCBCtorq(isnan(corrBCBCtorq)) = 0;
+	corrMCBCcurs(isnan(corrMCBCcurs)) = 0;
+	corrMCBCtorq(isnan(corrMCBCtorq)) = 0;
+	corrMCMCcurs(isnan(corrMCMCcurs)) = 0;
+	corrMCMCtorq(isnan(corrMCMCtorq)) = 0;
+	corrMCMC2curs(isnan(corrMCMC2curs)) = 0;
+	corrMCMC2torq(isnan(corrMCMC2torq)) = 0;
+
 	%%%%%%%%%%%%%%%%%%%%%%
 	%Insert into database%
 	%%%%%%%%%%%%%%%%%%%%%%
@@ -212,6 +221,8 @@ function processGLMDecodingTorque(conn, modelID, blackrock, labview, nevfile, BC
 	stamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
 	cursnames = {'cursX', 'cursY'};
 	comm = currCommit();
+	asdf=0;
+	asdf=0;
 	for idx = 1:2
 		unit = cursnames{idx};
 		unitnum = idx;

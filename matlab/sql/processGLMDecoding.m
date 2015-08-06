@@ -162,6 +162,15 @@ function processGLMDecoding(conn, modelID, blackrock, labview, nevfile, BCnevfil
 		corrBCBCtorq(midx) = corr(decoded_cursor_BCBC(ii_sub,midx), data.torque(ii_sub,midx));
 	end
 
+	corrBCBCcurs(isnan(corrBCBCcurs)) = 0;
+	corrBCBCtorq(isnan(corrBCBCtorq)) = 0;
+	corrMCBCcurs(isnan(corrMCBCcurs)) = 0;
+	corrMCBCtorq(isnan(corrMCBCtorq)) = 0;
+	corrMCMCcurs(isnan(corrMCMCcurs)) = 0;
+	corrMCMCtorq(isnan(corrMCMCtorq)) = 0;
+	corrMCMC2curs(isnan(corrMCMC2curs)) = 0;
+	corrMCMC2torq(isnan(corrMCMC2torq)) = 0;
+
 	%Train the same units on BC task, but using cursor velocity
 	%data = filters_sprc_vel_lv(processed, nK_sp, nK_pos, dt_sp, dt_pos);
 	%model = MLE_glmfit(data, const);
