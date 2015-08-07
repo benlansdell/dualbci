@@ -1,4 +1,4 @@
-function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1, BCnevfile, nevfile2, paramcode)
+function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1, BCnevfile, nevfile2, expt_id, paramcode)
 	nevpath1 = [blackrock nevfile1];
 	nevpath2 = [blackrock nevfile2];
 	BCnevpath = [blackrock BCnevfile];
@@ -35,14 +35,26 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 		return
 	end
 
-	%Check if the requisite number of units have already been analysed in this file...
-	analysedunits = fetch(exec(conn, ['SELECT `unit` FROM fits WHERE modelID = '...
-	 num2str(modelID) ' AND `nev file` = "' nevfile1 '"']));
-	analysedunits = analysedunits.Data;
-	if all(~strcmp(analysedunits, 'No Data'))
-		display('Already analysed this file with this model. Continuing')
+	%Tag with computer run on, date, last git commit
+	host = hostname();
+	stamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
+	comm = currCommit();
+
+	previous = fetch(exec(conn, ['SELECT id FROM analyses WHERE `experiment_id` = "' num2str(expt_id) '" AND modelID = ' num2str(modelID)]));
+	if ~strcmp(previous.Data{1}, 'No Data')
+		display(['modelID ' num2str(modelID) ' and experiment_id ' num2str(expt_id) ' already analysed. Skipping'])
 		return
-	end	
+	end
+
+	%Setup an analysis
+	%Insert into analyses
+	tablename = 'analyses';
+	fitcols = {'modelID', '`experiment_id`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
+	sqldata = { modelID, expt_id, 'NULL', 1, 1, host, stamp, comm};
+	datainsert(conn,tablename,fitcols,sqldata);
+	%Get the analysis_id used
+	analysis_id = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
+	analysis_id = analysis_id.Data{1};
 
 	if strcmp(taskaxes, 'horiz')
 		idx = [1];
@@ -107,19 +119,11 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 		causaldensity = causaldensities{i};
 		nevfile = nevfiles{i};
 
-		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "'...
-			nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
-		if ~strcmp(previous.Data{1}, 'No Data')
-			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit '... 
-				unit ' already analysed. Skipping'])
-			continue
-		end
-	
 		%Insert into fits
 		tablename = 'fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer',...
+		fitcols = {'modelID', '`analyses_id`', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer',...
 		 '`analysis date`', 'commit'};
-		sqldata = { modelID, nevfile, unit, unitnum, nC, host, stamp, comm};
+		sqldata = { modelID, analysis_id, nevfile, unit, unitnum, nC, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
 		%Get the fit id used
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
