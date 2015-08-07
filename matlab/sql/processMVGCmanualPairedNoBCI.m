@@ -106,13 +106,10 @@ function processMVGCmanualPairedNoBCI(conn, modelID, blackrock, labviewpath, nev
 	%%%%%%%%%%%%%%%%%%%
 
 	%Tag with computer run on, date, last git commit
-	host = hostname()
-	stamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
-	comm = currCommit();
 	unit = 'curs';
 	unitnum = 1;
 
-	for i = 1:length(results)
+	for i = 2:length(results)
 		result = results{i};
 		nC = nCs{i};
 		causaldensity = causaldensities{i};
@@ -120,7 +117,7 @@ function processMVGCmanualPairedNoBCI(conn, modelID, blackrock, labviewpath, nev
 
 		%Insert into fits
 		tablename = 'fits';
-		fitcols = {'modelID', '`analyses_id', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer',...
+		fitcols = {'modelID', '`analyses_id`', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer',...
 		 '`analysis date`', 'commit'};
 		sqldata = { modelID, analysis_id, nevfile, unit, unitnum, nC, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
