@@ -1,8 +1,12 @@
 function comm = currCommit()
-	comm = git('rev-parse --short HEAD');
-	%Filler to stop git() function from including output of next line's 
-	%execution (who knows why???)
-	a = 0;
-	b = 0;
-	c = 0;
+	%Try 10 times to get a good answer, otherwise return NULL
+	nTries = 1;
+	comm = 'asdfasdfasdfasdfasdfasdfasdf';
+	while length(comm) > 7 & nTries <= 10
+		comm = git('rev-parse --short HEAD');
+		nTries = nTries + 1;
+	end
+	if length(comm) > 7
+		comm = 'NULL';
+	end
 end
