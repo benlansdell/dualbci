@@ -1,5 +1,5 @@
 %Script to run simple linear regression on manual control between 2013-09-20 and 2014-01-01
-modelID = 14;
+modelID = 15;
 blackrock = './blackrock/';
 labviewpath = './labview/';
 
@@ -21,7 +21,7 @@ toprocess = reshape(toprocess, [], 1);
 nR = size(toprocess,1);
 eval(paramcode);
 
-for idx = 252:nR
+for idx = 1:nR
 	nevfile = toprocess{idx};
 	%Figure out which units to process, that haven't already been processed by this model
 	units = exec(conn, ['SELECT u.`unit` FROM units u'...

@@ -28,7 +28,7 @@ for idx = 1:nR
 	nevfile2 = toprocess{idx,3};
 	expt_id = toprocess{idx,4};
 	display(['Processing ' nevfile1])
-	if exist([blackrock nevfile1], 'file')
+	if exist([blackrock nevfile1], 'file') & exist([blackrock BCnevfile], 'file') & exist([blackrock nevfile2], 'file')
 		processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile1, BCnevfile, nevfile2, expt_id, paramcode);
 	else
 		display('Cannot find file, continuing')
