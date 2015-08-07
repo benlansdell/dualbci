@@ -4,7 +4,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, par
 	%Load parameters
 	eval(paramcode);
 	%If too short then skip this file...
-	duration = fetch(exec(conn, ['SELECT `duration` FROM Recordings WHERE `nev file` = "' nevfile '"']));
+	duration = fetch(exec(conn, ['SELECT `duration` FROM recordings WHERE `nev file` = "' nevfile '"']));
 	duration = duration.Data{1};
 	if duration < dur+testdur
 		display(['Duration of ' nevfile '(' num2str(duration) 's) is less than requested ' num2str(dur+testdur) 's. Continuing'])		
@@ -47,7 +47,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, par
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
 		%Extract and save regression fiticients
 		unit = processed.unitnames{idx};
-		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
@@ -69,8 +69,8 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, par
 		%Get the fitID
 		%fitid = getFitID(conn);
 		%fitid = randi(1e9);
-		%Insert into Fits
-		tablename = 'Fits';
+		%Insert into fits
+		tablename = 'fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit', 'conv', 'cond'};
 		sqldata = { modelID, nevfile, unit, nC, dev, mseout, host, stamp, comm, converged, conditioned};
 		datainsert(conn,tablename,fitcols,sqldata);
@@ -88,8 +88,8 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, par
 		%sqldata = { fitid, direction, tuningsize};
 		%datainsert(conn,tablename,fitcols,sqldata);
 
-		%Insert into ParameterEstimates
-		tablename = 'ParameterEstimates';
+		%Insert into estimates_parameters
+		tablename = 'estimates_parameters';
 		fitcols = {'id', 'num', 'label', 'value', 'se', 'mask'};
 		for j = 1:nC
 			num = j;

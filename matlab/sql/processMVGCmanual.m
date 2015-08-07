@@ -1,22 +1,23 @@
-function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnevfile, paramcode)
+function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnevfile, nevfile2, expt_id, paramcode)
 	nevpath = [blackrock nevfile];
+	nevpath2 = [blackrock nevfile2];
 	%Load parameters
 	eval(paramcode);
 	%Get which units are BCI units, get the mat file for this nev file
-	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `BCIUnits` WHERE `ID` = "' BCnevfile '"']));
+	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `bci_units` WHERE `ID` = "' BCnevfile '"']));
 	%bcunits = num2str(cell2mat(bcunits.Data));
 	bcunits = bcunits.Data;
 	if size(bcunits,1) < 2
 		display(['Warning: fewer than 2 BCI units are labeled within ' nevfile])
 	end
-	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
 	duration = matfile.Data{2};
 	matfile = matfile.Data{1};
 	matpath = [labviewpath matfile];
-	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
 	taskaxes = taskaxes.Data{1};
-	%Get how many units are above threshold from Units
-	units = fetch(exec(conn, ['SELECT `unit` FROM `Units` WHERE `nev file` = "' nevfile '" AND `firingrate` > ' num2str(threshold)]));
+	%Get how many units are above threshold from units
+	units = fetch(exec(conn, ['SELECT `unit` FROM `units` WHERE `nev file` = "' nevfile '" AND `firingrate` > ' num2str(threshold)]));
 	units = units.Data;
 	%If more than 30 units...take a random sample
 	if length(units) > nU
@@ -30,7 +31,7 @@ function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnev
 	end
 
 	%Check if the requisite number of units have already been analysed in this file...
-	analysedunits = fetch(exec(conn, ['SELECT `unit` FROM Fits WHERE modelID = ' num2str(modelID) ' AND `nev file` = "' nevfile '"']));
+	analysedunits = fetch(exec(conn, ['SELECT `unit` FROM fits WHERE modelID = ' num2str(modelID) ' AND `nev file` = "' nevfile '"']));
 	analysedunits = analysedunits.Data;
 	if all(~strcmp(analysedunits, 'No Data'))
 		display('Already analysed this file with this model. Continuing')
@@ -42,8 +43,6 @@ function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnev
 	%Truncate to specified duration
 	processed = truncate_recording(processed, dur);
 
-	%Truncate to units that haven't been analyzed before using this model
-	processed = removeProcessedUnits(processed, conn, modelID);
 	nUtotal = length(processed.unitnames);
 	%If all units have been analyzed then return
 	if nUtotal == 0
@@ -93,14 +92,14 @@ function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnev
 		unit = units{i};
 		unitnum = unitnums(i);
 
-		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
 		end
 	
-		%Insert into Fits
-		tablename = 'Fits';
+		%Insert into fits
+		tablename = 'fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
 		sqldata = { modelID, nevfile, unit, unitnum, nC, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
@@ -108,14 +107,14 @@ function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnev
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 	
-		%Insert into FitsMVGC
-		tablename = 'FitsMVGC';
+		%Insert into fits_mvgc
+		tablename = 'fits_mvgc';
 		fitcols = {'id', 'alpha', 'units', 'causaldensity'};
 		sqldata = { fitid, pval, nUtotal, causaldensity};
 		datainsert(conn,tablename,fitcols,sqldata);
 	
 		%For each unit, save the results 
-		tablename = 'GrangerEstimates';
+		tablename = 'estimates_granger';
 		fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 		nG = length(units);
 		for j = (nG+1):(nUtotal+nG)
@@ -126,7 +125,7 @@ function processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile, BCnev
 			p = results.pwcgc_pval(i,j);
 			sig = results.pwcgc_sig(i,j);
 		
-			%Insert into FitsMVGC
+			%Insert into fits_mvgc
 			sqldata = {fitid, j-nG, unit, score, p, sig};
 			datainsert(conn,tablename,fitcols,sqldata);
 		end	

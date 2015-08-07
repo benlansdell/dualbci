@@ -38,7 +38,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
 		%Extract and save regression fiticients
 		unit = processed.unitnames{idx};
-		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
@@ -56,8 +56,8 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 		%Get the fitID
 		%fitid = getFitID(conn);
 		%fitid = randi(1e9);
-		%Insert into Fits
-		tablename = 'Fits';
+		%Insert into fits
+		tablename = 'fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit'};
 		sqldata = { modelID, nevfile, unit, nC, dev, mseout, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
@@ -66,8 +66,8 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 
-		%Insert into FitsLinear
-		tablename = 'FitsLinear';
+		%Insert into fits_linear
+		tablename = 'fits_linear';
 		fitcols = {'id', 'dir', 'size'};
 		regrRU = model.b_hat(idx,2);
 		regrFE = model.b_hat(idx,3);
@@ -75,8 +75,8 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 		sqldata = { fitid, direction, tuningsize};
 		datainsert(conn,tablename,fitcols,sqldata);
 
-		%Insert into ParameterEstimates
-		tablename = 'ParameterEstimates';
+		%Insert into estimates_parameters
+		tablename = 'estimates_parameters';
 		fitcols = {'id', 'num', 'label', 'value', 'se', 'mask'};
 		for j = 1:nC
 			num = j;

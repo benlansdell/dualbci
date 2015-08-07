@@ -15,7 +15,7 @@ function np = nevmappings_sql(matpath)
 
 	if (nargin < 1) matpath = './labview/'; end
 	%Set up database connection
-	conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
+	conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
 	tablename = 'Recordings2';
 	colnames = {'`labview file`', '`labview date`', 'sessionID', '`nev file`', '`nev date`',...
 	 'starttime', 'endtime', 'duration', 'tasktype', 'axis', 'map', 'Toffset', 'ch1', ...
@@ -130,7 +130,7 @@ function np = nevmappings_sql(matpath)
 	datainsert(conn,tablename,colnames,newrows)
 end 
 
-%LogMetaData2('Spanky', 0, true)
+%LogMetaData2('spanky_db', 0, true)
 %global matpath
 %global nevpath
 %global metaData

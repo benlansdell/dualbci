@@ -17,8 +17,8 @@ sigma_trq = 0.3;
 
 %Fetch each pair of nev files to run
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-tablename = 'AnalysisLinear';
+	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+tablename = 'experiment_tuning';
 colnames = {'1DBCrecording', 'manualrecording'};
 toprocess = exec(conn, ['SELECT `1DBCrecording`,`manualrecording` FROM ' tablename ' WHERE regrFE1 IS NULL']);
 toprocess = fetch(toprocess);
@@ -33,19 +33,19 @@ for idx = 1:nR
 	bcipath = [blackrock bcifile];
 	manpath = [blackrock manfile];
 	%Get the mat file to use
-	matfile = fetch(exec(conn, ['SELECT `labview file`, `axis` FROM Recordings WHERE `nev file` = "' bcifile '"']));
+	matfile = fetch(exec(conn, ['SELECT `labview file`, `axis` FROM recordings WHERE `nev file` = "' bcifile '"']));
 	matfilebci = matfile.Data{1};
 	axisbci = matfile.Data{2};
-	matfile = fetch(exec(conn, ['SELECT `labview file` FROM Recordings WHERE `nev file` = "' manfile '"']));
+	matfile = fetch(exec(conn, ['SELECT `labview file` FROM recordings WHERE `nev file` = "' manfile '"']));
 	matfileman = matfile.Data;
 	%Check they're from the same recording session
 	if ~strcmp(matfileman, matfilebci)
-		display(['Recordings are from a different trial session, check your data for: ' bcifile])
+		display(['recordings are from a different trial session, check your data for: ' bcifile])
 		continue
 	end
 	matfile = ['./labview/' matfileman{1}];
 	%Get the BC units from the BCI recording
-	BCunits = fetch(exec(conn, ['SELECT `unit`, `direction` FROM BCIUnits WHERE `ID` = "' bcifile '"']));
+	BCunits = fetch(exec(conn, ['SELECT `unit`, `direction` FROM bci_units WHERE `ID` = "' bcifile '"']));
 	BCunits = BCunits.Data;
 	if size(BCunits,1) ~= 2
 		display([bcifile ' is not configured as a 1D brain control task. Continuing'])

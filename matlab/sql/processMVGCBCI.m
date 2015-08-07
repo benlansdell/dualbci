@@ -3,21 +3,21 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	%Load parameters
 	eval(paramcode);
 	%Get which units are BCI units, get the mat file for this nev file
-	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `BCIUnits` WHERE `ID` = "' nevfile '"']));
+	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `bci_units` WHERE `ID` = "' nevfile '"']));
 	%bcunits = num2str(cell2mat(bcunits.Data));
 	bcunits = bcunits.Data;
 	if size(bcunits,1) < 2
 		display(['Warning: fewer than 2 BCI units are labeled within ' nevfile])
 	end
-	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
 	duration = matfile.Data{2};
 	matfile = matfile.Data{1};
 	matpath = [labviewpath matfile];
-	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
 	taskaxes = taskaxes.Data{1};
-	%Get how many units are above threshold from Units
+	%Get how many units are above threshold from units
 	%%Still processing...
-	%abovethresh = fetch(exec(conn, ['SELECT `unit` FROM `Units` WHERE `nev file` = "' nevfile '" AND `firingrate` > ' num2str(threshold)]))
+	%abovethresh = fetch(exec(conn, ['SELECT `unit` FROM `units` WHERE `nev file` = "' nevfile '" AND `firingrate` > ' num2str(threshold)]))
 	%abovethresh = abovethresh.Data;
 	if duration < dur
 		display(['Recording is shorter than specified ' num2str(dur) ' seconds. Skipping'])
@@ -76,14 +76,14 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	unit = 'curs';
 	unitnum = 1;
 
-	previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+	previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 	if ~strcmp(previous.Data{1}, 'No Data')
 		display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 		continue
 	end
 
-	%Insert into Fits
-	tablename = 'Fits';
+	%Insert into fits
+	tablename = 'fits';
 	fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
 	sqldata = { modelID, nevfile, unit, unitnum, nC, host, stamp, comm};
 	datainsert(conn,tablename,fitcols,sqldata);
@@ -91,8 +91,8 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 	fitid = fitid.Data{1};
 
-	%Insert into FitsMVGC
-	tablename = 'FitsMVGC';
+	%Insert into fits_mvgc
+	tablename = 'fits_mvgc';
 	fitcols = {'id', 'alpha', 'units', 'causaldensity'};
 	sqldata = { fitid, pval, nUtotal, causaldensity};
 	datainsert(conn,tablename,fitcols,sqldata);
@@ -108,7 +108,7 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 		p = results.pwcgc_pval(1,j);
 		sig = results.pwcgc_sig(1,j);
 	
-		%Insert into FitsMVGC
+		%Insert into fits_mvgc
 		sqldata = {fitid, j-1, unit, score, p, sig};
 		datainsert(conn,tablename,fitcols,sqldata);
 	end	

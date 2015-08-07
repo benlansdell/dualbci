@@ -9,14 +9,14 @@ duration = 180;
 
 %Fetch paramcode to load
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-paramcode = exec(conn, ['SELECT `description` FROM Models WHERE modelID = ' num2str(modelID)]);
+	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+paramcode = exec(conn, ['SELECT `description` FROM models WHERE modelID = ' num2str(modelID)]);
 paramcode = fetch(paramcode);
 paramcode = paramcode.Data{1};
 
 %Fetch files to analyze
 %Fetch all files 
-toprocess = exec(conn, ['SELECT `nev file` FROM Recordings WHERE `nev date` BETWEEN "'...
+toprocess = exec(conn, ['SELECT `nev file` FROM recordings WHERE `nev date` BETWEEN "'...
  after '" AND "' before '" AND `tasktype` = "' tasktype '" AND `duration` > ' num2str(duration)]);
 toprocess = fetch(toprocess);
 toprocess = toprocess.Data;

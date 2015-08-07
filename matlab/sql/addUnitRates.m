@@ -1,9 +1,9 @@
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
+conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
 threshold = 0;
-toprocess = exec(conn,'select `nev file` from `Recordings` WHERE `nev date` > "2013-12-06"');
+toprocess = exec(conn,'select `nev file` from `recordings` WHERE `nev date` > "2013-12-06"');
 toprocess = fetch(toprocess);
 nFiles = size(toprocess.Data,1);
-tablename = 'Units';
+tablename = 'units';
 colnames = {'`nev file`', 'unit', 'firingrate'};
 
 cannotfind = {};
@@ -71,6 +71,6 @@ for idx = 1:nFiles
 		datainsert(conn,tablename,colnames,data);
 	end
 	whereclause = ['WHERE `nev file` = "' nevfile '"'];
-	update(conn, 'Recordings', {'abovefive'}, {nU5}, whereclause)	
+	update(conn, 'recordings', {'abovefive'}, {nU5}, whereclause)	
 	display([num2str(nU5) ' units above 5Hz in ' nevfile])
 end

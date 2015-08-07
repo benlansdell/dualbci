@@ -11,8 +11,8 @@ function processGLMLinearDecoding(conn, modelID, blackrock, nevfile, paramcode, 
 	%%%
 
 	%Get top 15 units that are not in the BC task
-	searchstr = ['SELECT unit FROM `Units` WHERE `nev file` = "' nevfile '"'...
-	' ORDER BY `Units`.`firingrate` DESC LIMIT ' num2str(nU)];
+	searchstr = ['SELECT unit FROM `units` WHERE `nev file` = "' nevfile '"'...
+	' ORDER BY `units`.`firingrate` DESC LIMIT ' num2str(nU)];
 	units = fetch(exec(conn, searchstr));
 	units = units.Data;
 
@@ -72,21 +72,21 @@ function processGLMLinearDecoding(conn, modelID, blackrock, nevfile, paramcode, 
 	for idx = 1:2
 		unit = cursnames{idx};
 		unitnum = idx;
-		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
 		end
-		%Insert into Fits
-		tablename = 'Fits';
+		%Insert into fits
+		tablename = 'fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
 		sqldata = { modelID, nevfile, unit, unitnum, nU, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
 		%Get the fit id used
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
-		%Insert into FitsGLMVsLMDecode
-		tablename = 'FitsGLMVsLMDecode';
+		%Insert into fits_glm_vs_lm_decode
+		tablename = 'fits_glm_vs_lm_decode';
 		fitcols = {'id', 'corrTorqGLM', 'corrTorqLM'};
 		sqldata = { fitid, corrTorqGLM(idx), corrTorqLM(idx)};
 		datainsert(conn,tablename,fitcols,sqldata);	

@@ -3,13 +3,13 @@
 %Add Toffset%
 %%%%%%%%%%%%%
 
-%Add missing columns to Recordings table
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
-tablename = 'Recordings';
+%Add missing columns to recordings table
+conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+tablename = 'recordings';
 
 %Toffset
 colname = {'`Toffset`'};
-toprocess = exec(conn,'select `nev file`, `labview file` from `Recordings` WHERE `Toffset` IS NULL');
+toprocess = exec(conn,'select `nev file`, `labview file` from `recordings` WHERE `Toffset` IS NULL');
 toprocess = fetch(toprocess);
 nFiles = size(toprocess.Data);
 if nFiles == 0
@@ -44,9 +44,9 @@ end
 %%%%%%%%%%%%
 
 %Performance. Trial info.
-%Add missing columns to Recordings table
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
-tablename = 'Trials';
+%Add missing columns to recordings table
+conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+tablename = 'trials';
 colnames = {'`nev file`', '`labview file`', '`start`', '`end`', '`duration`', '`success`', '`valid`', '`startPosX`', '`startPosY`', '`targetPosX`', '`targetPosY`'};
 nC = length(colnames);
 matfiles = dir('./labview/*.mat');
@@ -62,7 +62,7 @@ for i = 1:length(matfiles)
 	end
 
 	%Determine if have already added this mat file
-	toprocess = exec(conn,['SELECT * FROM `Trials` WHERE `labview file` = ''' matfile '''']);
+	toprocess = exec(conn,['SELECT * FROM `trials` WHERE `labview file` = ''' matfile '''']);
 	toprocess = fetch(toprocess);
 	nTrials = size(toprocess.Data,1);
 	if nTrials == 0 | strcmp(toprocess.Data{1}, 'No Data')
@@ -73,7 +73,7 @@ for i = 1:length(matfiles)
 	end
 
 	%Load nev file info
-	nevinfo = exec(conn,['SELECT `nev file`, `starttime`, `endtime` FROM `Recordings` WHERE `labview file` = ''' matfile '''']);
+	nevinfo = exec(conn,['SELECT `nev file`, `starttime`, `endtime` FROM `recordings` WHERE `labview file` = ''' matfile '''']);
 	nevinfo = fetch(nevinfo);
 
 	nNev = size(nevinfo.Data,1);
@@ -109,13 +109,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Add BCI units to recordings%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
+conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
 
-tablename = 'Recordings';
+tablename = 'recordings';
 
 %Toffset
 colnames = {'`ch1`', '`ch2`', '`ch3`', '`ch4`'};
-toprocess = exec(conn,'select `nev file`, `labview file` from `Recordings` WHERE `ch1` IS NULL');
+toprocess = exec(conn,'select `nev file`, `labview file` from `recordings` WHERE `ch1` IS NULL');
 toprocess = fetch(toprocess);
 nFiles = size(toprocess.Data,1);
 if nFiles == 0
@@ -149,12 +149,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 threshold = 5;
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
-tablename = 'Recordings';
+conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+tablename = 'recordings';
 
 %Toffset
 colname = {'`abovefive`'};
-toprocess = exec(conn,'select `nev file` from `Recordings` WHERE `abovefive` IS NULL');
+toprocess = exec(conn,'select `nev file` from `recordings` WHERE `abovefive` IS NULL');
 toprocess = fetch(toprocess);
 nFiles = size(toprocess.Data,1);
 if nFiles == 0
@@ -218,13 +218,13 @@ end
 
 testnev = '20121205SpankyUtah001.nev';
 
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky')
-tablename = 'Intertrials';
+conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+tablename = 'intertrials';
 colnames = {'`nev file`', '`start`', '`end`', '`duration`'};
 
 %Find all nev files without intertrials
-nevfiles = exec(conn, ['SELECT `nev file`, `starttime`, `endtime` FROM `Recordings` WHERE' ...
-' not exists (select * from Intertrials where `Intertrials`.`nev file`=`Recordings`.`nev file`)'...
+nevfiles = exec(conn, ['SELECT `nev file`, `starttime`, `endtime` FROM `recordings` WHERE' ...
+' not exists (select * from intertrials where `intertrials`.`nev file`=`recordings`.`nev file`)'...
 ' and duration is not null']);
 nevfiles = fetch(nevfiles);
 nN = size(nevfiles.Data, 1);
@@ -238,7 +238,7 @@ for i = 1:nN
 	nevend = nevfiles.Data{i, 3};
 	display(['Processing ' nevfile]);
 	%Fetch all trials within nev file
-	trials = exec(conn, ['SELECT `start`, `end` FROM `Trials` WHERE' ...
+	trials = exec(conn, ['SELECT `start`, `end` FROM `trials` WHERE' ...
 	' `nev file`="' nevfile '"']);
 	trials = fetch(trials);
 	trials = trials.Data;

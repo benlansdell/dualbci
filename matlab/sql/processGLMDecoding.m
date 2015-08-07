@@ -1,5 +1,5 @@
-function processGLMDecoding(conn, modelID, blackrock, labview, nevfile, BCnevfile, nevfile2, paramcode, verbose)
-	if nargin < 9
+function processGLMDecoding(conn, modelID, blackrock, labview, nevfile, BCnevfile, nevfile2, expt_id, paramcode, verbose)
+	if nargin < 10
 		verbose = 0;
 	end
 	N_sub = 5000;
@@ -9,17 +9,17 @@ function processGLMDecoding(conn, modelID, blackrock, labview, nevfile, BCnevfil
 	%Load parameters
 	eval(paramcode);
 	%Get which units are BCI units, get the mat file for this nev file
-	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `BCIUnits` WHERE `ID` = "' BCnevfile '"']));
+	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `bci_units` WHERE `ID` = "' BCnevfile '"']));
 	%bcunits = num2str(cell2mat(bcunits.Data));
 	bcunits = bcunits.Data;
 	if size(bcunits,1) < 2
 		display(['Warning: fewer than 2 BCI units are labeled within ' nevfile])
 	end
-	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `Recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
 	duration = matfile.Data{2};
 	matfile = matfile.Data{1};
 	matpath = [labview matfile];
-	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `Recordings` rec WHERE rec.`nev file` = "' BCnevfile '"']));
+	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `recordings` rec WHERE rec.`nev file` = "' BCnevfile '"']));
 	taskaxes = taskaxes.Data{1};
 	if strcmp(taskaxes, 'horiz')
 		mask = [1];
@@ -41,8 +41,8 @@ function processGLMDecoding(conn, modelID, blackrock, labview, nevfile, BCnevfil
 
 	%Get top 15 units that are not in the BC task
 	bcunitsstr = ['unit != ', strjoin(bcunits, ' AND unit != ')];
-	searchstr = ['SELECT unit FROM `Units` WHERE `nev file` = "' nevfile '"'...
-	' AND ' bcunitsstr ' ORDER BY `Units`.`firingrate` DESC LIMIT ' num2str(nU)];
+	searchstr = ['SELECT unit FROM `units` WHERE `nev file` = "' nevfile '"'...
+	' AND ' bcunitsstr ' ORDER BY `units`.`firingrate` DESC LIMIT ' num2str(nU)];
 	units = fetch(exec(conn, searchstr));
 	units = units.Data;
 
@@ -224,21 +224,21 @@ function processGLMDecoding(conn, modelID, blackrock, labview, nevfile, BCnevfil
 	for idx = 1:2
 		unit = cursnames{idx};
 		unitnum = idx;
-		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(conn, ['SELECT id FROM analyses WHERE `experiment_id` = "' num2str(expt_id) '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
 		end
-		%Insert into Fits
-		tablename = 'Fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
-		sqldata = { modelID, nevfile, unit, unitnum, nU, host, stamp, comm};
+		%Insert into fits
+		tablename = 'analyses';
+		fitcols = {'modelID', '`experiment_id`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
+		sqldata = { modelID, expt_id, unit, unitnum, nU, host, stamp, comm};
 		datainsert(conn,tablename,fitcols,sqldata);
 		%Get the fit id used
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 		%Insert into FitsGLMDecode
-		tablename = 'FitsGLMDecode';
+		tablename = 'analysis_glm_decode';
 		fitcols = {'id', 'corrCursMCMC', 'corrCursMCBC', 'corrCursBCBC', 'corrCursMCMC2', 'corrTorqMCMC', 'corrTorqMCBC', 'corrTorqBCBC', 'corrTorqMCMC2'};
 		sqldata = { fitid, corrMCMCcurs(idx), corrMCBCcurs(idx), corrBCBCcurs(idx), corrMCMC2curs(idx), corrMCMCtorq(idx), corrMCBCtorq(idx), corrBCBCtorq(idx), corrMCMC2torq(idx)};
 		datainsert(conn,tablename,fitcols,sqldata);	

@@ -7,15 +7,15 @@ scriptdesc = 'Performing MVGC on cursor pos from manual control dataset to compa
 
 %Fetch paramcode to load
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-paramcode = exec(conn, ['SELECT `description` FROM Models WHERE modelID = ' num2str(modelID)]);
+	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+paramcode = exec(conn, ['SELECT `description` FROM models WHERE modelID = ' num2str(modelID)]);
 paramcode = fetch(paramcode);
 paramcode = paramcode.Data{1};
 id = logJob(conn, scriptname, scriptdesc);
 
 %Fetch each pair of nev files to run
-tablename = '`AnalysisLinear`';
-colnames = '`1DBCrecording`, `manualrecording`, `manualrecordingafter`';
+tablename = '`experiment_tuning`';
+colnames = '`1DBCrecording`, `manualrecording`, `manualrecordingafter`, `experiment_id`';
 toprocess = exec(conn, ['SELECT ' colnames ' FROM ' tablename]);
 %toprocess = exec(conn, ['SELECT `1DBCrecording` FROM ' tablename]);
 toprocess = fetch(toprocess);
@@ -26,15 +26,10 @@ for idx = 1:nR
 	BCnevfile = toprocess{idx,1};
 	nevfile1 = toprocess{idx,2};
 	nevfile2 = toprocess{idx,3};
+	expt_id = toprocess{idx,4};
 	display(['Processing ' nevfile1])
 	if exist([blackrock nevfile1], 'file')
-		processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile1, BCnevfile, paramcode);
-	else
-		display('Cannot find file, continuing')
-	end
-	display(['Processing ' nevfile2])
-	if exist([blackrock nevfile2], 'file')
-		processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile2, BCnevfile, paramcode);
+		processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile1, BCnevfile, nevfile2, expt_id, paramcode);
 	else
 		display('Cannot find file, continuing')
 	end

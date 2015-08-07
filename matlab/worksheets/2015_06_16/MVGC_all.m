@@ -8,15 +8,15 @@ before = '2014-01-01';
 
 %Fetch paramcode to load
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-paramcode = exec(conn, ['SELECT `description` FROM Models WHERE modelID = ' num2str(modelID)]);
+	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+paramcode = exec(conn, ['SELECT `description` FROM models WHERE modelID = ' num2str(modelID)]);
 paramcode = fetch(paramcode);
 paramcode = paramcode.Data{1};
 
 %Fetch each pair of nev files to run
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-tablename = '`Analysis Feb-Aug 2014 Tuning Change`';
+	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+tablename = '`rotated_linear_analysis_2014`';
 colnames = {'`File name MCP 1`', '`File name MCP 2`','`File name MCV`','`File name BC`'};
 toprocess = exec(conn, ['SELECT `File name BC` FROM ' tablename]);
 %toprocess = exec(conn, ['SELECT `1DBCrecording` FROM ' tablename]);

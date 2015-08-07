@@ -44,13 +44,13 @@ function processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, thresho
 
 		%If already in database, skip
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
-		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
 		end
 
-		tablename = 'Fits';
+		tablename = 'fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'dev', 'computer', '`analysis date`', 'commit'};
 		sqldata = { modelID, nevfile, unit, idx, nC, dev, host, stamp, comm};
 		%sqldata = { 1, '20130920SpankyUtah001.nev', 999, 1, 3, 3, '3', '2013-12-09 12:12:12', '12'};
@@ -59,8 +59,8 @@ function processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, thresho
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 
-		%Insert into FitsGranger
-		tablename = 'FitsGranger';
+		%Insert into fits_granger
+		tablename = 'fits_granger';
 		fitcols = {'id', 'alpha', 'units', 'causaldensity'};
 		sqldata = { fitid, pval, nU, causaldensity};
 		datainsert(conn,tablename,fitcols,sqldata);

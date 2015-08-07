@@ -1,14 +1,14 @@
-%Add missing columns to BCIUnits table
+%Add missing columns to bci_units table
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/Spanky');
-tablenameUnits = 'BCIUnits';
+	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+tablenameUnits = 'bci_units';
 colnames = {'ID', 'unit', 'direction', 'angle'};
 
 %Get a unique list of mat files
-%toprocess = exec(conn,['select DISTINCT `labview file` from Recordings where not exists'...
-% ' (select * from BCIUnits where ID = `nev file`) and `labview file`="Spanky_2013-03-19-1408.mat"']);
-toprocess = exec(conn,['select DISTINCT `labview file` from Recordings where not exists'...
- ' (select * from BCIUnits where ID = `nev file`) AND `nev date` > "2013-12-05"']);
+%toprocess = exec(conn,['select DISTINCT `labview file` from recordings where not exists'...
+% ' (select * from bci_units where ID = `nev file`) and `labview file`="Spanky_2013-03-19-1408.mat"']);
+toprocess = exec(conn,['select DISTINCT `labview file` from recordings where not exists'...
+ ' (select * from bci_units where ID = `nev file`) AND `nev date` > "2013-12-05"']);
 toprocess = fetch(toprocess);
 nFiles = size(toprocess.Data,1);
 if nFiles == 0
@@ -23,7 +23,7 @@ for idx = 1:nFiles
 	display(['Processing ' matfile])
 	%Get the corresponding nev files, etc, associated with it
 	nevfiles = exec(conn,['select `nev file`, `labview task type`, `starttime`, `endtime`, `ch1`,' ...
-	' `ch2`, `ch3`, `ch4`, `duration` from Recordings'...
+	' `ch2`, `ch3`, `ch4`, `duration` from recordings'...
 	 ' where `labview file`="' matfile '"']);
 	nevfiles = fetch(nevfiles);
 	%Open the mat file
@@ -99,10 +99,10 @@ for idx = 1:nFiles
 				changes	
 			end
 			%Add to conflict table, if not already in there
-			isconflict = fetch(exec(conn, ['SELECT ID FROM `ConflictedRecordings` WHERE ID = "' nevfile '"']));
+			isconflict = fetch(exec(conn, ['SELECT ID FROM `conflicted_recordings` WHERE ID = "' nevfile '"']));
 			isconflict = isconflict.Data;
 			if strcmp(isconflict, 'No Data')
-				datainsert(conn, 'ConflictedRecordings', {'ID'}, {nevfile});
+				datainsert(conn, 'conflicted_recordings', {'ID'}, {nevfile});
 			end
 		else
 			%Determine direction for BCI units, and add these...

@@ -6,22 +6,22 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 	%Load parameters
 	eval(paramcode);
 	%Get which units are BCI units, get the mat file for this nev file
-	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `BCIUnits` WHERE `ID` = "'...
+	bcunits = fetch(exec(conn, ['SELECT `unit` FROM `bci_units` WHERE `ID` = "'...
 	 BCnevfile '"']));
 	%bcunits = num2str(cell2mat(bcunits.Data));
 	bcunits = bcunits.Data;
 	if size(bcunits,1) < 2
 		display(['Warning: fewer than 2 BCI units are labeled within ' BCnevfile])
 	end
-	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `Recordings`'...
+	matfile = fetch(exec(conn, ['SELECT `labview file`,`duration` FROM `recordings`'...
 		' rec WHERE rec.`nev file` = "' nevfile1 '"']));
 	duration = matfile.Data{2};
 	matfile = matfile.Data{1};
 	matpath = [labviewpath matfile];
-	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `Recordings` rec WHERE rec.`nev file` = "' BCnevfile '"']));
+	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `recordings` rec WHERE rec.`nev file` = "' BCnevfile '"']));
 	taskaxes = taskaxes.Data{1};
-	%Get how many units are above threshold from Units
-	units = fetch(exec(conn, ['SELECT `unit` FROM `Units` WHERE `nev file` = "'...
+	%Get how many units are above threshold from units
+	units = fetch(exec(conn, ['SELECT `unit` FROM `units` WHERE `nev file` = "'...
 	 nevfile1 '" AND `firingrate` > ' num2str(threshold)]));
 	units = units.Data;
 	%If more than 30 units...take a random sample
@@ -36,7 +36,7 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 	end
 
 	%Check if the requisite number of units have already been analysed in this file...
-	analysedunits = fetch(exec(conn, ['SELECT `unit` FROM Fits WHERE modelID = '...
+	analysedunits = fetch(exec(conn, ['SELECT `unit` FROM fits WHERE modelID = '...
 	 num2str(modelID) ' AND `nev file` = "' nevfile1 '"']));
 	analysedunits = analysedunits.Data;
 	if all(~strcmp(analysedunits, 'No Data'))
@@ -107,7 +107,7 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 		causaldensity = causaldensities{i};
 		nevfile = nevfiles{i};
 
-		previous = fetch(exec(conn, ['SELECT id FROM Fits WHERE `nev file` = "'...
+		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "'...
 			nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit '... 
@@ -115,8 +115,8 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 			continue
 		end
 	
-		%Insert into Fits
-		tablename = 'Fits';
+		%Insert into fits
+		tablename = 'fits';
 		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer',...
 		 '`analysis date`', 'commit'};
 		sqldata = { modelID, nevfile, unit, unitnum, nC, host, stamp, comm};
@@ -125,14 +125,14 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 	
-		%Insert into FitsMVGC
-		tablename = 'FitsMVGC';
+		%Insert into fits_mvgc
+		tablename = 'fits_mvgc';
 		fitcols = {'id', 'alpha', 'units', 'causaldensity'};
 		sqldata = { fitid, pval, nUtotal, causaldensity};
 		datainsert(conn,tablename,fitcols,sqldata);
 	
 		%For each unit, save the results 
-		tablename = 'GrangerEstimates';
+		tablename = 'estimates_granger';
 		fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 		for j = (nG+1):(nUtotal+nG)
 			%Extract and save regression fiticients
@@ -141,7 +141,7 @@ function processMVGCmanualPaired(conn, modelID, blackrock, labviewpath, nevfile1
 			score = result.pwcgc(1,j);
 			p = result.pwcgc_pval(1,j);
 			sig = result.pwcgc_sig(1,j);
-			%Insert into FitsMVGC
+			%Insert into fits_mvgc
 			sqldata = {fitid, j-nG, fromunit, score, p, sig};
 			datainsert(conn,tablename,fitcols,sqldata);
 		end	
