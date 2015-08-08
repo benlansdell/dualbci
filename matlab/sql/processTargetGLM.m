@@ -11,7 +11,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, par
 		return
 	end
 	ntrials = fetch(exec(conn, ['SELECT `trials` FROM recordings WHERE `nev file` = "' nevfile '"']));
-	ntrials = duration.Data{1};
+	ntrials = ntrials.Data{1};
 	if ntrials == 0
 		display('No trials found in this recording. Skipping')
 		return
