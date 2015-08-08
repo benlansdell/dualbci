@@ -194,7 +194,7 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 		%Check if nevfile matches
 		if strcmp(nevfiles, nevfiletrial)
 			%If it does then set the target value for all bins that are between start and end of trial
-			startbin = floor((trial.starttime-trial.offset)/binsize);
+			startbin = max(1,floor((trial.starttime-trial.offset)/binsize));
 			endbin = floor((trial.endtime-trial.offset)/binsize);
 			target(startbin:endbin,:) = repmat(trial.target,endbin-startbin+1,1);
 			%Resample the cursor information and place it in the structure also
