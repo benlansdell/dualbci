@@ -10,6 +10,12 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, matfile, par
 		display(['Duration of ' nevfile '(' num2str(duration) 's) is less than requested ' num2str(dur+testdur) 's. Continuing'])		
 		return
 	end
+	ntrials = fetch(exec(conn, ['SELECT `trials` FROM recordings WHERE `nev file` = "' nevfile '"']));
+	ntrials = duration.Data{1};
+	if ntrials == 0
+		display('No trials found in this recording. Skipping')
+		return
+	end
 	%Preprocess data
 	if nargin < 8
 		processed = preprocess_spline_target(nevpath, matpath, binsize, threshold, offset);
