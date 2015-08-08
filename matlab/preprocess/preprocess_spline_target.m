@@ -164,9 +164,27 @@ function processed = preprocess_spline_target(nevfile, labviewfile, binsize, thr
 	if (labviewsample == 59) | (labviewsample == 48)
 		error('preprocess:labviewrecording:rareSampleRate', ['Sample rate of labview file cannot be processed: ' labviewsample]);
 	end
-	cursor = resample(cursor, floor(10000000/labviewsample), binsize*10000000);
-	dcursor = [diff(cursor); 0, 0]*labviewsample;
-	ddcursor = [diff(dcursor); 0, 0]*labviewsample;
+	%cursor = resample(cursor, floor(10000000/labviewsample), binsize*10000000);
+	%dcursor = [diff(cursor); 0, 0]*labviewsample;
+	%ddcursor = [diff(dcursor); 0, 0]*labviewsample;
+
+	p = 0.9999;
+	for j = 1:2
+		lvpts = ((1:size(cursor,1))-1)/labviewsample;
+		pts = ((1:size(binnedspikes,1))-1)/samplerate;
+		%Smooth w spline
+		spcurs = csaps(lvpts, cursor(:,j), p);
+		c(:,j) = fnval(spcurs, pts);
+		%Compute velocity of spline
+		vel = fnder(spcurs);
+		dc(:,j) = fnval(vel, pts);
+		%Compute accel of spline
+		accel = fnder(vel);
+		ddc(:,j) = fnval(accel, pts);
+	end
+	cursor = c;
+	dcursor = dc;
+	ddcursor = ddc;
 
 	target = zeros(size(cursor));
 	cursor_trial = zeros(size(cursor));
