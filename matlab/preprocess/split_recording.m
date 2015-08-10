@@ -29,9 +29,11 @@ function [processed1, processed2] = split_recording(processed, split, duration)
     %Truncate processed structures
     short_processed.binnedspikes = short_processed.binnedspikes(1:nB,:);
     short_processed.rates = short_processed.rates(1:nB,:);
-    short_processed.torque = short_processed.torque(1:nB,:);
-    short_processed.dtorque = short_processed.dtorque(1:nB,:);
-    short_processed.ddtorque = short_processed.ddtorque(1:nB,:);
+    if isfield(short_processed, 'torque')
+        short_processed.torque = short_processed.torque(1:nB,:);
+        short_processed.dtorque = short_processed.dtorque(1:nB,:);
+        short_processed.ddtorque = short_processed.ddtorque(1:nB,:);
+    end
     %If cursor exists
     if isfield(short_processed, 'dcursor')
         short_processed.dcursor = short_processed.ddcursor(1:nB,:);
@@ -62,9 +64,11 @@ function [processed1, processed2] = split_recording(processed, split, duration)
     %Truncate processed structures
     processed1.binnedspikes = processed1.binnedspikes(1:nB,:);
     processed1.rates = processed1.rates(1:nB,:);
-    processed1.torque = processed1.torque(1:nB,:);
-    processed1.dtorque = processed1.dtorque(1:nB,:);
-    processed1.ddtorque = processed1.ddtorque(1:nB,:);
+    if isfield(processed1, 'torque')
+        processed1.torque = processed1.torque(1:nB,:);
+        processed1.dtorque = processed1.dtorque(1:nB,:);
+        processed1.ddtorque = processed1.ddtorque(1:nB,:);
+    end
     %If cursor exists
     if isfield(processed1, 'dcursor')
         processed1.dcursor = processed1.ddcursor(1:nB,:);
@@ -91,9 +95,11 @@ function [processed1, processed2] = split_recording(processed, split, duration)
     %Truncate processed structures
     processed2.binnedspikes = processed2.binnedspikes(nB:end,:);
     processed2.rates = processed2.rates(nB:end,:);
-    processed2.torque = processed2.torque(nB:end,:);
-    processed2.dtorque = processed2.dtorque(nB:end,:);
-    processed2.ddtorque = processed2.ddtorque(nB:end,:);
+    if isfield(processed2, 'torque')
+        processed2.torque = processed2.torque(nB:end,:);
+        processed2.dtorque = processed2.dtorque(nB:end,:);
+        processed2.ddtorque = processed2.ddtorque(nB:end,:);
+    end
     %If cursor exists
     if isfield(processed2, 'dcursor')
         processed2.dcursor = processed2.ddcursor(nB:end,:);
