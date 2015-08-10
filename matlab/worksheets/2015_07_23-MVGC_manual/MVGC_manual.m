@@ -22,12 +22,23 @@ toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 nR = size(toprocess,1);
 
-for idx = 1:nR
+for idx = 99:nR
 	BCnevfile = toprocess{idx,1};
 	nevfile1 = toprocess{idx,2};
 	nevfile2 = toprocess{idx,3};
 	expt_id = toprocess{idx,4};
 	display(['Processing ' nevfile1])
+	%Check not labeled as waitfile:
+	mapping1 = fetch(exec(conn, ['SELECT `labview task type` FROM recordings WHERE `nev file` = "' nevfile1 '"']));
+	mapping1 = mapping1.Data{1};
+	mapping2 = fetch(exec(conn, ['SELECT `labview task type` FROM recordings WHERE `nev file` = "' BCnevfile '"']));
+	mapping2 = mapping2.Data{1};
+	mapping3 = fetch(exec(conn, ['SELECT `labview task type` FROM recordings WHERE `nev file` = "' nevfile2 '"']));
+	mapping3 = mapping3.Data{1};
+	if strcmp(mapping1, '(waitfile)') | strcmp(mapping2, '(waitfile)'), strcmp(mapping3, '(waitfile)')
+		display('Labeled as (waitfile), continuing')
+		continue
+	end
 	if exist([blackrock nevfile1], 'file') & exist([blackrock BCnevfile], 'file') & exist([blackrock nevfile2], 'file')
 		processMVGCmanual(conn, modelID, blackrock, labviewpath, nevfile1, BCnevfile, nevfile2, expt_id, paramcode);
 	else
