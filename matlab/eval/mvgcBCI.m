@@ -1,8 +1,10 @@
-function results = mvgcBCI(X, tstat, nK, alpha)
+function results = mvgcBCI(X, tstat, nK, alpha, momax, acmaxlags)
 
-	if (nargin < 3) tstat = ''; end
-	if (nargin < 4) nK = []; end
-	if (nargin < 5) alpha = 0.05; end
+	if (nargin < 2) tstat = ''; end
+	if (nargin < 3) nK = []; end
+	if (nargin < 4) alpha = 0.05; end
+	if (nargin < 5) momax = 20; end
+	if (nargin < 6) acmaxlags = 1000; end
 	
 	demean = true;
 	%%%%%%%
@@ -22,10 +24,10 @@ function results = mvgcBCI(X, tstat, nK, alpha)
 	icregmode = 'LWR';  % information criteria regression mode ('OLS', 'LWR' or empty for default)
 
 	morder    = 'AIC';  % model order to use ('actual', 'AIC', 'BIC' or supplied numerical value)
-	momax     = 20;     % maximum model order for model order estimation
+	%momax     = 20;     % maximum model order for model order estimation
 
 	%acmaxlags = momax;
-	acmaxlags = 1000;   % maximum autocovariance lags (empty for automatic calculation)
+	%acmaxlags = 1000;   % maximum autocovariance lags (empty for automatic calculation)
 
 	%tstat     = 'chi2';     % statistical test for MVGC:  'F' for Granger's F-test (default) or 'chi2' for Geweke's chi2 test
 	%alpha     = 0.05;   % significance level for significance test
