@@ -10,7 +10,7 @@ else
 	homedir = '/home/';
 end
 
-opengl software
+%opengl software
 
 addpath([homedir 'lansdell/projects/bci/matlab/functions']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/functions']);
