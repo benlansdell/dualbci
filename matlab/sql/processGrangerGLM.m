@@ -66,7 +66,7 @@ function processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, thresho
 		datainsert(conn,tablename,fitcols,sqldata);
 
 		%Insert into NetworkEstimates
-		tablename = 'GrangerEstimates';
+		tablename = 'estimates_granger';
 		fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 		for j = 1:nU
 			if j ~= idx
