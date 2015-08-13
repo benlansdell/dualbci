@@ -16,8 +16,8 @@ function model = MLE_glmfit_network(data, const)
 	%
 	%Test code:
 	%	const = 'on';
-	%	nK_sp = 6; 
-	%	nK_pos = 6;
+	%	nK_sp = 30; 
+	%	nK_pos = 0;
 	%	%Load test preprocessed data
 	%	pre = load('./testdata/test_preprocess_spline_60hz_short24.mat');
 	%	data = filters_sp_pos_network(pre.processed, nK_sp, nK_pos);
