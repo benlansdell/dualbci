@@ -346,4 +346,5 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	processed.binsize = binsize;
 	processed.nevfile = nevfile;
 	processed.labviewfile = matfile;
+	processed.offsets = offsets;
 end
