@@ -21,6 +21,8 @@ toprocess = reshape(toprocess, [], 1);
 nR = size(toprocess,1);
 eval(paramcode);
 
+nS = 0;
+
 for idx = 1:nR
 	nevfile = toprocess{idx};
 	matfile = exec(conn, ['SELECT `labview file` FROM recordings WHERE `nev file` = "' nevfile '"']);
@@ -42,6 +44,7 @@ for idx = 1:nR
 		end
 	else
 		display('Cannot find file, continuing')
+		nS = nS + 1;
 	end
 end
 

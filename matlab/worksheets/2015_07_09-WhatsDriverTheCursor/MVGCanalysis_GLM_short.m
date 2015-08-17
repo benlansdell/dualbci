@@ -7,7 +7,8 @@ conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,'...
-	' f1.`mse out`, f1.`dev`, f2.`mse out`, f2.`dev`, f3.`mse out`, f3.`dev`, f4.`mse out`, f4.`dev`'...
+	' f1.`mse out`, f1.`dev`, f2.`mse out`, f2.`dev`, f3.`mse out`, f3.`dev`, f4.`mse out`, f4.`dev`, '...
+	' f5.`mse out`'...
 	'FROM estimates_granger ge '...
 	'INNER JOIN fits f ON f.id = ge.id '...
 	'INNER JOIN bci_units bci ON bci.ID = f.`nev file` AND bci.unit = ge.fromunit '...
@@ -17,6 +18,7 @@ data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,
 	'INNER JOIN fits f2 ON f2.`nev file` = al.`manualrecording` AND f2.`modelID` = 15 and f2.unit = ge.fromunit '...
 	'INNER JOIN fits f3 ON f3.`nev file` = al.`manualrecording` AND f3.`modelID` = 1 and f3.unit = ge.fromunit '...
 	'INNER JOIN fits f4 ON f4.`nev file` = al.`manualrecording` AND f4.`modelID` = 16 and f4.unit = ge.fromunit '...
+	'INNER JOIN fits f5 ON f5.`nev file` = al.`manualrecording` AND f5.`modelID` = 19 and f5.unit = ge.fromunit '...
 	'WHERE f.modelID = 3 ']);
 
 data = fetch(data);
@@ -45,6 +47,8 @@ targmseout1 = [];
 targmseout2 = [];
 targdev1 = [];
 targdev2 = [];
+mseconst1 = [];
+mseconst2 = [];
 
 for i = 1:(size(data,1)-1)
 	if strcmp(data{i, 4}, data{i+1, 4})
@@ -74,6 +78,8 @@ for i = 1:(size(data,1)-1)
 		targdev1(idx) = data{i, 12};
 		targdev2(idx) = data{i+1, 12};
 		performance(idx) = data{i, 3};
+		mseconst1(idx) = data{i, 13};
+		mseconst2(idx) = data{i+1, 13};
 	end
 end
 
@@ -233,3 +239,7 @@ f = fit([x', y'], c', 'cubicinterp')
 plot(f)
 hold on 
 scatter(x,y,[],c, 'filled');
+
+
+
+

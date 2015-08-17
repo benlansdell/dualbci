@@ -21,7 +21,7 @@ toprocess = reshape(toprocess, [], 1);
 nR = size(toprocess,1);
 eval(paramcode);
 
-for idx = 1:nR
+for idx = 75:nR
 	nevfile = toprocess{idx};
 	%Figure out which units to process, that haven't already been processed by this model
 	units = exec(conn, ['SELECT u.`unit` FROM units u'...
