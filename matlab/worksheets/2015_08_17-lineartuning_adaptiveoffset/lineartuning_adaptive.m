@@ -18,7 +18,7 @@ toprocess = reshape(toprocess,1,[]);
 nR = size(toprocess,2);
 
 %rng('shuffle')
-for idx = 2:nR
+for idx = 1:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
 	if ~strcmp(nevfile, 'null')

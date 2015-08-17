@@ -45,6 +45,7 @@ function processLinear(conn, modelID, blackrock, labview, nevfile, matfile, para
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
 		%Extract and save regression fiticients
 		unit = processed.unitnames{idx};
+		offset = processed.offsets(idx);
 		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
@@ -75,11 +76,12 @@ function processLinear(conn, modelID, blackrock, labview, nevfile, matfile, para
 
 		%Insert into fits_linear
 		tablename = 'fits_linear';
-		fitcols = {'id', 'dir', 'size'};
+		fitcols = {'id', 'dir', 'size', 'offset'};
 		regrRU = model.b_hat(idx,2);
 		regrFE = model.b_hat(idx,3);
 		[direction, tuningsize] = unitTheta(regrRU, regrFE);
-		sqldata = { fitid, direction, tuningsize};
+		sqldata = { fitid, direction, tuningsize, offset};
+
 		datainsert(conn,tablename,fitcols,sqldata);
 
 		%Insert into estimates_parameters
