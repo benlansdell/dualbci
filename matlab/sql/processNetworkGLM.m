@@ -41,10 +41,13 @@ function processNetworkGLM(conn, modelID, blackrock, nevfile, paramcode, units)
 	stamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
 	comm = currCommit();
 	%For each unit, save the results 
-	for idx = 2:nU
+	%Renew connection in case it is stale
+	conn = db_conn(conn);
+
+	for idx = 1:nU
 		%If already in database, skip
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
-		%Extract and save regression fiticients
+		%Extract and save regression coefficients
 		unit = processed.unitnames{idx};
 		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')

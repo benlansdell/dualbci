@@ -29,12 +29,16 @@ function processGrangerGLMCausal(conn, modelID, blackrock, nevfile, paramcode)
 
 	nC = size(gdata.X,2);
 	if strcmp(const, 'on')
-		nC = nC + 1;
+		nC = nC+1;
 	end
 	%Tag with computer run on, date, last git commit
 	host = hostname();
 	comm = currCommit();
 	stamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
+
+	%Renew connection after potentially taking a long time to run GC comp
+	conn = db_conn();
+
 	%For each unit, save the results 
 	for idx = 1:nU
 		%Extract and save regression fiticients
