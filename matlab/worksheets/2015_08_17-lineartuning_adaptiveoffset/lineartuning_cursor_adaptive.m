@@ -19,13 +19,13 @@ toprocess = reshape(toprocess,1,[]);
 nR = size(toprocess,2);
 
 %rng('shuffle')
-for idx = 1:nR
+for idx = 11:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
 	%Select labview file
 	matfile = fetch(exec(conn, ['SELECT `labview file` FROM recordings WHERE `nev file` = "' nevfile '"']));
 	matfile = matfile.Data{1};
 	if ~strcmp(nevfile, 'null')
-		processLinearCursorAdaptiveOffset(conn, modelID, blackrock, labview, nevfile, matfile, paramcode);
+		processLinearCursorAdaptOffset(conn, modelID, blackrock, labview, nevfile, matfile, paramcode);
 	end
 end

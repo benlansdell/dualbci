@@ -49,7 +49,7 @@ function processNetworkGLM(conn, modelID, blackrock, nevfile, paramcode, units)
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
 		%Extract and save regression coefficients
 		unit = processed.unitnames{idx};
-		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(db_conn(conn), ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue

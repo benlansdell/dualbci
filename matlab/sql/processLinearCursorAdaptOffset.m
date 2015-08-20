@@ -37,6 +37,9 @@ function processLinear(conn, modelID, blackrock, labview, nevfile, matfile, para
 	nC = size(model.b_hat,2);
 	%Tag with computer run on, date, last git commit
 	host = hostname();
+	if isempty(host)
+		host = 'null';
+	end
 	stamp = datestr(now, 'yyyy-mm-dd HH:MM:SS');
 	comm = currCommit();
 	%For each unit, save the results 

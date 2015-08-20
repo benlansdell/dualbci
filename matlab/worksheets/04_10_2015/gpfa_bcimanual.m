@@ -23,7 +23,7 @@ method = 'gpfa';
 xDim = 8;
 kernSD = 30;
 % Extract neural trajectories
-result_bci = neuralTraj(runIdx, dat, 'method', method, 'xDim', xDim, 'kernSDList', kernSD);
+result_bci = neuralTraj(runIdx, dat_bci, 'method', method, 'xDim', xDim, 'kernSDList', kernSD);
 % Orthonormalize neural trajectories
 [estParams_bci, seqTrain_bci, seqTest_bci, DD] = postprocess(result_bci, 'kernSD', kernSD);
 % Plot each dimension of neural trajectories versus time
