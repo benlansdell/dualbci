@@ -173,8 +173,8 @@ function processed = preprocess_smooth(nevfile, binsize, sigma_fr, sigma_trq, th
 	end
 	%Check they're the same length, and trim
 	nsamp = min(size(torque,1), size(rates,1));
-	binnedspikes(1:nsamp,:) = binnedspikes(1:nsamp,:);
-	torque=torque(1:nsamp,:);
+	binnedspikes = binnedspikes(1:nsamp,:);
+	torque = torque(1:nsamp,:);
 	rates = rates(1:nsamp,:);
 	%Apply offset to data
 	delaysamples = round(offset*samplerate);
