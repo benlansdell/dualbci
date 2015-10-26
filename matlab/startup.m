@@ -19,7 +19,7 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/models']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/eval']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/worksheets']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/other']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/other/pillow_code_GLM_v1']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/sql']);
 
 %nev files, labview files, respectively
