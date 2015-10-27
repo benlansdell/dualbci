@@ -4,7 +4,7 @@ function [direction, torquesize] = unitTheta(torqueRU, torqueFE)
 	%Compute angle
 	torqueH = atan(torqueRU./torqueFE); %theta
 	torquesize = sqrt(torqueRU.^2 + torqueFE.^2); %speed
-	piplus = torqueFE < 0 & torqueRU > 0;
+	piplus = torqueFE < 0 & torqueRU >= 0;
 	piminus = torqueFE < 0 & torqueRU < 0;
 	%Between plus/minus pi
 	torqueH(piplus) = torqueH(piplus) + pi;
