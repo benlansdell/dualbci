@@ -19,7 +19,7 @@ toprocess = reshape(toprocess,1,[]);
 nR = size(toprocess,2);
 
 %rng('shuffle')
-for idx = 11:nR
+for idx = 42:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
 	%Select labview file

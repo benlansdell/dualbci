@@ -18,7 +18,7 @@ toprocess = toprocess.Data;
 toprocess = reshape(toprocess,1,[]);
 nR = size(toprocess,2);
 
-for idx = 75:nR
+for idx = 185:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
 	if ~strcmp(nevfile, 'null')
