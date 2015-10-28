@@ -162,6 +162,9 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	lvdtorque = resample(lvdtorque, samplerate, labviewsamplerate);
 	lvddtorque = resample(lvddtorque, samplerate, labviewsamplerate);
 
+	velocity = data.stateHist.velocity(withinnev,:);
+	plot(velocity)
+
 	%If can't find NSx file then go ahead with zeros...
 	if exist(ns3file, 'file')
 		chans = findTorqueChannels(nevfile);
