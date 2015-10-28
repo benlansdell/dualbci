@@ -2,8 +2,6 @@
 BCI Target pursuit task -- GLM
 ==============================
 
-Date modified: Oct 28, 2015
-
 MATLAB code for studying neural recording data from monkey as performs manual
 and brain control target pursuit tasks. Data from Moritz lab. Orignally studied
 by Charlie Matlack (cmatlack@uw.edu). 
