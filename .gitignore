@@ -5,7 +5,7 @@ matlab/Tuning
 matlab/LogProcess
 matlab/mat_results
 matlab/NPMK
-matlab/worksheets
+#matlab/worksheets
 matlab/tmp
 matlab/GLMwGUI
 matlab/expts
@@ -15,3 +15,9 @@ matlab/tmp*
 *.eps
 *.m~
 *.adj
+*.mat
+*.fig
+*.csv
+*.pdf
+*.svg
+*.jpg
