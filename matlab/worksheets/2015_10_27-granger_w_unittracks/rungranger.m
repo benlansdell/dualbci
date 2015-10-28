@@ -18,7 +18,7 @@ toprocess = toprocess.Data;
 nR = size(toprocess,1);
 
 %rng('shuffle')
-for idx = 1:nR
+for idx = 2:nR
 	MCnevfile1 = toprocess{idx,2};
 	MCnevfile2 = toprocess{idx,3};
 	BCnevfile1 = toprocess{idx,1};
@@ -28,7 +28,7 @@ for idx = 1:nR
 		display(['Processing ' MCnevfile1])
 		processGrangerGLMPaired(conn, modelID, blackrock, labviewpath, MCnevfile1, BCnevfile1, MCnevfile2, DCnevfile, expt_id, paramcode);
 	else
-		display('Can''t find all file, continuing')
+		display('Can''t find all files, continuing')
 		continue
 	end
 end
