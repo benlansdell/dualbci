@@ -11,6 +11,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 	%Truncate to units that haven't been analyzed before using this model
 	processed = removeProcessedUnits(processed, conn, modelID);
 	nU = length(processed.unitnames);
+	%processed 
 	%Truncate to specified duration
 	[processed, processed_novel] = split_recording(processed, dur, dur+testdur);
 	%If all units have been analyzed then return
