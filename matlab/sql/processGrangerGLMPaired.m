@@ -87,7 +87,7 @@ function runGrangerPaired(conn, analysis_id, modelID, blackrock, labviewpath, ne
 
 		%If already in database, skip
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
-		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `analyses_id` = ' num2str(analysis_id) ' `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
+		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `analyses_id` = ' num2str(analysis_id) ' AND `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
 			continue
