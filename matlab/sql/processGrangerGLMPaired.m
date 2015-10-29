@@ -94,8 +94,8 @@ function runGrangerPaired(conn, analysis_id, modelID, blackrock, labviewpath, ne
 		end
 
 		tablename = 'fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'dev', 'computer', '`analysis date`', 'commit'};
-		sqldata = { modelID, nevfile, unit, idx, nC, dev, host, stamp, comm};
+		fitcols = {'modelID', '`analyses_id`', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'dev', 'computer', '`analysis date`', 'commit'};
+		sqldata = { modelID, analysis_id, nevfile, unit, idx, nC, dev, host, stamp, comm};
 		%sqldata = { 1, '20130920SpankyUtah001.nev', 999, 1, 3, 3, '3', '2013-12-09 12:12:12', '12'};
 		datainsert(conn,tablename,fitcols,sqldata);
 		%Get the fit id used
