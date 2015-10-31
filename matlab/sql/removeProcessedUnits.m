@@ -4,7 +4,8 @@ function processed = removeProcessedUnits(processed, conn, modelID)
 	[pathstr, nevfile, ext] = fileparts(processed.nevfile);
 	nevfile = [nevfile '.nev'];
 	%Find which of these units have been analyzed with this modelID and nevfile
-	processedunits = exec(conn, ['SELECT `unit` FROM fits WHERE modelID = ' num2str(modelID) ' AND `nev file` = "' nevfile '"']);
+	processedunits = exec(conn, ['SELECT `unit` FROM fits WHERE modelID = ' num2str(modelID) ' AND `nev file` = "' nevfile '"'...
+		' AND analyses_id = NULL']);
 	processedunits = fetch(processedunits);
 	processedunits = processedunits.Data;
 	if strcmp(processedunits, 'No Data')
