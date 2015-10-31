@@ -5,7 +5,7 @@ labview = './labview/';
 threshold = 5;
 after = '2013-09-01';
 before = '2014-09-20';
-tasktype = 'dual';
+tasktype = 'brain';
 duration = 240;
 
 %Fetch paramcode to load

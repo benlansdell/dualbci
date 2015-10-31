@@ -1,4 +1,5 @@
-%Script to run Granger causality model with 'causal' and 'acausal' stim filters. 
+%Script to run Granger causality model, tracking units between recordings. 
+%Model 29 fits GC over a longer set of training data
 modelID = 29;
 blackrock = './blackrock/';
 labviewpath = './labview/';
@@ -18,7 +19,8 @@ toprocess = toprocess.Data;
 nR = size(toprocess,1);
 
 %rng('shuffle')
-for idx = 2:nR
+% 1-18 (americano) 19-45 (espresso) 46-67 (mocha) 68-89 (galao) 90-108 (mocha -- since latte sshfs not working...)
+for idx = 97:108
 	MCnevfile1 = toprocess{idx,2};
 	MCnevfile2 = toprocess{idx,3};
 	BCnevfile1 = toprocess{idx,1};

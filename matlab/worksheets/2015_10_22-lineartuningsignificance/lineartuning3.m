@@ -89,3 +89,6 @@ xlabel('Tuning strength BC1')
 ylabel('Tuning strength DC')
 title(['Mutual information: ' num2str(MI(6))])
 saveplot(gcf, './worksheets/2015_10_22-lineartuningsignificance/tuningstrengthMCBCMC2.eps')
+
+clf
+scatter(all_d(:,1), all_d(:,2), [], all_d(:,5))

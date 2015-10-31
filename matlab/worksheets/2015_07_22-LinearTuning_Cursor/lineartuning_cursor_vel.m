@@ -19,7 +19,7 @@ toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 nR = size(toprocess,1);
 
-for idx = 74:nR
+for idx = 1:nR
 	nevfile = toprocess{idx, 1};
 	matfile = toprocess{idx, 2};
 	bciunits = exec(conn, ['SELECT `unit` FROM bci_units WHERE `ID` = "' nevfile '"']);

@@ -4,7 +4,7 @@ conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Gather data%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-all_data = fetch(exec(conn, ['SELECT fl1.size, fl2.size, fl3.size, fl4.size, fl1.dir, fl2.dir, fl3.dir, fl4.dir FROM '...
+all_data = fetch(exec(conn, ['SELECT fl1.size, fl2.size, fl3.size, fl4.size, fl5.size, fl1.dir, fl2.dir, fl3.dir, fl4.dir, fl5.dir FROM '...
 '`experiment_tuning` et1 '...
 'INNER JOIN `fits` flin1 '...
 'ON flin1.`nev file` = et1.`manualrecording` '...
@@ -22,14 +22,20 @@ all_data = fetch(exec(conn, ['SELECT fl1.size, fl2.size, fl3.size, fl4.size, fl1
 'ON flin4.`nev file` = et1.`1DBCrecordingafter` '...
 'INNER JOIN `fits_linear` fl4 '...
 'ON flin4.id = fl4.id '...
-'WHERE flin1.modelID = 7 AND flin2.modelID = 7 AND flin3.modelID = 7 AND flin4.modelID = 7 ' ...
-'AND flin1.unit = flin2.unit AND flin2.unit = flin3.unit AND flin2.unit = flin4.unit']));
-all_d = cell2mat(all_data.Data(:,1:4));
+'INNER JOIN `fits` flin5 '...
+'ON flin5.`nev file` = et1.`dualrecording` '...
+'INNER JOIN `fits_linear` fl5 '...
+'ON flin5.id = fl5.id '...
+'WHERE flin1.modelID = 7 AND flin2.modelID = 7 AND flin3.modelID = 7 AND flin4.modelID = 7 AND flin5.modelID = 7 ' ...
+'AND flin1.unit = flin2.unit AND flin2.unit = flin3.unit AND flin2.unit = flin4.unit AND flin2.unit = flin5.unit']));
+all_d = cell2mat(all_data.Data(:,1:5));
 
 MI(1) = mutualinfo(all_d(:,1), all_d(:,2));
 MI(2) = mutualinfo(all_d(:,1), all_d(:,3));
 MI(3) = mutualinfo(all_d(:,3), all_d(:,2));
 MI(4) = mutualinfo(all_d(:,2), all_d(:,4));
+MI(5) = mutualinfo(all_d(:,1), all_d(:,5));
+MI(6) = mutualinfo(all_d(:,2), all_d(:,5));
 
 clf
 subplot(2,3,1)
@@ -54,4 +60,17 @@ ylabel('Tuning strength BC2')
 xlim([0 3])
 ylim([0 8])
 title(['Mutual information: ' num2str(MI(4))])
+subplot(2,3,5)
+plot(all_d(:,1), all_d(:,5), '.')
+xlabel('Tuning strength MC1')
+ylabel('Tuning strength DC')
+title(['Mutual information: ' num2str(MI(5))])
+subplot(2,3,6)
+plot(all_d(:,2), all_d(:,5), '.')
+xlabel('Tuning strength BC1')
+ylabel('Tuning strength DC')
+title(['Mutual information: ' num2str(MI(6))])
 saveplot(gcf, './worksheets/2015_10_22-lineartuningsignificance/tuning-cursor-strengthMCBCMC2.eps')
+
+clf
+scatter(all_d(:,1), all_d(:,2), [], all_d(:,5))
