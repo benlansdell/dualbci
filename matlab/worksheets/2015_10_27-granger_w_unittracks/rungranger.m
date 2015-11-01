@@ -20,7 +20,7 @@ nR = size(toprocess,1);
 
 %rng('shuffle')
 % 1-18 (americano) 19-45 (espresso) 46-67 (mocha) 68-89 (galao) 90-108 (mocha -- since latte sshfs not working...)
-for idx = 97:108
+for idx = 105:108
 	MCnevfile1 = toprocess{idx,2};
 	MCnevfile2 = toprocess{idx,3};
 	BCnevfile1 = toprocess{idx,1};

@@ -38,7 +38,7 @@ for idx = 1:nR
 	allunits = unique([otherunits; bciunits]);
 	display(['Processing ' nevfile])
 	if exist([blackrock nevfile], 'file')
-		processLinearCursor(conn, modelID, blackrock, labview, nevfile, matfile, paramcode, threshold, allunits, rerun);
+		processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, allunits, rerun);
 	else
 		display('Cannot find file, continuing')
 	end
@@ -58,7 +58,7 @@ for idx = 1:nR
 	allunits = unique([otherunits; bciunits]);
 	display(['Processing ' nevfile])
 	if exist([blackrock nevfile], 'file')
-		processLinearCursor(conn, modelID, blackrock, labview, nevfile, matfile, paramcode, threshold, allunits, rerun);
+		processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, allunits, rerun);
 	else
 		display('Cannot find file, continuing')
 	end
@@ -79,7 +79,7 @@ for idx = 1:nR
 	allunits = unique([otherunits; bciunits]);
 	display(['Processing ' nevfile])
 	if exist([blackrock nevfile], 'file')
-		processLinearCursor(conn, modelID, blackrock, labview, nevfile, matfile, paramcode, threshold, allunits, rerun);
+		processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, allunits, rerun);
 	else
 		display('Cannot find file, continuing')
 	end
@@ -100,7 +100,7 @@ for idx = 1:nR
 	allunits = unique([otherunits; bciunits]);
 	display(['Processing ' nevfile])
 	if exist([blackrock nevfile], 'file')
-		processLinearCursor(conn, modelID, blackrock, labview, nevfile, matfile, paramcode, threshold, allunits, rerun);
+		processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, allunits, rerun);
 	else
 		display('Cannot find file, continuing')
 	end
