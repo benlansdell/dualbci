@@ -66,7 +66,7 @@ end
 
 %MC2
 for idx = 1:nR
-	nevfile = toprocess{idx, 1};
+	nevfile = toprocess{idx, 4};
 	matfile = toprocess{idx, 2};
 	BCnevfile = toprocess{idx, 3};
 	bciunits = exec(conn, ['SELECT `unit` FROM bci_units WHERE `ID` = "' BCnevfile '"']);
@@ -87,7 +87,7 @@ end
 
 %DC
 for idx = 1:nR
-	nevfile = toprocess{idx, 1};
+	nevfile = toprocess{idx, 5};
 	matfile = toprocess{idx, 2};
 	BCnevfile = toprocess{idx, 3};
 	bciunits = exec(conn, ['SELECT `unit` FROM bci_units WHERE `ID` = "' BCnevfile '"']);
