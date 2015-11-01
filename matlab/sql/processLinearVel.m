@@ -1,4 +1,4 @@
-function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, units, rerun)
+function processLinearVel(conn, modelID, blackrock, nevfile, paramcode, threshold, units, rerun)
 	logfile = './sqllog.txt';
 	nevpath = [blackrock nevfile];
 	%Load parameters
@@ -29,10 +29,10 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 	d = ['processLinearCursor: Fitting model ' num2str(modelID) ' nevfile ' nevfile];
 	display(d);
 	writelog(logfile, d);
-	data = filters_sp_pos(processed, nK_sp, nK_pos);
+	data = filters_sp_vel(processed, nK_sp, nK_pos);
 	model = MLE_lmfit(data, const);
 	%%Compute MSE on test data
-	datanovel = filters_sp_pos(processed_novel, nK_sp, nK_pos);
+	datanovel = filters_sp_vel(processed_novel, nK_sp, nK_pos);
 	nBout = size(datanovel.y,2);
 	nBin = size(data.y,2);
 
