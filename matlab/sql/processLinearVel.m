@@ -4,12 +4,12 @@ function processLinearVel(conn, modelID, blackrock, nevfile, paramcode, threshol
 	%Load parameters
 	eval(paramcode);
 	%Preprocess data
-	if nargin < 9
+	if nargin < 7
 		processed = preprocess_spline(nevpath, binsize, threshold, offset);
 	else
 		processed = preprocess_spline(nevpath, binsize, threshold, offset, 0, 0, units);
 	end
-	if nargin < 10
+	if nargin < 8
 		rerun = 0;
 	end
 	%Truncate to units that haven't been analyzed before using this model
