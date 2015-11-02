@@ -26,7 +26,7 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 	end
 
 	%Fit a linear model to training data
-	d = ['processLinearCursor: Fitting model ' num2str(modelID) ' nevfile ' nevfile];
+	d = ['processLinear: Fitting model ' num2str(modelID) ' nevfile ' nevfile];
 	display(d);
 	writelog(logfile, d);
 	data = filters_sp_pos(processed, nK_sp, nK_pos);
@@ -51,18 +51,18 @@ function processLinear(conn, modelID, blackrock, nevfile, paramcode, threshold, 
 			' AND analyses_id IS NULL']));
 		if ~strcmp(previous.Data{1}, 'No Data')
 			if ~rerun 
-				d = ['processLinearCursor: WARNING Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'];
+				d = ['processLinear: WARNING Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'];
 				display(d);
 				writelog(logfile, d);
 				continue
 			elseif length(previous.Data) > 1
-				d = ['processLinearCursor: WARNING Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Trying to overwrite '...
+				d = ['processLinear: WARNING Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Trying to overwrite '...
 					' old fit, but found too many matching fits for this model to unambiguously replace with new data. Skipping'];
 				display(d);
 				writelog(logfile, d);
 				continue				
 			else
-				d = ['processLinearCursor: rerun = 1: Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Deleting and '...
+				d = ['processLinear: rerun = 1: Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Deleting and '...
 				're-entering.'];
 				display(d);
 				writelog(logfile, d);
