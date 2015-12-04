@@ -1,3 +1,5 @@
+
+
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
 

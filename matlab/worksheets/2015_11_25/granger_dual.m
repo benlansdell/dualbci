@@ -1,7 +1,7 @@
-%Script to run Granger causality model with 'causal' and 'acausal' stim filters. 
-modelID = 31;
+%Script to run simple linear regression on manual control between 2013-09-20 and 2014-01-01
+modelID = 2;
 blackrock = './blackrock/';
-labviewpath = './labview';
+threshold = 5;
 
 %Fetch paramcode to load
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
@@ -13,11 +13,11 @@ paramcode = paramcode.Data{1};
 %Fetch each pair of nev files to run
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
-toprocess = exec(conn, ['SELECT `manualrecording`, `1DBCrecording`, `manualrecordingafter`, `dualrecording`, `1DBCrecordingafter` FROM experiment_tuning']);
+tablename = '`experiment_tuning`';
+toprocess = exec(conn, ['SELECT `dualrecording` FROM ' tablename]);
 toprocess = fetch(toprocess);
 toprocess = toprocess.Data;
 toprocess = reshape(toprocess,1,[]);
-toprocess = unique(toprocess);
 nR = size(toprocess,2);
 
 %rng('shuffle')
@@ -25,7 +25,7 @@ for idx = 1:nR
 	nevfile = toprocess{idx};
 	display(['Processing ' nevfile])
 	if ~strcmp(nevfile, 'null')
-		processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode);
+		processGrangerGLM(conn, modelID, blackrock, nevfile, paramcode, threshold);
 	end
 end
 

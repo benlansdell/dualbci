@@ -49,6 +49,16 @@ for idx = 1:nR
 			%Compute size
 			sizes = sqrt(model.b_hat(:,2).^2+model.b_hat(:,3).^2);
 			sizes_MC = [sizes_MC; sizes];
+
+			%Extract deviance
+			dev = model.dev{idx, 1};
+			%Extract SE
+			stats = model.stats{idx};
+			%Extract MSE. Need to add cross-validation code to do this... add later
+			b_hat = model.b_hat(idx,:);
+			datanovel = filters_sp_pos(processed_novel, nK_sp, nK_pos);
+			rho_hat = glmval(b_hat', squeeze(data.X(idx,:,:)), 'identity');
+			rho_hat_novel = glmval(b_hat', squeeze(datanovel.X(idx,:,:)), 'identity');
 		end
 
 		%Brain control

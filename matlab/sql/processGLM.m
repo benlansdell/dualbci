@@ -28,10 +28,10 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 	end
 
 	%Fit a linear model to training data
-	data = filters_sprc_pos(processed, nK_sp, nK_pos, dt_sp, dt_pos)
+	data = filters_sprc_pos(processed, nK_sp, nK_pos)
 	model = MLE_glmfit(data, const);
 	%%Compute MSE on test data
-	datanovel = filters_sprc_pos(processed_novel, nK_sp, nK_pos, dt_sp, dt_pos);
+	datanovel = filters_sprc_pos(processed_novel, nK_sp, nK_pos);
 	nBout = size(datanovel.y,2);
 	nBin = size(data.y,2);
 
@@ -53,6 +53,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 		end
 		%Extract deviance
 		dev = model.dev{idx, 1};
+		logli = likelihood(model, data, 'poisson');
 		%Extract SE
 		stats = model.stats{idx};
 		%Extract MSE. Need to add cross-validation code to do this... add later
@@ -70,7 +71,7 @@ function processGLM(conn, modelID, blackrock, labviewpath, nevfile, paramcode, u
 		%fitid = randi(1e9);
 		%Insert into fits
 		tablename = 'fits';
-		fitcols = {'modelID', '`nev file`', 'unit', 'ncoeff', 'dev', '`mse out`', 'computer', '`analysis date`', 'commit', 'conv', 'cond'};
+		fitcols = {'modelID', '`nev file`', 'unit', 'ncoeff', 'dev', '`mse out`', 'logli', 'computer', '`analysis date`', 'commit', 'conv', 'cond'};
 		sqldata = { modelID, nevfile, unit, nC, dev, mseout, host, stamp, comm, converged, conditioned};
 		datainsert(conn,tablename,fitcols,sqldata);
 
