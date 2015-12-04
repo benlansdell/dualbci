@@ -1,6 +1,4 @@
-==============================
-BCI Target pursuit task -- GLM
-==============================
+# BCI Target pursuit task -- GLM
 
 MATLAB code for studying neural recording data from monkey as performs manual
 and brain control target pursuit tasks. Data from Moritz lab. Orignally studied
@@ -9,40 +7,38 @@ by Charlie Matlack (cmatlack@uw.edu).
 Dependencies: makes use of functions in the stats toolbox.
 
 In preprocess:
--Functions for importing data from .nev and .nsx files. 
--Functions for importing trial data from Labview (.mat) files. 
--Functions for smoothing torque data, and converting spike times to binned spikes
--generate_glm_data.m for simulating a GLM given input data and filters
+* Functions for importing data from .nev and .nsx files. 
+* Functions for importing trial data from Labview (.mat) files. 
+* Functions for smoothing torque data, and converting spike times to binned spikes
+* generate_glm_data.m for simulating a GLM given input data and filters
 
 In models:
--If the GLM has the form: E(y) = g(X\beta) where X is a data matrix and \beta is
+* If the GLM has the form: E(y) = g(X\beta) where X is a data matrix and \beta is
  a vector of filter coefficients, this directory contains functions for taking raw 
  data and preparing data matrix to be input into a GLM, along with output vector y.
 
 In eval:
--Functions to fit the filter coefficients beta
--Functions to predict spike trains given stimulus and a fit GLM
--Functions to plot filters of GLM
--Other plotting functions
+* Functions to fit the filter coefficients beta
+* Functions to predict spike trains given stimulus and a fit GLM
+* Functions to plot filters of GLM
+* Other plotting functions
 
 In functions:
--Functions to import blackrock files
--Functions by Charlie to compute correlations, etc
--Functions to save plots as .eps
--Some other things
+* Functions to import blackrock files
+* Functions by Charlie to compute correlations, etc
+* Functions to save plots as .eps
+* Some other things
 
 In other: 
--Other people's GLM code
+* Other people's GLM code
 
 In old:
--Old code
+* Old code
 
 In worksheets:
--Some scripts that make use of all this code
+* Some scripts that make use of all this code
 
-==========
-How to use==
-==========
+## How to use
 
 If MATLAB is started in the ./matlab directory then startup.m will
 automatically add the above directories to the path. It will try to add
@@ -53,9 +49,7 @@ are not necessary.
 See ./matlab/accessing_data.txt for information on the format of matlab,
 labview and BlackRock files
 
-===============
-Version history
-===============
+## Version history
 
 0.3 -- Can now:
 
