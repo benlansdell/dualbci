@@ -98,8 +98,3 @@ function [y, tspks, rho, dev] = glmsim_network_rescale(processed, model, data)
 		end
 	end
 	tspks = spikemuas;
-
-
-
-
-
