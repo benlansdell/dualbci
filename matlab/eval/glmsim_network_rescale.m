@@ -1,4 +1,4 @@
-function [y, tspks, rho, dev] = glmsim_network(processed, model, data, maxspks)
+function [y, tspks, rho, dev] = glmsim_network_rescale(processed, model, data, maxspks)
 	%Compute deviance of a set of data points given a set of fitted coefficients. The deviance is given by:
 	%
 	%	D(y,mu) = 2\sum y_i ln (y_i / \mu_i) - y_i + \mu_i
@@ -27,7 +27,7 @@ function [y, tspks, rho, dev] = glmsim_network(processed, model, data, maxspks)
 	%	dt_pos = 1/50;
 	%	data = filters_sp_pos_network(p, nK_sp, nK_pos, dt_sp, dt_pos);
 	%	model = MLE_glmfit_network(data, const);
-	%	trains = glmsim_network(p, model, data);
+	%	trains = glmsim_network_rescale(p, model, data);
 
 	if (nargin < 4) maxspks = 0; end
 	bs = processed.binsize;
