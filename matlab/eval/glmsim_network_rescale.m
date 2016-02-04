@@ -1,19 +1,19 @@
-function [y, tspks, rho, dev] = glmsim_network(processed, model, data, maxspks)
+function [y, tspks, rho, dev] = glmsim_network_rescale(processed, model, data)
 	%Compute deviance of a set of data points given a set of fitted coefficients. The deviance is given by:
 	%
 	%	D(y,mu) = 2\sum y_i ln (y_i / \mu_i) - y_i + \mu_i
 	%
 	%Usage:
-	%	[y, tspks] = glmsim(model, data)
+	%	[y, tspks, rho, dev] = glmsim_network_rescale(processed, model, data)
 	%     
 	%Input:
+	%	processed = structure output from preprocess() function
 	%	model = a structure of fit coefficients from MLE_glmfit
 	%	data = a structure of stimulus and spike history data from ./models
-	%	maxspks = (optional, default = 0) If set to 1 then will enforce a maximum number of spikes per timestep equal
-	%		to one spike per 2 milliseconds. 
 	%   
 	%Output:
-	%	y = a vector of a simulated spike train given cursor data for each unit
+	%	y = a matrix of simulated spike trains given cursor data for each unit
+	%	tspks = 
 	%  
 	%Test code:
 	%	%Load test preprocessed data
@@ -27,22 +27,15 @@ function [y, tspks, rho, dev] = glmsim_network(processed, model, data, maxspks)
 	%	dt_pos = 1/50;
 	%	data = filters_sp_pos_network(p, nK_sp, nK_pos, dt_sp, dt_pos);
 	%	model = MLE_glmfit_network(data, const);
-	%	trains = glmsim_network(p, model, data);
+	%	trains = glmsim_network_rescale(p, model, data);
 
-	if (nargin < 4) maxspks = 0; end
 	bs = processed.binsize;
-	%Force there to be a maximum number of spikes per time bin equal to binsize/0.001
-	%meaning there is at most one spike per two milliseconds
-	if maxspks == 1
-		nMaxSpks = bs/0.002;
-	end
-
 	nU = size(data.k,2);
 	N = size(data.X,1);
 	nK_sp = length(data.k{1,2});
 	y = zeros(N, nU);
 	rho = zeros(N, nU);
-	dev = zeros(nU);
+	dev = zeros(1,nU);
 
 	%indices of spike history filter
 	sp_indices = (1:(nU*nK_sp))+1;
@@ -70,29 +63,31 @@ function [y, tspks, rho, dev] = glmsim_network(processed, model, data, maxspks)
 		%compute the component of mu = e^eta that comes from the remaining filters used
 		mu(i,:) = glmval(b_hat(i,:)', squeeze(data.X(:,:)), 'log');
 	end
-	%then for each data point
+
+	%start clocks and draw initial spike times
+	clocks = zeros(nU,1);
+	tau = exprnd(ones(nU,1));
+	%for each time point
 	for j = 1:N
 		%compute mu that incorporates the current spike history
 		mu_sp = mu(:,j).*exp(k_sp*sp_hist);
-		%then sample y ~ Pn(exp(eta)) to decide if we spike or not
-		if maxspks == 1
-			mu_sp = min(mu_sp, nMaxSpks);
-		end
-		yij = poissrnd(mu_sp);
+		%advance the clocks
+		clocks = clocks + mu_sp;
+		%mark which cells spiked
+		yij = clocks >= tau;
 		y(j,:) = yij;
 		rho(j,:) = mu_sp;
 		%for each unit
 		for i = 1:nU
-			%If there's a spike, add the time(s) to spikemuas
+			%If there's a spike, add the time to spikemuas
 			if (yij(i) > 0)
-				sptime = bs*(j);%+0.005*(1:yij(i))');
+				sptime = bs*j;%+0.005*(1:yij(i))');
 				display(['t = ' num2str(sptime) ' spike! unit = ' num2str(i)])
-				if yij(i) > 1e6
-					display(['too many spikes per time bin: bin #: ' num2str(j) ' n. spikes: ' num2str(yij(i))])
-				end
 				spikemuas(i).times = [spikemuas(i).times; sptime];
-				%Only add this if there is a spike, otherwise set it to zero
-				dev(i) = dev(i) + 2*yij(i)*log(yij(i));
+				%reset this unit's clock
+				clocks(i) = 0;
+				%draw another spike time for this unit
+				tau(i) = exprnd(1);
 			end
 			dev(i) = dev(i)-2*yij(i)*log(mu_sp(i))-2*yij(i)+2*mu_sp(i);
 			%then update the spike history filter
@@ -103,36 +98,3 @@ function [y, tspks, rho, dev] = glmsim_network(processed, model, data, maxspks)
 		end
 	end
 	tspks = spikemuas;
-
-
-
-
-
-Initialization (assuming no spikes have been observed in the interval (−∞, 0)):
-Set the clocks ui = 0 for all cells i.
-Set the summed currents mi(t) = 0 for t ∈ [0, T] and all cells i.
-Draw the random times τi = ei/dt, ei ∼ exp(1) for all cells i.
-Set the time index t = 0.
-While t ≤ T:
-Advance the clocks ui = ui + f[Ii(t) + hi(t)] for all cells i.
-If ui
-′ ≥ τi
-′ for any cell i
-′
-:
-— record that neuron i
-′
-spiked at time t;
-— update the currents mi(s) = mi(s) + hi
-′
-,i(s − t) for s ∈ [t, t + t0] for all cells i which
-are connected to cell i
-′
-;
-— draw a new (independent) random time τi
-′ = ei
-′/dt, ei
-′ ∼ exp(1);
-— reset the clock ui
-′ = 0.
-Advance the time index t = t + dt.
