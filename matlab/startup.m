@@ -29,6 +29,7 @@ addpath_recurse([homedir 'lansdell/matlab/Tubeplot']);
 addpath_recurse([homedir 'lansdell/matlab/plot2svg']);
 addpath_recurse([homedir 'lansdell/matlab/arfit']);
 addpath_recurse([homedir 'lansdell/matlab/mi']);
+addpath_recurse([homedir 'lansdell/matlab/schmidt']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
 
 addpath([homedir '/lansdell/matlab/mvgc_v1.0']);

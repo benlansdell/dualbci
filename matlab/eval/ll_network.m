@@ -42,4 +42,4 @@ function logli = ll_network(model, data, distr)
 			logli(idx) = -0.5*(N*log(2*pi*sigma^2)+sum(((y-mu).^2)/sigma^2));
 		end
 	end
-
+end
