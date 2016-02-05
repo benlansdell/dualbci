@@ -14,6 +14,7 @@ end
 
 addpath([homedir 'lansdell/projects/bci/matlab/functions']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/functions']);
+addpath_recurse([homedir 'lansdell/projects/bci/matlab/te_matlab_0.5']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/preprocess']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/models']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
