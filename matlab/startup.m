@@ -28,6 +28,7 @@ addpath_recurse([homedir 'mellecj/matlab/schmidt']);
 addpath_recurse([homedir 'mellecj/projects/bci/matlab/gpfa']);
 
 addpath([homedir '/mellecj/matlab/mvgc_v1.0']);
+addpath([homedir '/mellecj/matlab/te_matlab_0.5/']);
 mvgcstartup
 javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
 
