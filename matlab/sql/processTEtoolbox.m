@@ -40,8 +40,8 @@ function processTEtoolbox(conn, modelID, blackrock, labviewpath, MCnevfile1, BCn
 	%Setup an analysis
 	%Insert into analyses
 	tablename = 'analyses';
-	fitcols = {'modelID', '`experiment_id`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
-	sqldata = { modelID, expt_id, 'NULL', 1, 1, host, stamp, comm};
+	fitcols = {'modelID', '`experiment_id`', 'unit', 'unitnum', 'computer', '`analysis date`', 'commit'};
+	sqldata = { modelID, expt_id, 'NULL', 1, host, stamp, comm};
 	datainsert(conn,tablename,fitcols,sqldata);
 	%Get the analysis_id used
 	analysis_id = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
