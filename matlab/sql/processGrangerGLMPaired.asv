@@ -10,9 +10,12 @@ function processTEtoolbox(conn, modelID, blackrock, labviewpath, MCnevfile1, BCn
 	'ON u1.`nev file` = et1.`manualrecording` '...
 	'INNER JOIN `units` u2 '...
 	'ON u2.`nev file` = et1.`1DBCrecording` '...
+% 	'INNER JOIN `units` u3 '...
+% 	'ON u3.`nev file` = et1.`manualrecordingafter` '...
  	'INNER JOIN `units` u4 '...
 	'ON u4.`nev file` = et1.`dualrecording` '...
 	'WHERE u1.unit = u2.unit AND u1.unit = u4.unit AND '...
+    % u2.unit = u3.unit AND    ' AND u3.firingrate > ' num2str(threshold)
 	'u1.firingrate > ' num2str(threshold) ' AND u2.firingrate > ' num2str(threshold)  ' AND '...
 	'u4.firingrate > ' num2str(threshold) ' AND et1.`manualrecording` = "' MCnevfile1 '"']));
 	otherunits = units.Data;
@@ -48,7 +51,7 @@ function processTEtoolbox(conn, modelID, blackrock, labviewpath, MCnevfile1, BCn
 	analysis_id = analysis_id.Data{1};
 
 	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile1, allunits, expt_id, paramcode);
-%	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
+%	runGrangerPaired(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
 	runTE(conn, analysis_id, modelID, blackrock, labviewpath, BCnevfile1, allunits, expt_id, paramcode);
 	runTE(conn, analysis_id, modelID, blackrock, labviewpath, DCnevfile, allunits, expt_id, paramcode);
 end 
@@ -65,14 +68,13 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 	processed = truncate_recording(processed, dur);
 	%Run with position filters
     
-	%Estimates the Transfer Entropy using the TE toolbox from Shinya Ito, Indiana University
-    
-    % * transent.c  must be compiled prior to this
-    asdf = SparseToASDF(processed.binnedspikes', 1);
-    %check if processed or processed' needs to be used
-    [te_estimate, CI, TEdelays_big]=ASDFTE(asdf,j_delay, i_order, j_order);
-    
+	%% TE stuff
    
+%%
+	nC = size(gdata.X,2);
+	if strcmp(const, 'on')
+		nC = nC + 1;
+	end
 	%Tag with computer run on, date, last git commit
 	host = hostname();
 	comm = currCommit();
@@ -101,20 +103,22 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 
-		%Insert into fits_te
-		tablename = 'fits_te';
-		fitcols = {'id', 'j_delay', 'i_order', 'j_order'};
-		sqldata = { fitid, j_delay', i_order, j_order};
+		%Insert into fits_granger
+		tablename = 'fits_TE';
+		fitcols = {'id', 'param1(l)', 'units', 'causaldensity'};
+		sqldata = { fitid, pval, nU, causaldensity};
 		datainsert(conn,tablename,fitcols,sqldata);
 
 		%Insert into NetworkEstimates
-		tablename = 'estimates_te';
-		fitcols = {'id', 'fromnum', 'fromunit', 'score'};
+		tablename = 'estimates_granger';
+		fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 		for j = 1:nU
 			if j ~= idx
 				unitj = processed.unitnames{j};
-				te = te_estimate(idx, j);		
-				sqldata = { fitid, j, unitj, te};
+				gc = GCdev(idx, j);		
+				gcpval = GCpval(idx, j);
+				gcsig = GCsig(idx, j);
+				sqldata = { fitid, j, unitj, gc, gcpval, gcsig};
 				datainsert(conn,tablename,fitcols,sqldata);
 			end
 		end
