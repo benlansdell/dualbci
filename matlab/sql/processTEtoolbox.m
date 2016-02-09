@@ -70,7 +70,7 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
     % * transent.c  must be compiled prior to this
     asdf = SparseToASDF(processed.binnedspikes', 1);
     %check if processed or processed' needs to be used
-    [te_estimate, CI, TEdelays_big]=ASDFTE(asdf,j_delay, i_order, j_order);
+    [te_estimate, ~, ~]=ASDFTE(asdf,j_delay, i_order, j_order);
     
    
 	%Tag with computer run on, date, last git commit
