@@ -40,8 +40,8 @@ function processTEtoolbox(conn, modelID, blackrock, labviewpath, MCnevfile1, BCn
 	%Setup an analysis
 	%Insert into analyses
 	tablename = 'analyses';
-	fitcols = {'modelID', '`experiment_id`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
-	sqldata = { modelID, expt_id, 'NULL', 1, 1, host, stamp, comm};
+	fitcols = {'modelID', '`experiment_id`', 'unit', 'unitnum', omputer', '`analysis date`', 'commit'};
+	sqldata = { modelID, expt_id, 'NULL', 1, st, stamp, comm};
 	datainsert(conn,tablename,fitcols,sqldata);
 	%Get the analysis_id used
 	analysis_id = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
@@ -91,8 +91,8 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 		end
 
 		tablename = 'fits';
-		fitcols = {'modelID', '`analyses_id`', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
-		sqldata = { modelID, analysis_id, nevfile, unit, idx, 1, host, stamp, comm};
+		fitcols = {'modelID', '`analyses_id`', '`nev file`', 'unit', 'unitnum', 'computer', '`analysis date`', 'commit'};
+		sqldata = { modelID, analysis_id, nevfile, unit, idx, host, stamp, comm};
 		%sqldata = { 1, '20130920SpankyUtah001.nev', 999, 1, 3, 3, '3', '2013-12-09 12:12:12', '12'};
 		datainsert(conn,tablename,fitcols,sqldata);
 		%Get the fit id used
