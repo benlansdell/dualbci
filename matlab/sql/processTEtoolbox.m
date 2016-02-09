@@ -81,9 +81,7 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 	for idx = 1:nU
 		%Extract and save regression fiticients
 		unit = processed.unitnames{idx};
-		%Extract deviance
-		dev = fulldevs(idx);
-
+	
 		%If already in database, skip
 		%unit = '21.3'; modelID = 2; nevfile = '20140610SpankyUtah002.nev';
 		previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `analyses_id` = ' num2str(analysis_id) ' AND `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
@@ -93,8 +91,8 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 		end
 
 		tablename = 'fits';
-		fitcols = {'modelID', '`analyses_id`', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'dev', 'computer', '`analysis date`', 'commit'};
-		sqldata = { modelID, analysis_id, nevfile, unit, idx, nC, dev, host, stamp, comm};
+		fitcols = {'modelID', '`analyses_id`', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
+		sqldata = { modelID, analysis_id, nevfile, unit, idx, nC, host, stamp, comm};
 		%sqldata = { 1, '20130920SpankyUtah001.nev', 999, 1, 3, 3, '3', '2013-12-09 12:12:12', '12'};
 		datainsert(conn,tablename,fitcols,sqldata);
 		%Get the fit id used
