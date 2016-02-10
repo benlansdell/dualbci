@@ -99,7 +99,5 @@ else
 			end
 		end
 	end
-ci_result=0;
-all_te=0;
 
 end % if multiple delays
