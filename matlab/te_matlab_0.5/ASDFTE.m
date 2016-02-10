@@ -99,7 +99,7 @@ else
 			end
 		end
 	end
-	if num_neurons==0
-		ci_result=0;
-	end
+ci_result=0;
+all_te=0;
+
 end % if multiple delays
