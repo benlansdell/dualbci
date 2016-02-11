@@ -101,12 +101,6 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 
-		%Insert into fits_te
-		tablename = 'fits_te';
-		fitcols = {'id', 'j_delay', 'i_order', 'j_order'};
-		sqldata = { fitid, j_delay', i_order, j_order};
-		datainsert(conn,tablename,fitcols,sqldata);
-
 		%Insert into NetworkEstimates
 		tablename = 'estimates_te';
 		fitcols = {'id', 'fromnum', 'fromunit', 'score'};
