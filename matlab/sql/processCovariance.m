@@ -103,8 +103,8 @@ function runCOV(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, uni
 		for j = 1:nU
 			if j ~= idx
 				unitj = processed.unitnames{j};
-				cov = Cov(idx, j);		
-				sqldata = { fitid, j, unitj, cov};
+				covariance = Cov(idx, j);		
+				sqldata = { fitid, j, unitj, covariance};
 				datainsert(conn,tablename,fitcols,sqldata);
 			end
 		end
