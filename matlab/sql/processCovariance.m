@@ -66,9 +66,9 @@ function runCOV(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, uni
 	%Run with position filters
     
 	%Determines covariance of data
-    [Cov]=cov(processed.binnedspikes);
+    	[Cov]=cov(processed.binnedspikes);
     
-    ncoeff=nU;
+    	ncoeff=nU;
     
    
 	%Tag with computer run on, date, last git commit
