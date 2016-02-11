@@ -72,6 +72,8 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
     %check if processed or processed' needs to be used
     [te_estimate, ~, ~]=ASDFTE(asdf,j_delay, i_order, j_order);
     
+    ncoeff=nU*length(j_delay);
+    
    
 	%Tag with computer run on, date, last git commit
 	host = hostname();
