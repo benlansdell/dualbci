@@ -47,13 +47,13 @@ function processCovariance(conn, modelID, blackrock, labviewpath, MCnevfile1, BC
 	analysis_id = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 	analysis_id = analysis_id.Data{1};
 
-	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile1, allunits, expt_id, paramcode);
-%	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
-	runTE(conn, analysis_id, modelID, blackrock, labviewpath, BCnevfile1, allunits, expt_id, paramcode);
-	runTE(conn, analysis_id, modelID, blackrock, labviewpath, DCnevfile, allunits, expt_id, paramcode);
+	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile1, allunits, expt_id, paramcode);
+%	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
+	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, BCnevfile1, allunits, expt_id, paramcode);
+	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, DCnevfile, allunits, expt_id, paramcode);
 end 
 
-function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, units, expt_id, paramcode)
+function runCOV(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, units, expt_id, paramcode)
 	nevpath = [blackrock nevfile];
 	%Load parameters
 	eval(paramcode);
