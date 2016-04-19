@@ -1,8 +1,8 @@
 %Charlie's scripts uses these global variables...
 %global metaData matpath nevpath
-%matpath = '/home/lansdell/projects/bci/matlab/labview';
-%nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
-%metaData = '/home/lansdell/projects/bci/matlab/labview';
+%matpath = '/home/mellecj/projects/bci/matlab/labview';
+%nevpath = '/home/mellecj/projects/bci/matlab/blackrock';
+%metaData = '/home/mellecj/projects/bci/matlab/labview';
 
 if ismac
 	homedir = '/Users/';
@@ -12,30 +12,24 @@ end
 
 %opengl software
 
-addpath([homedir 'lansdell/projects/bci/matlab/functions']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/functions']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/te_matlab_0.5']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/preprocess']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/models']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/eval']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/worksheets']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/other/pillow_code_GLM_v1']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/sql']);
+addpath([homedir 'mellecj/projects/bci/matlab/functions']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/functions']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/preprocess']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/models']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/fitting']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/eval']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/worksheets']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/other/pillow_code_GLM_v1']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/sql']);
 
 %nev files, labview files, respectively
-addpath([homedir '/lansdell/projects/bci/matlab/blackrock'], [homedir '/lansdell/projects/bci/matlab/labview']);
-addpath_recurse([homedir 'lansdell/matlab/chronux']);
-addpath_recurse([homedir 'lansdell/matlab/Tubeplot']);
-addpath_recurse([homedir 'lansdell/matlab/plot2svg']);
-addpath_recurse([homedir 'lansdell/matlab/arfit']);
-addpath_recurse([homedir 'lansdell/matlab/mi']);
-addpath_recurse([homedir 'lansdell/matlab/schmidt']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
+addpath([homedir '/mellecj/projects/bci/matlab/blackrock'], [homedir '/mellecj/projects/bci/matlab/labview']);
+addpath_recurse([homedir 'mellecj/matlab/schmidt']);
+addpath_recurse([homedir 'mellecj/projects/bci/matlab/gpfa']);
 
-addpath([homedir '/lansdell/matlab/mvgc_v1.0']);
+addpath([homedir '/mellecj/matlab/mvgc_v1.0']);
+addpath([homedir '/mellecj/matlab/te_matlab_0.5/']);
 mvgcstartup
-
 javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
 
 %Add extra color

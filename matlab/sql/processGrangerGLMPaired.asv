@@ -51,7 +51,7 @@ function processTEtoolbox(conn, modelID, blackrock, labviewpath, MCnevfile1, BCn
 	analysis_id = analysis_id.Data{1};
 
 	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile1, allunits, expt_id, paramcode);
-%	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
+%	runGrangerPaired(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
 	runTE(conn, analysis_id, modelID, blackrock, labviewpath, BCnevfile1, allunits, expt_id, paramcode);
 	runTE(conn, analysis_id, modelID, blackrock, labviewpath, DCnevfile, allunits, expt_id, paramcode);
 end 
@@ -68,13 +68,9 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 	processed = truncate_recording(processed, dur);
 	%Run with position filters
     
-	%Estimates the Transfer Entropy using the TE toolbox from Shinya Ito, Indiana University
-    % * transent.c  must be compiled prior to this
-    asdf = SparseToASDF(processed', 1);
-    %check if processed or processed' needs to be used
-    te_estimate=ASDFTE(asdf,j_delay, i_order, j_order);
-    
+	%% TE stuff
    
+%%
 	nC = size(gdata.X,2);
 	if strcmp(const, 'on')
 		nC = nC + 1;
@@ -107,20 +103,22 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 		fitid = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 		fitid = fitid.Data{1};
 
-		%Insert into fits_te
-		tablename = 'fits_te';
-		fitcols = {'id', 'j_delay', 'i_order', 'j_order'};
-		sqldata = { fitid, j_delay', i_order, j_order};
+		%Insert into fits_granger
+		tablename = 'fits_TE';
+		fitcols = {'id', 'param1(l)', 'units', 'causaldensity'};
+		sqldata = { fitid, pval, nU, causaldensity};
 		datainsert(conn,tablename,fitcols,sqldata);
 
 		%Insert into NetworkEstimates
-		tablename = 'estimates_te';
-		fitcols = {'id', 'fromnum', 'fromunit', 'score'};
+		tablename = 'estimates_granger';
+		fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 		for j = 1:nU
 			if j ~= idx
 				unitj = processed.unitnames{j};
-				te = te_estimate(idx, j);		
-				sqldata = { fitid, j, unitj, te};
+				gc = GCdev(idx, j);		
+				gcpval = GCpval(idx, j);
+				gcsig = GCsig(idx, j);
+				sqldata = { fitid, j, unitj, gc, gcpval, gcsig};
 				datainsert(conn,tablename,fitcols,sqldata);
 			end
 		end
