@@ -141,7 +141,9 @@ corrsunrotated(5) = corr(all_r2(unrot,2), all_r2(unrot,4));
 
 clf
 cc = ones(size(tuningtype));
+%Rotated
 cc(tuningtype == 1 | tuningtype == 3 | tuningtype == 4) = 2;
+%Unrotated
 cc(tuningtype == 5) = 3;
 colors = [0 0 0; 1 0 0; 0 0 1];
 c = [];
@@ -176,6 +178,29 @@ ylabel('R^2 DC')
 title(['corr rotated: ' num2str(corrsrotated(5)) ' corr unrotated: ' num2str(corrsunrotated(5))])
 
 saveplot(gcf, './worksheets/2015_11_03-bcireportplots/tuningstrengthVR2R2out.eps', 'eps', [10 6])
+
+%%%%%%%%%%%%%%%%%%%
+%Only plot rotated%
+%%%%%%%%%%%%%%%%%%%
+
+rotc = cc == 2;
+subplot(2,3,1)
+scatter(all_r2(rotc,1), all_r2(rotc,2), 'r')
+xlabel('R^2 MC1')
+ylabel('R^2 BC1')
+title(['corr rotatedrot ' num2str(corrsrotated(1))])
+subplot(2,3,2)
+scatter(all_r2(rotc,1), all_r2(rotc,3), 'r')
+xlabel('R^2 MC1')
+ylabel('R^2 MC2')
+title(['corr rotatedrot ' num2str(corrsrotated(2))])
+subplot(2,3,5)
+scatter(all_r2(rotc,1), all_r2(rotc,4), 'r')
+xlabel('R^2 MC1')
+ylabel('R^2 DC')
+title(['corr rotatedrot ' num2str(corrsrotated(4))])
+
+saveplot(gcf, './worksheets/2015_11_03-bcireportplots/tuningstrengthVR2R2out_rotated.eps', 'eps', [10 6])
 
 
 %Tuning angles (velocity)

@@ -55,7 +55,7 @@ function model = MLE_glmfit_network_groupL1(data, lambda, const)
 		%[b, dev] = groupL1fit(data.X(:,mask), data.y(idx,:), data, lambda, const, idx, nU);
 
 		%Initial guess for parameters
-		b0 = glmfit(data.X,data.y(idx,:),'poisson', 'constant', const);
+		b0 = glmfit(data.X, data.y(idx,:), 'poisson', 'constant', const);
 		[b, ll, dev] = groupL1fit(data.X, data.y(idx,:), data, lambda, const, idx, nU, b0);
 		%Catch if a warning was raised about badly conditioned matrix
 		[warn, warnid] = lastwarn;

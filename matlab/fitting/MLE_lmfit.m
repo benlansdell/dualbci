@@ -51,8 +51,18 @@ function model = MLE_lmfit(data, const)
 		else
 			m = [1==1 mask];
 		end
+		%const 
+		%mask
+		%size(d)
+		%size(d(:,mask))
+		%size(data.y)
+
 		model.mask(idx,:) = m;
-		[b, dev, stats] = glmfit(d(:,mask),data.y(idx,:),'normal', 'constant', const, 'link', 'identity');
+		if length(mask) == 1
+			[b, dev, stats] = glmfit(d,data.y(idx,:),'normal', 'constant', const, 'link', 'identity');
+		else
+			[b, dev, stats] = glmfit(d(:,mask),data.y(idx,:),'normal', 'constant', const, 'link', 'identity');
+		end
 		%Catch if a warning was raised about badly conditioned matrix
 		[warn, warnid] = lastwarn;
 		if ~strcmp(warn, '')

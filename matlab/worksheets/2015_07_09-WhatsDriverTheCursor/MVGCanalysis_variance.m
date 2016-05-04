@@ -97,11 +97,11 @@ figure
 x = mseconst1; y = mseconst2; c = gcnorm; a = 100*performance+20;
 scatter(x,y,[],c, 'filled');
 hold on
-plot([0 .4], [0 .4], 'k')
+%plot([0 .4], [0 .4], 'k')
 ylim([0 2])
 xlim([0 2])
-xlabel('MSE. Unit 1')
-ylabel('MSE. Unit 2')
+xlabel('Variance Unit 1')
+ylabel('Variance Unit 2')
 title('\Delta Granger (Brain control)')
 caxis([-.6 .6])
 colorbar

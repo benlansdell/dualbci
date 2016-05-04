@@ -6,13 +6,19 @@ files = fetch(exec(conn, ['SELECT et.`manualrecording` FROM experiment_tuning et
 files = files.Data;
 
 %Torque tuning angle (velocity)
-deltaBCI = [];
-deltacotuned = [];
-deltaother = [];
+cotunedMC = [];
+cotunedBC = [];
+cotunedDC = [];
+propcotunedMC = [];
+propcotunedBC = [];
+propcotunedDC = [];
+pDC = [];
+pBC = [];
+allunits = [];
 
 for idx = 1:length(files)
 	mcfile = files{idx}
-	all_data = fetch(exec(conn, ['SELECT fl1.dir, fl2.dir, fl5.dir, et1.`tuning_type` FROM '...
+	all_data = fetch(exec(conn, ['SELECT fl1.dir, fl2.dir, fl5.dir, et1.`tuning_type`, recbc.`successrate`, recdc.`successrate` FROM '...
 	'`experiment_tuning` et1 '...
 	'INNER JOIN `fits` flin1 '...
 	'ON flin1.`nev file` = et1.`manualrecording`'...
@@ -26,12 +32,18 @@ for idx = 1:length(files)
 	'ON flin5.`nev file` = et1.`dualrecording`'...
 	'INNER JOIN `fits_linear` fl5 '...
 	'ON flin5.id = fl5.id '...
+	'INNER JOIN `recordings` recbc '...
+	'ON recbc.`nev file` = flin2.`nev file` '...
+	'INNER JOIN `recordings` recdc '...
+	'ON recdc.`nev file` = flin5.`nev file` '...
 	'WHERE flin1.modelID = 30 AND flin2.modelID = 30 AND flin5.modelID = 30 ' ...
 	'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
-	'AND fl1.r2 > 0.01 '...
 	'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
 	'AND et1.`manualrecording` = "' mcfile '" '...
-	'AND et1.`tuning_type` = 5']));
+	'AND (et1.`tuning_type` = 1 OR et1.`tuning_type` = 3 OR et1.`tuning_type` = 4)']));
+
+	%'AND fl1.r2 > 0.01 '...
+
 	if strcmp(all_data.Data, 'No Data')
 		continue 
 	end
@@ -40,7 +52,9 @@ for idx = 1:length(files)
 	end
 	all_theta = cell2mat(all_data.Data(:,1:3));
 	tuningtype = cell2mat(all_data.Data(:,4));
-	
+	perfBC = cell2mat(all_data.Data(:,5));
+	perfDC = cell2mat(all_data.Data(:,6));
+
 	%BCI unit
 	all_data = fetch(exec(conn, ['SELECT fl1.dir, fl2.dir, fl5.dir FROM '...
 	'`experiment_tuning` et1 '...
@@ -60,41 +74,58 @@ for idx = 1:length(files)
 	'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
 	'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
 	'AND et1.`manualrecording` = "' mcfile '" '...
-	'AND et1.`tuning_type` = 5 '...
+	'AND (et1.`tuning_type` = 1 OR et1.`tuning_type` = 3 OR et1.`tuning_type` = 4) '...
 	'LIMIT 1']));
 	bci_theta = cell2mat(all_data.Data(:,1:3));
 	nU = size(all_theta,1);
+
+	%1=MC
+	%2=BC
+	%3=DC
 	
 	%Pick cotuned units to BCI units in MC
 	diff_MC_theta = cos(bci_theta(1) - all_theta(:,1));
-	
-	%Pick top two
-	[l, cotunedidx] = sort(diff_MC_theta, 'descend'); 
-	cotunedidx = cotunedidx(1:2);
-	bcicotuned = diff_MC_theta(cotunedidx);
-	
-	%Pick random two 
-	otherunits = randsample(setdiff(1:nU, cotunedidx), 2);
-	
-	deltathetaBCIMCDC = (bci_theta(3)-bci_theta(1))*180/pi
-	deltathetacotunedMCDC = (all_theta(cotunedidx,3) - all_theta(cotunedidx,1))*180/pi
-	deltathetaotherMCDC = (all_theta(otherunits,3) - all_theta(otherunits,1))*180/pi
+	diff_BC_theta = cos(bci_theta(2) - all_theta(:,2));
+	diff_DC_theta = cos(bci_theta(3) - all_theta(:,3));
 
-	deltaBCI = [deltaBCI(:); deltathetaBCIMCDC; deltathetaBCIMCDC];
-	deltacotuned = [deltacotuned(:); deltathetacotunedMCDC];
-	deltaother = [deltaother(:); deltathetaotherMCDC];	
+	cos30 = cos(pi/6);
+
+	cotunedMC(idx) = sum(diff_MC_theta > cos30);
+	cotunedBC(idx) = sum(diff_BC_theta > cos30);
+	cotunedDC(idx) = sum(diff_DC_theta > cos30);
+	allunits(idx) = size(all_theta,1);
+	propcotunedMC(idx) = sum(diff_MC_theta > cos30)/allunits(idx);
+	propcotunedBC(idx) = sum(diff_BC_theta > cos30)/allunits(idx);
+	propcotunedDC(idx) = sum(diff_DC_theta > cos30)/allunits(idx);
+
+	pBC(idx) = perfBC(1);
+	pDC(idx) = perfDC(1);
+
+	%display(['cotuned BCI in MC: ' num2str(sum(diff_MC_theta > cos30))])
+	%display(['cotuned BCI in BC: ' num2str(sum(diff_BC_theta > cos30))])
+	%display(['cotuned BCI in DC: ' num2str(sum(diff_DC_theta > cos30))])
+	%display(['total units analyzed in recording: ' num2str(size(all_theta,1))])
+	%display(['BC performance: ' num2str(60*perfBC(1))])
+	%display(['DC performance: ' num2str(60*perfDC(1))])
 	%pause 
 end
 
-deltaBCI = mod(deltaBCI, 2*pi);
-deltacotuned = mod(deltacotuned, 2*pi);
-deltaother = mod(deltaother, 2*pi);
+figure
+subplot(1,3,1)
+boxplot(propcotunedMC);
+ylim([0 .5])
+subplot(1,3,2)
+boxplot(propcotunedBC);
+ylim([0 .5])
+subplot(1,3,3)
+boxplot(propcotunedDC);
+ylim([0 .5])
 
-subplot(1,2,1)
-scatter(deltaBCI, deltacotuned)
-xlabel('\Delta \theta BC unit')
-ylabel('\Delta \theta Cotuned unit')
-subplot(1,2,2)
-scatter(deltaBCI, deltaother)
-xlabel('\Delta \theta BC unit')
-ylabel('\Delta \theta Other unit')
+subplot(2,1,1)
+plot(deltaBCI, deltacotuned, '.')
+xlabel('Change in tuning. BC unit')
+ylabel('Change in tuning. Cotuned unit')
+subplot(2,1,2)
+plot(deltaBCI, deltaother, '.')
+xlabel('Change in tuning. BC unit')
+ylabel('Change in tuning. Other unit')

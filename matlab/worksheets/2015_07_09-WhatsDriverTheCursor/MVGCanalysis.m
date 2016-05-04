@@ -111,6 +111,17 @@ colorbar
 saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/angleVsGranger.eps')
 
 figure
+x = abs(delangle1); y = abs(delangle2); c = performance;
+scatter(x,y,[],c, 'filled');
+hold on
+%plot([0 4], [0 4])
+xlabel('|Delta angle 1|')
+ylabel('|Delta angle 2|')
+title('Performance (successes/second)')
+colorbar
+saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/AnglevsPerformance.eps')
+
+figure
 x = tuningsize1; y = tuningsize2; c = gcnorm;
 scatter(x,y,[],c, 'filled');
 hold on
