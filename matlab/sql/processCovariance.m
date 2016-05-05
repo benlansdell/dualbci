@@ -1,4 +1,4 @@
-function processTEtoolbox(conn, modelID, blackrock, labviewpath, MCnevfile1, BCnevfile1, MCnevfile2, DCnevfile, expt_id, paramcode)
+function processCovariance(conn, modelID, blackrock, labviewpath, MCnevfile1, BCnevfile1, MCnevfile2, DCnevfile, expt_id, paramcode)
 	%Keep the units of the network the same between recordings
 	%Load parameters
 	eval(paramcode);
@@ -47,13 +47,13 @@ function processTEtoolbox(conn, modelID, blackrock, labviewpath, MCnevfile1, BCn
 	analysis_id = fetch(exec(conn, 'SELECT LAST_INSERT_ID()'));
 	analysis_id = analysis_id.Data{1};
 
-	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile1, allunits, expt_id, paramcode);
-%	runTE(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
-	runTE(conn, analysis_id, modelID, blackrock, labviewpath, BCnevfile1, allunits, expt_id, paramcode);
-	runTE(conn, analysis_id, modelID, blackrock, labviewpath, DCnevfile, allunits, expt_id, paramcode);
+	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile1, allunits, expt_id, paramcode);
+%	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, MCnevfile2, allunits, expt_id, paramcode);
+	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, BCnevfile1, allunits, expt_id, paramcode);
+	runCOV(conn, analysis_id, modelID, blackrock, labviewpath, DCnevfile, allunits, expt_id, paramcode);
 end 
 
-function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, units, expt_id, paramcode)
+function runCOV(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, units, expt_id, paramcode)
 	nevpath = [blackrock nevfile];
 	%Load parameters
 	eval(paramcode);
@@ -65,14 +65,10 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 	processed = truncate_recording(processed, dur);
 	%Run with position filters
     
-	%Estimates the Transfer Entropy using the TE toolbox from Shinya Ito, Indiana University
+	%Determines covariance of data
+    	[Cov]=cov(processed.binnedspikes);
     
-    % * transent.c  must be compiled prior to this
-    asdf = SparseToASDF(processed.binnedspikes', 1);
-    %check if processed or processed' needs to be used
-    [te_estimate, ~, ~]=ASDFTE(asdf,j_delay, i_order, j_order);
-    
-    ncoeff=nU*length(j_delay);
+    	ncoeff=nU;
     
    
 	%Tag with computer run on, date, last git commit
@@ -102,13 +98,13 @@ function runTE(conn, analysis_id, modelID, blackrock, labviewpath, nevfile, unit
 		fitid = fitid.Data{1};
 
 		%Insert into NetworkEstimates
-		tablename = 'estimates_te';
+		tablename = 'estimates_cov';
 		fitcols = {'id', 'fromnum', 'fromunit', 'score'};
 		for j = 1:nU
 			if j ~= idx
 				unitj = processed.unitnames{j};
-				te = te_estimate(idx, j);		
-				sqldata = { fitid, j, unitj, te};
+				covariance = Cov(idx, j);		
+				sqldata = { fitid, j, unitj, covariance};
 				datainsert(conn,tablename,fitcols,sqldata);
 			end
 		end

@@ -162,6 +162,14 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 	lvdtorque = resample(lvdtorque, samplerate, labviewsamplerate);
 	lvddtorque = resample(lvddtorque, samplerate, labviewsamplerate);
 
+	lvtorque2 = data.stateHist.spikes(withinnev,5:7);
+	lvdtorque2 = [diff(lvtorque2); 0, 0, 0]*labviewsamplerate;
+	lvddtorque2 = [diff(lvdtorque2); 0, 0, 0]*labviewsamplerate;
+	%Resample at desired rate
+	lvtorque2 = resample(lvtorque2, samplerate, labviewsamplerate);
+	lvdtorque2 = resample(lvdtorque2, samplerate, labviewsamplerate);
+	lvddtorque2 = resample(lvddtorque2, samplerate, labviewsamplerate);
+
 	velocity = data.stateHist.velocity(withinnev,:);
 	plot(velocity)
 
@@ -298,6 +306,24 @@ function processed = preprocess_spline_lv(nevfile, matfile, binsize, threshold, 
 		ylabel('Change in change in torque/cursor position')
 		xlabel('times (s)')
 		saveplot(gcf, [fn_out '_lvcomp.eps'], 'eps', [9 6]);
+
+		clf
+		t = 10;
+		ii = 1:(t*samplerate);
+		tt = ii*binsize;
+		subplot(3,1,1)
+		plot(tt, -torque(ii,1),tt, -torque(ii,2), tt, 20*lvtorque2(ii,1),tt, 20*lvtorque2(ii,2), tt, 20*lvtorque2(ii,3))
+		title('Labview and blackrock torque comparison')
+		legend('Torque 1', 'Torque 2', 'LV Torque 1', 'LV Torque 2', 'LV Torque 3')
+		ylabel('Torque/cursor position')
+		subplot(3,1,2)
+		plot(tt, -dtorque(ii,1),tt, -dtorque(ii,2), tt, 20*lvdtorque2(ii,1),tt, 20*lvdtorque2(ii,2), tt, 20*lvtorque2(ii,3))
+		ylabel('Change in torque/cursor position')
+		subplot(3,1,3)
+		plot(tt, -ddtorque(ii,1),tt, -ddtorque(ii,2), tt, 20*lvddtorque2(ii,1),tt, 20*lvddtorque2(ii,2), tt, 20*lvtorque2(ii,3))
+		ylabel('Change in change in torque/cursor position')
+		xlabel('times (s)')
+		saveplot(gcf, [fn_out '_lv_torque_comp.eps'], 'eps', [9 6]);
 	end
 
 	%Return data

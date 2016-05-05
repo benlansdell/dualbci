@@ -14,7 +14,6 @@ end
 
 addpath([homedir 'lansdell/projects/bci/matlab/functions']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/functions']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/te_matlab_0.5']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/preprocess']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/models']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
@@ -25,18 +24,15 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/sql']);
 
 %nev files, labview files, respectively
 addpath([homedir '/lansdell/projects/bci/matlab/blackrock'], [homedir '/lansdell/projects/bci/matlab/labview']);
-addpath_recurse([homedir 'lansdell/matlab/chronux']);
-addpath_recurse([homedir 'lansdell/matlab/Tubeplot']);
-addpath_recurse([homedir 'lansdell/matlab/plot2svg']);
-addpath_recurse([homedir 'lansdell/matlab/arfit']);
-addpath_recurse([homedir 'lansdell/matlab/mi']);
 addpath_recurse([homedir 'lansdell/matlab/schmidt']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
 
 addpath([homedir '/lansdell/matlab/mvgc_v1.0']);
+addpath([homedir '/lansdell/matlab/te_matlab_0.5/']);
 mvgcstartup
 
 javaaddpath([homedir 'lansdell/matlab/mysql-connector-java-5.1.35-bin.jar']);
+%javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
 %javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
 
 %Add extra color
