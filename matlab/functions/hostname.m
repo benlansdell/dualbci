@@ -8,4 +8,6 @@ function name = hostname()
 	   end
 	end
 	name = strtrim(lower(name));
+	nB = min(50, length(name));
+	name = name(1:nB);
 end

@@ -20,6 +20,11 @@ function processLinearConst(conn, modelID, blackrock, labviewpath, nevfile, para
 	processed = removeProcessedUnits(processed, conn, modelID);
 	nU = length(processed.unitnames);
 	%Truncate to specified duration
+	processed = extractSuccesses(processed, conn, nevfile, 0);
+	if size(processed.binnedspikes,1)*processed.binsize < dur
+		display(['Successful trial data of insufficient length. Continuing'])
+		return
+	end
 	[processed, processed_novel] = split_recording(processed, dur, dur+testdur);
 	%If all units have been analyzed then return
 	if nU == 0
