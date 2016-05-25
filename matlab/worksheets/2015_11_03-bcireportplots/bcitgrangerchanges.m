@@ -185,6 +185,17 @@ xlim([-50 50])
 legend('Cotuned with BC-unit', 'Randomly selected unit')
 saveplot(gcf, './worksheets/2015_11_03-bcireportplots/GC-decoupling-MC-BC.eps')
 
+figure
+histogram(dcotuned, 50)
+hold on 
+histogram(dother, 50)
+xlabel('MCGC - BCGC')
+ylabel('Count')
+xlim([-50 50])
+%legend('Cotuned with BC-unit', 'Randomly selected unit')
+%saveplot(gcf, './worksheets/2015_11_03-bcireportplots/GC-decoupling-MC-BC_histogram.eps')
+saveplot(gcf, './worksheets/2015_11_03-bcireportplots/GC-decoupling-MC-BC_histogram.png', 'png', [4 3])
+
 %%%%%%%%%%%%%%%%%%%%
 %Do the same for DC%
 %%%%%%%%%%%%%%%%%%%%
@@ -350,3 +361,16 @@ ylabel('Density')
 xlim([-50 50])
 legend('Cotuned with BC-unit', 'Randomly selected unit')
 saveplot(gcf, './worksheets/2015_11_03-bcireportplots/GC-decoupling-MC-DC.eps')
+
+
+figure
+histogram(dcotuned, 50)
+hold on 
+histogram(dother, 50)
+xlabel('MCGC - DCGC')
+ylabel('Count')
+xlim([-50 50])
+%legend('Cotuned with BC-unit', 'Randomly selected unit')
+%saveplot(gcf, './worksheets/2015_11_03-bcireportplots/GC-decoupling-MC-DC_histogram.eps')
+saveplot(gcf, './worksheets/2015_11_03-bcireportplots/GC-decoupling-MC-DC_histogram.png', 'png', [4 3])
+

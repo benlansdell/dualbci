@@ -24,6 +24,23 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 		return
 	end
 
+	bcunitdir = fetch(exec(conn, ['SELECT `direction` FROM `bci_units` WHERE `ID` = "' nevfile '" LIMIT 1']));
+	bcunitdir = bcunitdir.Data{1};
+
+	task = fetch(exec(conn, ['SELECT `tasktype` FROM `recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	task = task.Data{1};
+
+	taskaxes = fetch(exec(conn, ['SELECT `axis` FROM `recordings` rec WHERE rec.`nev file` = "' nevfile '"']));
+	taskaxes = taskaxes.Data{1};
+
+	if strcmp(task, 'dual')
+		if strcmp(bcunitdir, 'east') | strcmp(bcunitdir, 'west')
+			taskaxes = 'horiz';
+		else
+			taskaxes = 'vert';
+		end
+	end
+
 	%%Preprocess data
 	%processed = preprocess_smooth_lv(nevpath, matfile, binsize, sigma_fr, sigma_trq, threshold, offset, [], [], units);
 	processed = preprocess_spline_lv(nevpath, matfile, binsize, threshold, offset);
@@ -79,10 +96,11 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	previous = fetch(exec(conn, ['SELECT id FROM fits WHERE `nev file` = "' nevfile '" AND modelID = ' num2str(modelID) ' AND unit = "' unit '"']));
 	if ~strcmp(previous.Data{1}, 'No Data')
 		display(['Model ' num2str(modelID) ' nevfile ' nevfile ' and unit ' unit ' already analysed. Skipping'])
-		continue
+		return
 	end
 
 	%Insert into fits
+	
 	tablename = 'fits';
 	fitcols = {'modelID', '`nev file`', 'unit', 'unitnum', 'ncoeff', 'computer', '`analysis date`', 'commit'};
 	sqldata = { modelID, nevfile, unit, unitnum, nC, host, stamp, comm};
@@ -98,7 +116,7 @@ function processMVGCBCI(conn, modelID, blackrock, labviewpath, nevfile, paramcod
 	datainsert(conn,tablename,fitcols,sqldata);
 
 	%For each unit, save the results 
-	tablename = 'GrangerEstimates';
+	tablename = 'estimates_granger';
 	fitcols = {'id', 'fromnum', 'fromunit', 'score', 'pval', 'significant'};
 	for j = 2:(nUtotal+1)
 		%Extract and save regression fiticients

@@ -26,7 +26,7 @@ for idx = 1:length(files)
 	'ON flin5.`nev file` = et1.`dualrecording`'...
 	'INNER JOIN `fits_linear` fl5 '...
 	'ON flin5.id = fl5.id '...
-	'WHERE flin1.modelID = 30 AND flin2.modelID = 30 AND flin5.modelID = 30 ' ...
+	'WHERE flin1.modelID = 40 AND flin2.modelID = 40 AND flin5.modelID = 40 ' ...
 	'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
 	'AND fl1.r2 > 0.01 '...
 	'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
@@ -56,7 +56,7 @@ for idx = 1:length(files)
 	'ON flin5.`nev file` = et1.`dualrecording`'...
 	'INNER JOIN `fits_linear` fl5 '...
 	'ON flin5.id = fl5.id '...
-	'WHERE flin1.modelID = 30 AND flin2.modelID = 30 AND flin5.modelID = 30 ' ...
+	'WHERE flin1.modelID = 40 AND flin2.modelID = 40 AND flin5.modelID = 40 ' ...
 	'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
 	'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
 	'AND et1.`manualrecording` = "' mcfile '" '...
@@ -90,79 +90,12 @@ deltaBCI = mod(deltaBCI, 2*pi);
 deltacotuned = mod(deltacotuned, 2*pi);
 deltaother = mod(deltaother, 2*pi);
 
-figure
 subplot(1,2,1)
-%Linear regression
-fit_deltacotuned = polyfit(deltaBCI, deltacotuned, 1)
-xf = 0:(pi/2):(2*pi);
-yf = polyval(fit_deltacotuned, xf)
-scatter(deltaBCI, deltacotuned, '.r')
-hold on 
-plot(xf, yf, 'r', 'linewidth', 2)
-xlim([0 2*pi])
-ylim([0 2*pi])
-xlabel('\Delta \theta BC unit')
-ylabel('\Delta \theta Cotuned unit')
-
-subplot(1,2,2)
-scatter(deltaBCI, deltaother,'.b')
-fit_deltaother = polyfit(deltaBCI, deltaother, 1)
-yf = polyval(fit_deltaother, xf)
-hold on 
-plot(xf, yf, 'b', 'linewidth', 2)
-xlim([0 2*pi])
-ylim([0 2*pi])
-xlabel('\Delta \theta BC unit')
-ylabel('\Delta \theta Other unit')
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/bcituningchanges_angle_trendline.eps', 'eps', [5 3])
-
-%Bin into quadrants and plot trend
-nBins = 4;
-cts = {};
-mean_deltacotuned = zeros(nBins,1);
-std_deltacotuned = zeros(nBins,1);
-for i = 1:nBins
-	cts{i} = [];
-end
-for i = 1:length(deltaBCI)
-	db = deltaBCI(i);
-	b = ceil(db*nBins/(2*pi));
-	cts{b} = [cts{b}, deltacotuned(i)]
-end
-
-%Compute mean and std 
-for i = 1:nBins
-	mean_deltacotuned(i) = mean(cts{i});
-	std_deltacotuned(i) = std(cts{i});
-end
-
-nBins = 4;
-cts = {};
-mean_deltaother = zeros(nBins,1);
-std_deltaother = zeros(nBins,1);
-for i = 1:nBins
-	cts{i} = [];
-end
-for i = 1:length(deltaBCI)
-	db = deltaBCI(i);
-	b = ceil(db*nBins/(2*pi));
-	cts{b} = [cts{b}, deltaother(i)]
-end
-
-%Compute mean and std 
-for i = 1:nBins
-	mean_deltaother(i) = mean(cts{i});
-	std_deltaother(i) = std(cts{i});
-end
-
-figure
-subplot(1,2,1)
-plot(0:90:270, mean_deltacotuned*180/pi)
-ylim([0 360])
+scatter(deltaBCI, deltacotuned)
 xlabel('\Delta \theta BC unit')
 ylabel('\Delta \theta Cotuned unit')
 subplot(1,2,2)
-plot(0:90:270, mean_deltaother*180/pi)
-ylim([0 360])
+scatter(deltaBCI, deltaother)
 xlabel('\Delta \theta BC unit')
 ylabel('\Delta \theta Other unit')
+saveplot(gcf, './worksheets/2016_05_04-bcireport_successes/bcituningchanges_success.eps')

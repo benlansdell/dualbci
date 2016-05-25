@@ -92,5 +92,6 @@ function saveplot(h, filename, format, dimensions, journal)
 	set(h, 'papersize', dimensions);
 	set(h, 'paperposition', box);
 	set(h, 'paperpositionmode', 'manual');
-	print(h, dev, '-r300', renderer, filename);
+	%print(h, dev, '-r600', renderer, filename);
+	print(h, dev, '-r600', renderer, filename);
 end

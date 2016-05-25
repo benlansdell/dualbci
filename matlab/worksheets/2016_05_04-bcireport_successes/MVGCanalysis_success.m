@@ -3,6 +3,17 @@
 %Summary MVGC stats%
 %%%%%%%%%%%%%%%%%%%%
 
+%Change to 'all' to see data for all trials
+direct = 'all';
+
+if strcmp(direct, 'success')
+	mvgcid = '42';
+	linid = '41';
+else
+	mvgcid = '3';
+	linid = '1';	
+end
+
 conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
 data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`, bci.unit '...
@@ -10,7 +21,7 @@ data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,
 	'INNER JOIN fits f ON f.id = ge.id '...
 	'INNER JOIN recordings rec ON rec.`nev file` = f.`nev file`'...
     'LEFT JOIN bci_units bci ON bci.`id` = f.`nev file` AND bci.`unit` = ge.`fromunit`'...
-    'WHERE f.`modelID` = 3']);
+    'WHERE f.`modelID` = ' mvgcid]);
 data = fetch(data);
 data = data.Data;
 
@@ -25,7 +36,7 @@ hist(log10(mvgc(~bcindices)));
 legend('BCI units', 'Non-BCI units')
 xlabel('log_{10}(Granger score)')
 ylabel('frequency (number of units)')
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/MVGCanalysis1.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/MVGCanalysis1.eps'])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Proportion of GC score versus linear tuning%
@@ -38,10 +49,10 @@ data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,
 	'INNER JOIN recordings rec ON rec.`nev file` = f.`nev file` '...
 	'INNER JOIN bci_units bci ON bci.ID = f.`nev file` AND bci.unit = ge.fromunit '...
 	'INNER JOIN experiment_tuning al ON al.`1DBCrecording` = f.`nev file` '...
-	'INNER JOIN fits f1 ON f1.`nev file` = al.`manualrecording` AND f1.`modelID` = 1 and f1.unit = ge.fromunit '...
+	'INNER JOIN fits f1 ON f1.`nev file` = al.`manualrecording` AND f1.`modelID` = ' linid ' and f1.unit = ge.fromunit ' ...
 	'INNER JOIN fits_linear fl ON f1.`id` = fl.id '...
 	'INNER JOIN units u ON u.`nev file` = f1.`nev file` AND u.`unit` = f1.unit '...
-	'INNER JOIN fits f2 ON f2.`nev file` = al.`1DBCrecording` AND f2.`modelID` = 1 AND f2.unit = ge.fromunit WHERE f.modelID = 3 ']);
+	'INNER JOIN fits f2 ON f2.`nev file` = al.`1DBCrecording` AND f2.`modelID` = ' linid ' AND f2.unit = ge.fromunit WHERE f.modelID = ' mvgcid]);
 
 data = fetch(data);
 data = data.Data;
@@ -107,8 +118,8 @@ ylabel('Delta angle 2')
 xlim([-180 180])
 ylim([-180 180])
 colorbar
-%saveplot(gcf, './worksheets/2015_06_18/angleVsGranger_log.eps')
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/angleVsGranger.eps')
+%saveplot(gcf, './worksheets/2015_06_18/angleVsGranger_log.eps'])
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/angleVsGranger.eps'])
 
 figure
 x = abs(delangle1); y = abs(delangle2); c = performance;
@@ -119,7 +130,7 @@ xlabel('|Delta angle 1|')
 ylabel('|Delta angle 2|')
 title('Performance (successes/second)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/AnglevsPerformance.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/AnglevsPerformance.eps'])
 
 figure
 x = tuningsize1; y = tuningsize2; c = gcnorm;
@@ -130,7 +141,7 @@ xlabel('Tuning size. Unit 1 (Manual control)')
 ylabel('Tuning size. Unit 2 (Manual control)')
 title('\Delta Granger (Brain control)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/tuningsizeVsGranger.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/tuningsizeVsGranger.eps'])
 
 figure
 x = mseout1; y = mseout2; c = gcnorm; a = 100*performance+20;
@@ -142,7 +153,23 @@ ylabel('MSE. Unit 2')
 title('\Delta Granger (Brain control)')
 caxis([-.6 .6])
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/mseoutVsGranger.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/mseoutVsGranger.eps'])
+
+figure
+x = mseout1; y = mseout2; c = gcnorm; a = 100*performance+20;
+%scatter(x,y,[],c, 'filled');
+scatter(y-x,c, 'filled')
+%Fit line
+f = fit((y-x)',c','poly1')
+r2 = corr((y-x)', c')^2
+hold on
+plot(f)
+xlabel('MSE unit 2 - MSE unit 1')
+ylabel('\Delta Granger (Brain control)')
+title(['R^2: ' num2str(r2)])
+%caxis([0 .4])
+%colorbar
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/mseoutVsGranger_trendline.eps'])
 
 figure
 x = gc1; y = gc2; c = performance;
@@ -153,7 +180,7 @@ xlabel('Granger score. Unit 1')
 ylabel('Granger score. Unit 2')
 title('Performance (successes/second)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/GrangervsPerformance.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/GrangervsPerformance.eps'])
 
 figure
 x = mseout1; y = mseout2; c = performance; a = min(gcnorm)+10+10*gcnorm;
@@ -164,7 +191,7 @@ xlabel('MSE. Unit 1')
 ylabel('MSE. Unit 2')
 title('Performance (successes/second)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/mseoutvsPerformance_redo.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/mseoutvsPerformance.eps'])
 
 figure
 x = mseout1; y = mseout2; c = performance;
@@ -172,7 +199,7 @@ plot([x y], [performance performance], '.');
 %plot([0 4], [0 4])
 xlabel('mse')
 ylabel('performance')
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/mseoutvsPerformanceA_redo.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/mseoutvsPerformanceA.eps'])
 
 figure
 x = tuningsize1; y = tuningsize2; c = performance;
@@ -183,7 +210,7 @@ xlabel('Tuning size. Unit 1')
 ylabel('Tuning size. Unit 2')
 title('Performance (successes/second)')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/tuningsizevsPerformance.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/tuningsizevsPerformance.eps'])
 
 figure
 x = firing1; y = firing2; c = performance;
@@ -193,7 +220,7 @@ hold on
 xlabel('firing 1')
 ylabel('firing 2')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/firingvsPerformance.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/firingvsPerformance.eps'])
 
 figure
 x = firing1; y = firing2; c = gcnorm;
@@ -203,12 +230,12 @@ plot([0 50], [0 50])
 xlabel('firing 1')
 ylabel('firing 2')
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/firingratevsGranger.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/firingratevsGranger.eps'])
 
 figure
 plot([mseout1, mseout2], [tuningsize1, tuningsize2], '.')
 xlabel('MSE'); ylabel('Tuning size')
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/tuningsizeVsMSE.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/tuningsizeVsMSE.eps'])
 
 figure
 x = firing1; y = firing2; c = gcnorm;
@@ -225,14 +252,14 @@ ylabel('Firing rate2')
 zlabel('Difference in Granger score')
 plot3([0 50], [0 50], [0 0], 'r', 'LineWidth', 2)
 h = surf(xx, yy, bhat(1)+bhat(2)*xx+bhat(3)*yy, 'FaceColor', 'none');
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/firingrateVsGranger3d.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/firingrateVsGranger3d.eps'])
 
 %Plot performance versus balance-ness:
 figure
 plot(abs(gcnorm), performance, '.');
 xlabel('GC balance')
 ylabel('Performance (successes/min)')
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/GCvsperformance.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/GCvsperformance.eps'])
 
 %%%%%%%%%%Linear regression of BC %%%%%%%%%%%%%%%%
 figure
@@ -247,7 +274,7 @@ xlabel('MSE out of sample1')
 ylabel('MSE out of sample2')
 caxis([-.35 0.35])
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/mseoutVsmseoutBC.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/mseoutVsmseoutBC.eps'])
 
 figure
 x = [mseout1, mseout2]; y = [mseout1BC, mseout2BC]; c = [performance, performance];
@@ -258,4 +285,4 @@ xlabel('MSE out of sample MC')
 ylabel('MSE out of sample BC')
 caxis([-.35 0.35])
 colorbar
-saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/mseoutVsmseoutBCA.eps')
+saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/mseoutVsmseoutBCA.eps'])
