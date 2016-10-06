@@ -7,7 +7,7 @@ conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 
 data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,'...
 	' f1.`mse out`, f1.`dev`, f2.`mse out`, f2.`dev`, f3.`mse out`, f3.`dev`, f4.`mse out`, f4.`dev`, '...
-	' f5.`mse out`, u.firingrate '...
+	' f5.`mse out`, u.firingrate, fl1.size '...
 	'FROM estimates_granger ge '...
 	'INNER JOIN fits f ON f.id = ge.id '...
 	'INNER JOIN bci_units bci ON bci.ID = f.`nev file` AND bci.unit = ge.fromunit '...
@@ -19,6 +19,7 @@ data = exec(conn, ['SELECT ge.fromunit, ge.score, rec.successrate, f.`nev file`,
 	'INNER JOIN fits f3 ON f3.`nev file` = al.`manualrecording` AND f3.`modelID` = 1 and f3.unit = ge.fromunit '...
 	'INNER JOIN fits f4 ON f4.`nev file` = al.`manualrecording` AND f4.`modelID` = 16 and f4.unit = ge.fromunit '...
 	'INNER JOIN fits f5 ON f5.`nev file` = al.`manualrecording` AND f5.`modelID` = 19 and f5.unit = ge.fromunit '...
+	'INNER JOIN fits_linear fl1 ON f3.`id` = fl1.id '...
 	'WHERE f.modelID = 3 ']);
 
 data = fetch(data);
@@ -51,6 +52,8 @@ mseconst1 = [];
 mseconst2 = [];
 firingrate1 = [];
 firingrate2 = [];
+tuningsize1 = [];
+tuningsize2 = [];
 
 for i = 1:(size(data,1)-1)
 	if strcmp(data{i, 4}, data{i+1, 4})
@@ -84,6 +87,8 @@ for i = 1:(size(data,1)-1)
 		mseconst2(idx) = data{i+1, 13};
 		firingrate1(idx) = data{i, 14};
 		firingrate2(idx) = data{i+1, 14};
+		tuningsize1(idx) = data{i, 15};
+		tuningsize2(idx) = data{i+1, 15};
 	end
 end
 
@@ -105,7 +110,7 @@ ylabel('Granger unit 2')
 title('Performance (successes/sec; dual control)')
 caxis([0 .4])
 colorbar
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/grangerVsPerformance_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/grangerVsPerformance_dual.eps')
 
 figure
 colormap(jet)
@@ -120,7 +125,7 @@ ylabel('Variance Unit 2')
 title('\Delta Granger (Brain control)')
 caxis([-.6 .6])
 colorbar
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/Const_mseoutVsGranger_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/Const_mseoutVsGranger_dual.eps')
 
 figure
 colormap(jet)
@@ -137,7 +142,7 @@ ylabel('\Delta Granger (Brain control)')
 title(['R^2: ' num2str(r2)])
 %caxis([0 .4])
 %colorbar
-saveplot(gcf, ['./worksheets/2015_11_03-bcireportplots/Const_mseoutVsGranger_dual_trendline.eps'])
+saveplot(gcf, ['./worksheets/2016_06_10-resultsforpaper/Const_mseoutVsGranger_dual_trendline.eps'])
 
 
 %Ok then, so what is the relation between the unit's variance and other things????
@@ -158,7 +163,7 @@ ylabel('Firing rate Unit 2')
 title('\Delta Granger (Brain control)')
 caxis([-.6 .6])
 colorbar
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/firingrateVsGranger_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/firingrateVsGranger_dual.eps')
 
 figure
 colormap(jet)
@@ -173,7 +178,7 @@ ylabel('Firing rate Unit 2')
 title('Performance (Dual control)')
 caxis([0 .4])
 colorbar
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/firingrateVsperformance_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/firingrateVsperformance_dual.eps')
 
 figure
 colormap(jet)
@@ -205,7 +210,7 @@ ylabel('MSE out Unit 2')
 title('Performance (successes/sec)')
 caxis([0 .4])
 colorbar
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/varianceVsPerformance_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformance_dual.eps')
 
 figure
 colormap(jet)
@@ -218,7 +223,7 @@ hold on
 %xlim([0 2])
 xlabel('Combined units'' variance')
 ylabel('Performance (successes/sec)')
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/varianceVsPerformanceB_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformanceB_dual.eps')
 
 figure
 colormap(jet)
@@ -231,7 +236,7 @@ hold on
 %xlim([0 2])
 xlabel('max(unit''s variance)')
 ylabel('Performance (successes/sec)')
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/varianceVsPerformanceC_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformanceC_dual.eps')
 
 figure
 x = mseconst1; y = mseconst2; c = performance; a = 100*performance+20;
@@ -243,4 +248,15 @@ plot(f)%ylim([0 2])
 %xlim([0 2])
 xlabel('Variance')
 ylabel('Performance (successes/sec)')
-saveplot(gcf, './worksheets/2015_11_03-bcireportplots/varianceVsPerformanceA_dual.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformanceA_dual.eps')
+
+figure
+x = tuningsize1; y = tuningsize2; c = performance;
+scatter(x,y,[],c, 'filled');
+hold on
+%plot([0 4], [0 4])
+xlabel('Tuning size. Unit 1')
+ylabel('Tuning size. Unit 2')
+title('Performance (successes/second)')
+colorbar
+saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/tuningsizevsPerformance.eps')

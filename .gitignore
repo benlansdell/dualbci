@@ -21,3 +21,5 @@ matlab/tmp*
 *.pdf
 *.svg
 *.jpg
+*.png
+*.mat

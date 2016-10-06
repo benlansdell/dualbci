@@ -91,7 +91,7 @@ plot(wgts, presults, [0 1], [0 1], 'k:', wgts, presults+stdresults, 'r--', wgts,
 xlabel('BCI weight of unit A')
 ylabel('Proportion of total GC score of unit A')
 legend('Simulation')
-saveplot(gcf, './worksheets/2015_08_10-cursorsim/cursorsimresults.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/cursorsimresults.eps')
 %Looks good enough...
 
 %However, the other way to do this is to take, at each time step, a random choice as to whether to

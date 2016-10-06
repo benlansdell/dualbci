@@ -56,9 +56,9 @@ grangerBCDC = fetch(exec(conn, ['SELECT fBC.analyses_id, fMC.`nev file`, fMC.uni
 grangerBCb = cell2mat(grangerBCDC.Data(:,5));
 grangerDC = cell2mat(grangerBCDC.Data(:,6));
 
-corr(grangerMC, grangerBC);
-corr(grangerMCb, grangerMC2);
-corr(grangerMCc, grangerDC);
+corr(grangerMC, grangerBC)
+corr(grangerMCb, grangerMC2)
+corr(grangerMCc, grangerDC)
 corr(grangerBCb, grangerDC)
 
 

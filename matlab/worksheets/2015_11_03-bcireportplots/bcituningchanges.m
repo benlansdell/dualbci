@@ -93,12 +93,16 @@ deltaother = mod(deltaother, 2*pi);
 figure
 subplot(1,2,1)
 %Linear regression
-fit_deltacotuned = polyfit(deltaBCI, deltacotuned, 1)
-xf = 0:(pi/2):(2*pi);
-yf = polyval(fit_deltacotuned, xf)
+hold on
+[f, gof] = fit(deltaBCI,deltacotuned,'poly1')
+plot(f)%ylim([0 2])
+
+%fit_deltacotuned = polyfit(deltaBCI, deltacotuned, 1)
+%xf = 0:(pi/2):(2*pi);
+%yf = polyval(fit_deltacotuned, xf)
 scatter(deltaBCI, deltacotuned, '.r')
-hold on 
-plot(xf, yf, 'r', 'linewidth', 2)
+%hold on 
+%plot(xf, yf, 'r', 'linewidth', 2)
 xlim([0 2*pi])
 ylim([0 2*pi])
 xlabel('\Delta \theta BC unit')
@@ -106,10 +110,15 @@ ylabel('\Delta \theta Cotuned unit')
 
 subplot(1,2,2)
 scatter(deltaBCI, deltaother,'.b')
-fit_deltaother = polyfit(deltaBCI, deltaother, 1)
-yf = polyval(fit_deltaother, xf)
-hold on 
-plot(xf, yf, 'b', 'linewidth', 2)
+
+hold on
+f = fit(deltaBCI,deltaother,'poly1')
+plot(f)%ylim([0 2])
+
+%fit_deltaother = polyfit(deltaBCI, deltaother, 1)
+%yf = polyval(fit_deltaother, xf)
+%hold on 
+%plot(xf, yf, 'b', 'linewidth', 2)
 xlim([0 2*pi])
 ylim([0 2*pi])
 xlabel('\Delta \theta BC unit')

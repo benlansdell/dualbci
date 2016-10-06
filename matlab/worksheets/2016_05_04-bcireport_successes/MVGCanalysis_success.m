@@ -162,6 +162,7 @@ scatter(y-x,c, 'filled')
 %Fit line
 f = fit((y-x)',c','poly1')
 r2 = corr((y-x)', c')^2
+f2 = fitlm((y-x),c)
 hold on
 plot(f)
 xlabel('MSE unit 2 - MSE unit 1')
@@ -174,6 +175,7 @@ saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/mseoutVsG
 figure
 x = gc1; y = gc2; c = performance;
 scatter(x,y,[],c, 'filled');
+fit 
 hold on
 %plot([0 4], [0 4])
 xlabel('Granger score. Unit 1')
@@ -184,6 +186,7 @@ saveplot(gcf, ['./worksheets/2016_05_04-bcireport_successes/' direct '/Grangervs
 
 figure
 x = mseout1; y = mseout2; c = performance; a = min(gcnorm)+10+10*gcnorm;
+fitlm([x', y'], c)
 scatter(x,y,[],c, 'filled');
 hold on
 %plot([0 4], [0 4])
