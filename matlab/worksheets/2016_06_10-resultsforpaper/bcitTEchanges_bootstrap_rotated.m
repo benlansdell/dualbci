@@ -387,6 +387,12 @@ dotherMCDC = dother;
 [hMCBC, pMCBC] = ttest2(abs(dcotunedMCBC), abs(dotherMCBC))
 [hMCDC, pMCDC] = ttest2(abs(dcotunedMCDC), abs(dotherMCDC))
 
+[hMCBCsgn, pMCBCsgn] = ttest2((dcotunedMCBC), (dotherMCBC))
+[hMCDCsgn, pMCDCsgn] = ttest2((dcotunedMCDC), (dotherMCDC))
+
+[pMCBCrs, hMCBCrs] = ranksum((dcotunedMCBC), (dotherMCBC))
+[pMCDCrs, hMCDCrs] = ranksum((dcotunedMCDC), (dotherMCDC))
+
 figure
 bar([mean(abs(dcotunedMCBC)), mean(abs(dotherMCBC)), mean(abs(dcotunedMCDC)), mean(abs(dotherMCDC))]);
 hold on 
@@ -395,3 +401,13 @@ errorbar([mean(abs(dcotunedMCBC)), mean(abs(dotherMCBC)), mean(abs(dcotunedMCDC)
 	[std(abs(dcotunedMCBC)), std(abs(dotherMCBC)), std(abs(dcotunedMCDC)), std(abs(dotherMCDC))]);
 
 saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_rotated.eps')
+
+figure
+bar([mean((dcotunedMCBC)), mean((dotherMCBC)), mean((dcotunedMCDC)), mean((dotherMCDC))]);
+hold on 
+title(['MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-value: ' num2str(pMCDCrs)])
+
+errorbar([mean(dcotunedMCBC), mean(dotherMCBC), mean(dcotunedMCDC), mean(dotherMCDC)],...
+	[std(dcotunedMCBC)/sqrt(length(dcotunedMCBC)), std(dotherMCBC)/sqrt(length(dotherMCBC)), std(dcotunedMCDC)/sqrt(length(dcotunedMCDC)), std(dotherMCDC)/sqrt(length(dotherMCDC))]);
+
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_rotated_signed_sem.eps')
