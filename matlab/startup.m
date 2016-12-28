@@ -35,22 +35,6 @@ javaaddpath([homedir 'lansdell/matlab/mysql-connector-java-5.1.35-bin.jar']);
 %javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
 %javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
 
-%Add extra color
-%my_ColorOrder = [   0.00000   0.00000   1.00000;
-%   0.00000   0.50000   0.00000;
-%   1.00000   0.00000   0.00000;
-%   0.00000   0.75000   0.75000;
-%   0.75000   0.00000   0.75000;
-%   0.75000   0.75000   0.00000;
-%   0.25000   0.25000   0.25000;
-%   0.00000   0.90000   0.00000;
-%   1.00000   0.50000   0.00000;
-%   0.95000   0.95000   0.00000;
-%   0.60000   0.60000   0.60000;
-%   0.00000   0.00000   0.00000;
-%   1.00000   0.00000   1.00000];
-%set(0,'DefaultAxesColorOrder',my_ColorOrder);
-
 % Change default axes fonts.
 %set(0,'DefaultAxesFontName', 'Arial')
 %set(0,'DefaultAxesFontSize', 10)
