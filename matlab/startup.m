@@ -1,5 +1,3 @@
-%Charlie's scripts uses these global variables...
-%global metaData matpath nevpath
 %matpath = '/home/lansdell/projects/bci/matlab/labview';
 %nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
 %metaData = '/home/lansdell/projects/bci/matlab/labview';
