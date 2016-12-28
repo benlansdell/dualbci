@@ -1,68 +1,40 @@
 # Analysis of dual control BCI target pursuit task
 
-Ben Lansdell, Ivana Milovanovic
+Ben Lansdell, Ivana Milovanovic. 2016
 
-MATLAB code for studying neural recording data from monkey as performs manual,
-and brain control target pursuit tasks. Data from Moritz lab. Orignally studied
-by Charlie Matlack (cmatlack@uw.edu). 
+MATLAB code for studying multi-electrode array recording data from monkey as performs manual, brain control and dual control target pursuit task. Data from [Moritz lab](http://depts.washington.edu/moritlab/), experiment setup by Charlie Matlack. 
 
-Dependencies: makes use of functions in the stats toolbox.
+### Dependencies:
+* Makes use of functions in the stats toolbox.
 
-In preprocess:
+### In preprocess:
 * Functions for importing data from .nev and .nsx files. 
 * Functions for importing trial data from Labview (.mat) files. 
 * Functions for smoothing torque data, and converting spike times to binned spikes
 * generate_glm_data.m for simulating a GLM given input data and filters
 
-In models:
+### In models:
 * If the GLM has the form: E(y) = g(X\beta) where X is a data matrix and \beta is
  a vector of filter coefficients, this directory contains functions for taking raw 
  data and preparing data matrix to be input into a GLM, along with output vector y.
 
-In eval:
+### In eval:
 * Functions to fit the filter coefficients beta
 * Functions to predict spike trains given stimulus and a fit GLM
 * Functions to plot filters of GLM
 * Other plotting functions
 
-In functions:
+### In functions:
 * Functions to import blackrock files
-* Functions by Charlie to compute correlations, etc
+* Functions to compute correlations, etc
 * Functions to save plots as .eps
 * Some other things
 
-In other: 
-* Other people's GLM code
-
-In old:
-* Old code
-
-In worksheets:
-* Some scripts that make use of all this code
+### In scripts:
+* Scripts that generate plots used in paper
 
 ## How to use
 
-If MATLAB is started in the ./matlab directory then startup.m will
-automatically add the above directories to the path. It will try to add
-the Chronux functions by adding ~/matlab/chronux to the path, and will try to
-add the .nev and .ns3 files to the path by looking in ./matlab/blackrock, but these
-are not necessary.
+If MATLAB is started in this directory then startup.m will automatically add the above directories to the path. It will try to add the Chronux functions by adding ~/matlab/chronux to the path, and will try to add the .nev and .ns3 files to the path by looking in ./matlab/blackrock, but these are not necessary.
 
-See ./matlab/accessing_data.txt for information on the format of matlab,
-labview and BlackRock files
-
-## Version history
-
-0.3 -- Can now:
-
--Compute Granger causality for a recording
--Estimate a range of intentional and non-intentional GLMs
--Use raised cosine basis vectors for spike history filters
--Added concept of experiment stuctures, allowing the study of entire year's worth of recordings with createExperiment, setupExperiment and runExperiment functions
-
-0.2 -- Updated to include code to run LN model, and a basic version of a GLM model
-
-0.1 -- contains a whole bunch of functions to compute correlation (corr_*.m) bw
-firing rate and torque (cursor) position/vel/accel. Not needed, as superseded
-by correlation_nev.m. Will be dropped from future versions.
-
+See ./accessing_data.txt for information on the format of matlab, labview and BlackRock files
