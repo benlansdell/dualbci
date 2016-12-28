@@ -8,11 +8,11 @@ MATLAB code for studying multi-electrode array recording data from monkey as per
 
 A full working environment requires the following:
 
-* `glmfit` is in the stats toolbox.
+* `glmfit`, which is in the statistics toolbox.
 * Mark Schmit's L1 toolbox ([here](http://www.cs.ubc.ca/~schmidtm/Software/thesis.html))
 * [MVGC toolbox](http://users.sussex.ac.uk/~lionelb/MVGC/) 
 * [GPFA toolbox](https://users.ece.cmu.edu/~byronyu/software.shtml)
-* Transfer entropy toolbox 
+* [Transfer entropy toolbox](https://code.google.com/archive/p/transfer-entropy-toolbox/) 
 * [MySQL java driver](http://dev.mysql.com/downloads/connector/j/)
 
 Depending on your usage, only a subset of these may be required. See usage section below.
@@ -65,16 +65,26 @@ The size of the dataset and number of analyses performed necessitated managing f
 
 ## Ok enough details, how do I use this:
 
-0. If MATLAB is started in this directory then startup.m will automatically add the above directories to the path. If not, make sure startup.m is run to setup paths and toolboxes, etc. In addition to code to perform analysis of GLM fits, our paper uses a number of other tools to analyze the data. This include GPFA, the transfer entropy toolbox, the MVGC toolbox and Mark Schmit's L1 fitting toolbox. So before doing so you'll need to open startup.m and check the paths to different toolboxes are set correctly.
+The simplest use case is:
 
-At a minimum you'll probably want to do one of
+* Making plots presented in paper:
+  See scripts in ./scripts
 
-1. a
-2. asdf
+Beyond that, you'll need to set some paths:
 
-In addition to this, the following instructions will setup your environment to be able to redo all analyses performed in our paper. 
+1. If MATLAB is started in this directory then `startup.m` will automatically add the above directories to the path. If not, make sure `startup.m` is run to setup paths and toolboxes, etc. You'll need to open `startup.m` to check the paths to different toolboxes are set correctly.
 
-1. will try to add the .nev and .ns3 files to the path by looking in ./matlab/blackrock, but these are not necessary.
-2.
+2. The next simplest use case is to use the GLM code to fit/interpret different models:
+	`const = 'on';
+	nK_sp = 100; 
+	nK_pos = 100;
+	%Load test preprocessed data
+	pre = load('./testdata/test_preprocess_spline_short.mat');
+	data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
+	model = MLE_glmfit(data, const);`
+
+Beyond that, to further setup your environment to be able to redo all analyses performed in our paper:
+
+* This requires acquiring the data. Once acquired its path can be added to `startup.m`. By default it looks for BlackRock .nev and .ns3 files in ./blackrock and ./labview. Please contact the authors for more information.
 
 See ./accessing_data.txt for information on the format of matlab, labview and BlackRock files.
