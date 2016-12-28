@@ -7,6 +7,7 @@ MATLAB code for studying multi-electrode array recording data from monkey as per
 ### Dependencies:
 * Makes use of functions in the stats toolbox.
 
+
 Overall, the bulk of the code is structured as follows:
 
 ### In preprocess:
@@ -55,9 +56,16 @@ The size of the dataset and number of analyses performed necessitated managing f
 
 ## Ok ok, how to use:
 
-If MATLAB is started in this directory then startup.m will automatically add the above directories to the path. It will try to add the Chronux functions by adding ~/matlab/chronux to the path, and will try to add the .nev and .ns3 files to the path by looking in ./matlab/blackrock, but these are not necessary.
+0. If MATLAB is started in this directory then startup.m will automatically add the above directories to the path. If not, make sure startup.m is run to setup paths and toolboxes, etc. In addition to code to perform analysis of GLM fits, our paper uses a number of other tools to analyze the data. This include GPFA, the transfer entropy toolbox, the MVGC toolbox and Mark Schmit's L1 fitting toolbox. So before doing so you'll need to open startup.m and check the paths to different toolboxes are set correctly.
 
-In addition to code to perform analysis of GLM fits, our paper uses a number of other tools to analyze the data. This include GPFA and the transfer entropy toolbox. 
+At a minimum you'll probably want to do one of
 
+1. a
+2. asdf
 
-See ./accessing_data.txt for information on the format of matlab, labview and BlackRock files
+In addition to this, the following instructions will setup your environment to be able to redo all analyses performed in our paper. 
+
+1. will try to add the .nev and .ns3 files to the path by looking in ./matlab/blackrock, but these are not necessary.
+2.
+
+See ./accessing_data.txt for information on the format of matlab, labview and BlackRock files.
