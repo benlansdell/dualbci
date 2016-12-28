@@ -75,7 +75,8 @@ Beyond that, you'll need to set some paths:
 1. If MATLAB is started in this directory then `startup.m` will automatically add the above directories to the path. If not, make sure `startup.m` is run to setup paths and toolboxes, etc. You'll need to open `startup.m` to check the paths to different toolboxes are set correctly.
 
 2. The next simplest use case is to use the GLM code to fit/interpret different models:
-```const = 'on';
+```
+const = 'on';
 nK_sp = 100; 
 nK_pos = 100;
 %Load test preprocessed data
