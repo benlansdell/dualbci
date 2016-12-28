@@ -85,8 +85,9 @@ data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
 model = MLE_glmfit(data, const);
 ```
 
-Beyond that, to further setup your environment to be able to redo all analyses performed in our paper:
+Beyond that, to further setup your environment to be able to redo all analyses performed in our paper, requires:
 
-* This requires acquiring the data. Once acquired its path can be added to `startup.m`. By default it looks for BlackRock .nev and .ns3 files in ./blackrock and ./labview. Please contact the authors for more information.
+1. acquiring the data. Once acquired its path can be added to `startup.m`. By default it looks for Blackrock .nev and .ns3 files in ./blackrock and Labview experiment data files in ./labview. 
+2. Setting up a/having access to our SQL database to store results of analyses for the thousands of recordings
 
-See ./accessing_data.txt for information on the format of matlab, labview and BlackRock files.
+Please contact the authors for more information on each of these. See also ./accessing_data.txt for information on the format of matlab, labview and BlackRock files.
