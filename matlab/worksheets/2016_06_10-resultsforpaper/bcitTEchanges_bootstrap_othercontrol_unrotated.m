@@ -42,7 +42,7 @@ for rep = 1:nR
 		'AND fl1.r2 > 0.0 '...
 		'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
 		'AND et1.`manualrecording` = "' mcfile '" '...
-		'AND (et1.`tuning_type` = 1 OR et1.`tuning_type` = 3 OR et1.`tuning_type` = 4)']));
+		'AND (et1.`tuning_type` = 5)']));
 		if strcmp(all_data.Data, 'No Data')
 			continue 
 		end
@@ -171,34 +171,6 @@ for rep = 1:nR
 	end
 end
 
-figure
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dothercotuned, rng, 'Normalization', 'probability')
-%From teMCBCstats.m
-MCBCpctile = 0.0011;
-plot([MCBCpctile, MCBCpctile], [0 1], 'k--')
-plot([-MCBCpctile, -MCBCpctile], [0 1], 'k--')
-xlabel('MCGC - BCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('With BC-unit', 'With randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dothercotuned))
-100*(sum(dcotuned < -MCBCpctile) + sum(dcotuned > MCBCpctile))/length(dcotuned)
-100*(sum(dothercotuned < -MCBCpctile) + sum(dothercotuned > MCBCpctile))/length(dothercotuned)
-
-title(['abs(dbci)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_histogram_bootstrap_othercontrol_rotated.eps')
-%saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_histogram.png', 'png', [4 3])
-
-figure 
-qqplot(dcotuned, dothercotuned)
-[h, p] = kstest2(dcotuned, dothercotuned)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_qqplot_bootstrap_othercontrol_rotated.eps')
-
 dcotunedMCBC = dcotuned;
 dothercotunedMCBC = dothercotuned; 
 
@@ -234,7 +206,7 @@ for rep = 1:nR
 		'AND fl1.r2 > 0.0 '...
 		'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
 		'AND et1.`manualrecording` = "' mcfile '" '...
-		'AND (et1.`tuning_type` = 1 OR et1.`tuning_type` = 3 OR et1.`tuning_type` = 4)']));
+		'AND (et1.`tuning_type` = 5)']));
 		if strcmp(all_data.Data, 'No Data')
 			continue 
 		end
@@ -363,33 +335,6 @@ for rep = 1:nR
 	end
 end
 
-figure
-MCDCpctile = 0.0011;
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dothercotuned, rng, 'Normalization', 'probability')
-plot([MCDCpctile, MCDCpctile], [0 1], 'k--')
-plot([-MCDCpctile, -MCDCpctile], [0 1], 'k--')
-xlabel('MCGC - DCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('With BC-unit', 'With randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dothercotuned))
-100*(sum(dcotuned < -MCDCpctile) + sum(dcotuned > MCDCpctile))/length(dcotuned)
-100*(sum(dothercotuned < -MCDCpctile) + sum(dothercotuned > MCDCpctile))/length(dothercotuned)
-
-title(['abs(dbci)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram_bootstrap_othercontrol_rotated.eps')
-%saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram.png', 'png', [4 3])
-
-figure 
-qqplot(dcotuned, dothercotuned);
-[h, p] = kstest2(dcotuned, dothercotuned)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_qqplot_bootstrap_othercontrol_rotated.eps')
-
 dcotunedMCDC = dcotuned;
 dothercotunedMCDC = dothercotuned; 
 
@@ -417,7 +362,7 @@ title(['MCBC: abs(dc)vs abs(do) p-value: ' num2str(pMCBC) ', MCDC: abs(dc)vs abs
 errorbar([mean(abs(dcotunedMCBC)), mean(abs(dothercotunedMCBC)), mean(abs(dcotunedMCDC)), mean(abs(dothercotunedMCDC))],...
 	[std(abs(dcotunedMCBC)), std(abs(dothercotunedMCBC)), std(abs(dcotunedMCDC)), std(abs(dothercotunedMCDC))]);
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_othercontrol_rotated.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_othercontrol_unrotated.eps')
 
 figure
 bar([mean((dcotunedMCBC)), mean((dothercotunedMCBC)), mean((dcotunedMCDC)), mean((dothercotunedMCDC))]);
@@ -427,7 +372,7 @@ title(['(rank sum) MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs
 errorbar([mean(dcotunedMCBC), mean(dothercotunedMCBC), mean(dcotunedMCDC), mean(dothercotunedMCDC)],...
 	[std(dcotunedMCBC)/sqrt(length(dcotunedMCBC)), std(dothercotunedMCBC)/sqrt(length(dothercotunedMCBC)), std(dcotunedMCDC)/sqrt(length(dcotunedMCDC)), std(dothercotunedMCDC)/sqrt(length(dothercotunedMCDC))]);
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_othercontrol_rotated_signed_sem.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_othercontrol_unrotated_signed_sem.eps')
 
 %Draw a boxplot 
 figure
@@ -439,4 +384,4 @@ set(h(7,:), 'Visible', 'off')
 ylim([-0.0005, 0.0005])
 
 title(['(rank sum) MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-value: ' num2str(pMCDCrs)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-boxplot_bootstrap_othercontrol_rotated_signed_sem.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-boxplot_bootstrap_othercontrol_unrotated_signed_sem.eps')

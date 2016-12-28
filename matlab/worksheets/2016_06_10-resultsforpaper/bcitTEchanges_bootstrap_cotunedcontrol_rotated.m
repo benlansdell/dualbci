@@ -15,6 +15,8 @@ dcotuned = [];
 
 nR = 50;
 
+rng(10);
+
 for rep = 1:nR
 	display(['rep = ' num2str(rep)])
 	for idx = 1:length(files)
@@ -204,6 +206,9 @@ saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_qqplo
 %%%%%%%%%%%%%%%%%%%%
 %Do the same for DC%
 %%%%%%%%%%%%%%%%%%%%
+
+dcotunedMCBC = dcotuned;
+dothercotunedMCBC = dothercotuned; 
 
 dothercotuned = [];
 dcotuned = [];
@@ -402,6 +407,14 @@ dothercotunedMCDC = dothercotuned;
 [pMCBCrs, hMCBCrs] = ranksum((dcotunedMCBC), (dothercotunedMCBC))
 [pMCDCrs, hMCDCrs] = ranksum((dcotunedMCDC), (dothercotunedMCDC))
 
+[pMCBCsrC, hMCBCsrC] = signrank(dcotunedMCBC)
+[pMCBCsrO, hMCBCsrO] = signrank(dothercotunedMCBC)
+[pMCDCsrC, hMCDCsrC] = signrank(dcotunedMCDC)
+[pMCDCsrO, hMCDCsrO] = signrank(dothercotunedMCDC)
+
+[pBCDCrsC, hBCDCrsC] = ranksum((dcotunedMCBC), (dcotunedMCDC))
+[pBCDCrsO, hBCDCrsO] = ranksum((dothercotunedMCBC), (dothercotunedMCDC))
+
 figure
 bar([mean(abs(dcotunedMCBC)), mean(abs(dothercotunedMCBC)), mean(abs(dcotunedMCDC)), mean(abs(dothercotunedMCDC))]);
 hold on 
@@ -420,3 +433,14 @@ errorbar([mean(dcotunedMCBC), mean(dothercotunedMCBC), mean(dcotunedMCDC), mean(
 	[std(dcotunedMCBC)/sqrt(length(dcotunedMCBC)), std(dothercotunedMCBC)/sqrt(length(dothercotunedMCBC)), std(dcotunedMCDC)/sqrt(length(dcotunedMCDC)), std(dothercotunedMCDC)/sqrt(length(dothercotunedMCDC))]);
 
 saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_cotunedcontrol_rotated_signed_sem.eps')
+
+figure
+groups = [ones(size(dcotunedMCBC)); 2*ones(size(dothercotunedMCBC));...
+			3*ones(size(dcotunedMCDC));4*ones(size(dothercotunedMCDC))];
+
+h = boxplot([dcotunedMCBC; dothercotunedMCBC; dcotunedMCDC; dothercotunedMCDC], groups);
+set(h(7,:), 'Visible', 'off')
+ylim([-0.0005, 0.0005])
+
+title(['(rank sum) MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-value: ' num2str(pMCDCrs)])
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-boxplot_bootstrap_cotunedcontrol_rotated_signed_sem.eps')

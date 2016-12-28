@@ -198,7 +198,7 @@ clf
 plot([mseconstBC1, mseconstBC2], [gc1, gc2], '.')
 
 figure
-colormap(jet)
+colormap(parula)
 x = mseconst1; y = mseconst2; c = performance; a = 100*performance+20;
 scatter(x,y,[],c, 'filled');
 hold on
@@ -211,6 +211,49 @@ title('Performance (successes/sec)')
 caxis([0 .4])
 colorbar
 saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformance_dual.eps')
+
+figure
+colormap(parula)
+maxp = 0.4;
+c = zeros(size(x));
+for idx = 1:length(x)
+	c(idx) = floor(performance(idx)/maxp*3);
+end
+x = mseconst1; y = mseconst2; 
+%c = performance;
+a = 100*performance+20;
+scatter(x,y,[],c, 'filled');
+hold on
+plot([0 maxp], [0 maxp], 'k')
+%ylim([0 2])
+%xlim([0 2])
+xlabel('MSE out Unit 1')
+ylabel('MSE out Unit 2')
+title('Performance (successes/sec)')
+caxis([0 2])
+colorbar
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformance_dual_3color.eps')
+
+figure
+colormap(parula)
+x = mseconst1; y = mseconst2; c = performance; a = 100*performance+20;
+scatter3(x,y,c, [], c,'filled');
+hold on
+%plot([0 .4], [0 .4], 'k')
+%ylim([0 2])
+%xlim([0 2])
+xlabel('MSE out Unit 1')
+ylabel('MSE out Unit 2')
+title('Performance (successes/sec)')
+caxis([0 .4])
+colorbar
+%Add lines
+for idx = 1:length(x)
+	plot3([x(idx), x(idx)], [y(idx), y(idx)], [0, c(idx)], 'Color', [0.8, 0.8, 0.8], 'LineWidth', 0.5)
+end
+scatter3(x,y,c, [], c,'filled');
+
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformance_dual_scatter3d.eps')
 
 figure
 colormap(jet)
@@ -260,3 +303,33 @@ ylabel('Tuning size. Unit 2')
 title('Performance (successes/second)')
 colorbar
 saveplot(gcf, './worksheets/2015_07_09-WhatsDriverTheCursor/tuningsizevsPerformance.eps')
+
+
+nbins = 3; 
+msemin = 0.2; 
+msemax = 1;
+bins = linspace(msemin, msemax, nbins);
+
+hm = cell(nbins, nbins);
+for i = 1:nbins
+	for j = 1:nbins
+		hm{i,j} = [];
+	end
+end
+
+for idx = 1:length(x)
+	bx = min(max(ceil((mseconst1(idx)-msemin)/(msemax-msemin)*nbins), 1), nbins);
+	by = min(max(ceil((mseconst2(idx)-msemin)/(msemax-msemin)*nbins), 1), nbins);
+	hm{bx, by} = [hm{bx,by}, performance(idx)];
+end
+
+ave_perf = zeros(nbins, nbins)
+for i = 1:nbins 
+	for j = 1:nbins
+		ave_perf(i,j) = mean(hm{i,j});
+	end
+end
+
+figure
+imagesc(flipud(ave_perf'));
+colormap(bone)

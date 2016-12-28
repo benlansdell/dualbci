@@ -82,10 +82,10 @@ for rep = 1:nR
 		%Pick cotuned units to BCI units in MC
 		diff_MC_theta = cos(bci_theta(1) - all_theta(:,1));
 		
-		%Pick random two
+		%Pick two units that are not cotuned
 		[l, cotunedidx] = sort(diff_MC_theta, 'descend'); 
-		cotunedidx = randsample(1:nU,2);
-
+		cotunedidx = randsample(3:nU, 2);
+		%cotunedidx = cotunedidx(1:2);
 		bcicotuned = diff_MC_theta(cotunedidx);
 		cotunedunits = otherunits(cotunedidx);
 	
@@ -93,9 +93,12 @@ for rep = 1:nR
 		otheridx = randsample(1:nU, 1);
 		otherunitname = otherunits(otheridx);
 
-		%Pick another random two units
-		othercotunedidx = randsample(setdiff(1:nU,otheridx),2);
-
+		%Pick two units that are not cotuned with it
+		diff_MC_theta_other = cos(all_theta(otheridx,1) - all_theta(:,1));
+		[l, othercotunedidx] = sort(diff_MC_theta_other, 'descend'); 
+		othercotunedidx = randsample(4:nU, 2);
+		%othercotunedidx = othercotunedidx(2:3);
+		othercotuned = diff_MC_theta_other(othercotunedidx);
 		othercotunedunits = otherunits(othercotunedidx);
 	
 		%Granger for cotuned units
@@ -171,40 +174,12 @@ for rep = 1:nR
 	end
 end
 
-figure
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dothercotuned, rng, 'Normalization', 'probability')
-%From teMCBCstats.m
-MCBCpctile = 0.0011;
-plot([MCBCpctile, MCBCpctile], [0 1], 'k--')
-plot([-MCBCpctile, -MCBCpctile], [0 1], 'k--')
-xlabel('MCGC - BCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('With BC-unit', 'With randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dothercotuned))
-100*(sum(dcotuned < -MCBCpctile) + sum(dcotuned > MCBCpctile))/length(dcotuned)
-100*(sum(dothercotuned < -MCBCpctile) + sum(dothercotuned > MCBCpctile))/length(dothercotuned)
-
-title(['abs(dbci)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_histogram_bootstrap_othercontrol_rotated.eps')
-%saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_histogram.png', 'png', [4 3])
-
-figure 
-qqplot(dcotuned, dothercotuned)
-[h, p] = kstest2(dcotuned, dothercotuned)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_qqplot_bootstrap_othercontrol_rotated.eps')
-
-dcotunedMCBC = dcotuned;
-dothercotunedMCBC = dothercotuned; 
-
 %%%%%%%%%%%%%%%%%%%%
 %Do the same for DC%
 %%%%%%%%%%%%%%%%%%%%
+
+dcotunedMCBC = dcotuned;
+dothercotunedMCBC = dothercotuned; 
 
 dothercotuned = [];
 dcotuned = [];
@@ -274,10 +249,9 @@ for rep = 1:nR
 		%Pick cotuned units to BCI units in MC
 		diff_MC_theta = cos(bci_theta(1) - all_theta(:,1));
 		
-		%Pick random two
+		%Pick top two
 		[l, cotunedidx] = sort(diff_MC_theta, 'descend'); 
-		cotunedidx = randsample(1:nU,2);
-
+		cotunedidx = cotunedidx(1:2);
 		bcicotuned = diff_MC_theta(cotunedidx);
 		cotunedunits = otherunits(cotunedidx);
 	
@@ -285,9 +259,11 @@ for rep = 1:nR
 		otheridx = randsample(1:nU, 1);
 		otherunitname = otherunits(otheridx);
 
-		%Pick another random two units
-		othercotunedidx = randsample(setdiff(1:nU,otheridx),2);
-
+		%Pick top two units cotuned with it
+		diff_MC_theta_other = cos(all_theta(otheridx,1) - all_theta(:,1));
+		[l, othercotunedidx] = sort(diff_MC_theta_other, 'descend'); 
+		othercotunedidx = othercotunedidx(2:3);
+		othercotuned = diff_MC_theta_other(othercotunedidx);
 		othercotunedunits = otherunits(othercotunedidx);
 	
 		%Granger for cotuned units
@@ -363,33 +339,6 @@ for rep = 1:nR
 	end
 end
 
-figure
-MCDCpctile = 0.0011;
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dothercotuned, rng, 'Normalization', 'probability')
-plot([MCDCpctile, MCDCpctile], [0 1], 'k--')
-plot([-MCDCpctile, -MCDCpctile], [0 1], 'k--')
-xlabel('MCGC - DCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('With BC-unit', 'With randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dothercotuned))
-100*(sum(dcotuned < -MCDCpctile) + sum(dcotuned > MCDCpctile))/length(dcotuned)
-100*(sum(dothercotuned < -MCDCpctile) + sum(dothercotuned > MCDCpctile))/length(dothercotuned)
-
-title(['abs(dbci)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram_bootstrap_othercontrol_rotated.eps')
-%saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram.png', 'png', [4 3])
-
-figure 
-qqplot(dcotuned, dothercotuned);
-[h, p] = kstest2(dcotuned, dothercotuned)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_qqplot_bootstrap_othercontrol_rotated.eps')
-
 dcotunedMCDC = dcotuned;
 dothercotunedMCDC = dothercotuned; 
 
@@ -417,7 +366,7 @@ title(['MCBC: abs(dc)vs abs(do) p-value: ' num2str(pMCBC) ', MCDC: abs(dc)vs abs
 errorbar([mean(abs(dcotunedMCBC)), mean(abs(dothercotunedMCBC)), mean(abs(dcotunedMCDC)), mean(abs(dothercotunedMCDC))],...
 	[std(abs(dcotunedMCBC)), std(abs(dothercotunedMCBC)), std(abs(dcotunedMCDC)), std(abs(dothercotunedMCDC))]);
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_othercontrol_rotated.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_notcotunedcontrol_rotated.eps')
 
 figure
 bar([mean((dcotunedMCBC)), mean((dothercotunedMCBC)), mean((dcotunedMCDC)), mean((dothercotunedMCDC))]);
@@ -427,9 +376,8 @@ title(['(rank sum) MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs
 errorbar([mean(dcotunedMCBC), mean(dothercotunedMCBC), mean(dcotunedMCDC), mean(dothercotunedMCDC)],...
 	[std(dcotunedMCBC)/sqrt(length(dcotunedMCBC)), std(dothercotunedMCBC)/sqrt(length(dothercotunedMCBC)), std(dcotunedMCDC)/sqrt(length(dcotunedMCDC)), std(dothercotunedMCDC)/sqrt(length(dothercotunedMCDC))]);
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_othercontrol_rotated_signed_sem.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_notcotunedcontrol_rotated_signed_sem.eps')
 
-%Draw a boxplot 
 figure
 groups = [ones(size(dcotunedMCBC)); 2*ones(size(dothercotunedMCBC));...
 			3*ones(size(dcotunedMCDC));4*ones(size(dothercotunedMCDC))];
@@ -439,4 +387,4 @@ set(h(7,:), 'Visible', 'off')
 ylim([-0.0005, 0.0005])
 
 title(['(rank sum) MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-value: ' num2str(pMCDCrs)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-boxplot_bootstrap_othercontrol_rotated_signed_sem.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-boxplot_bootstrap_notcotunedcontrol_rotated_signed_sem.eps')

@@ -15,6 +15,8 @@ dcotuned = [];
 
 nR = 50;
 
+rng(15);
+
 for rep = 1:nR
 	display(['rep = ' num2str(rep)])
 	for idx = 1:length(files)
@@ -163,33 +165,6 @@ for rep = 1:nR
 		dother = [dother(:); diffother(:)];
 	end
 end
-
-figure
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dother, rng, 'Normalization', 'probability')
-%From teMCBCstats.m
-MCBCpctile = 0.0011;
-plot([MCBCpctile, MCBCpctile], [0 1], 'k--')
-plot([-MCBCpctile, -MCBCpctile], [0 1], 'k--')
-%Count units that occur outside pctile
-100*(sum(dcotuned < -MCBCpctile) + sum(dcotuned > MCBCpctile))/length(dcotuned)
-100*(sum(dother < -MCBCpctile) + sum(dother > MCBCpctile))/length(dother)
-xlabel('MCGC - BCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('Cotuned with BC-unit', 'Randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dother))
-title(['abs(dcotuned)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_histogram_bootstrap_rotated.eps')
-
-figure 
-qqplot(dcotuned, dother)
-[h, p] = kstest2(dcotuned, dother)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_qqplot_bootstrap_rotated.eps')
 
 dcotunedMCBC = dcotuned;
 dotherMCBC = dother; 
@@ -353,34 +328,6 @@ for rep = 1:nR
 	end
 end
 
-figure
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dother, rng, 'Normalization', 'probability')
-%From teMCBCstats.m
-MCDCpctile = 0.0011;
-plot([MCDCpctile, MCDCpctile], [0 1], 'k--')
-plot([-MCDCpctile, -MCDCpctile], [0 1], 'k--')
-%Count units that occur outside pctile
-100*(sum(dcotuned < -MCDCpctile) + sum(dcotuned > MCDCpctile))/length(dcotuned)
-100*(sum(dother < -MCDCpctile) + sum(dother > MCDCpctile))/length(dother)
-xlabel('MCGC - DCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('Cotuned with BC-unit', 'Randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dother))
-title(['abs(dcotuned)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram_bootstrap_rotated.eps')
-%saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram.png', 'png', [4 3])
-
-figure 
-qqplot(dcotuned, dother);
-[h, p] = kstest2(dcotuned, dother)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_qqplot_bootstrap_rotated.eps')
-
 dcotunedMCDC = dcotuned;
 dotherMCDC = dother; 
 
@@ -392,6 +339,14 @@ dotherMCDC = dother;
 
 [pMCBCrs, hMCBCrs] = ranksum((dcotunedMCBC), (dotherMCBC))
 [pMCDCrs, hMCDCrs] = ranksum((dcotunedMCDC), (dotherMCDC))
+
+[pMCBCsrC, hMCBCsrC] = signrank(dcotunedMCBC)
+[pMCBCsrO, hMCBCsrO] = signrank(dotherMCBC)
+[pMCDCsrC, hMCDCsrC] = signrank(dcotunedMCDC)
+[pMCDCsrO, hMCDCsrO] = signrank(dotherMCDC)
+
+[pBCDCrsC, hBCDCrsC] = ranksum((dcotunedMCBC), (dcotunedMCDC))
+[pBCDCrsO, hBCDCrsO] = ranksum((dotherMCBC), (dotherMCDC))
 
 figure
 bar([mean(abs(dcotunedMCBC)), mean(abs(dotherMCBC)), mean(abs(dcotunedMCDC)), mean(abs(dotherMCDC))]);
@@ -411,3 +366,16 @@ errorbar([mean(dcotunedMCBC), mean(dotherMCBC), mean(dcotunedMCDC), mean(dotherM
 	[std(dcotunedMCBC)/sqrt(length(dcotunedMCBC)), std(dotherMCBC)/sqrt(length(dotherMCBC)), std(dcotunedMCDC)/sqrt(length(dcotunedMCDC)), std(dotherMCDC)/sqrt(length(dotherMCDC))]);
 
 saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_rotated_signed_sem.eps')
+
+figure
+groups = [ones(size(dcotunedMCBC)); 2*ones(size(dotherMCBC));...
+			3*ones(size(dcotunedMCDC));4*ones(size(dotherMCDC))];
+
+h = boxplot([dcotunedMCBC; dotherMCBC; dcotunedMCDC; dotherMCDC], groups);
+set(h(7,:), 'Visible', 'off')
+ylim([-0.0005, 0.0005])
+
+title(['(rank sum) MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-value: ' num2str(pMCDCrs)])
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-boxplot_bootstrap_rotated_signed_sem.eps')
+
+save('bcitTEchanges_bootstrap_rotated.mat')
