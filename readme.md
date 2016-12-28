@@ -1,6 +1,8 @@
-# BCI Target pursuit task -- GLM
+# Analysis of dual control BCI target pursuit task
 
-MATLAB code for studying neural recording data from monkey as performs manual
+Ben Lansdell, Ivana Milovanovic
+
+MATLAB code for studying neural recording data from monkey as performs manual,
 and brain control target pursuit tasks. Data from Moritz lab. Orignally studied
 by Charlie Matlack (cmatlack@uw.edu). 
 
