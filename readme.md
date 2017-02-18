@@ -1,66 +1,93 @@
-# BCI Target pursuit task -- GLM
+# Analysis of dual control BCI target pursuit task
 
-MATLAB code for studying neural recording data from monkey as performs manual
-and brain control target pursuit tasks. Data from Moritz lab. Orignally studied
-by Charlie Matlack (cmatlack@uw.edu). 
+Ben Lansdell, Ivana Milovanovic. 2016
 
-Dependencies: makes use of functions in the stats toolbox.
+MATLAB code for studying multi-electrode array recording data from monkey as performs manual, brain control and dual control target pursuit task. Data from [Moritz lab](http://depts.washington.edu/moritlab/), experiment setup by Charlie Matlack. 
 
-In preprocess:
+## Dependencies:
+
+A full working environment requires the following:
+
+* `glmfit`, which is in the statistics toolbox.
+* Mark Schmit's L1 toolbox ([here](http://www.cs.ubc.ca/~schmidtm/Software/thesis.html))
+* [MVGC toolbox](http://users.sussex.ac.uk/~lionelb/MVGC/) 
+* [GPFA toolbox](https://users.ece.cmu.edu/~byronyu/software.shtml)
+* [Transfer entropy toolbox](https://code.google.com/archive/p/transfer-entropy-toolbox/) 
+* [MySQL java driver](http://dev.mysql.com/downloads/connector/j/)
+
+Depending on your usage, only a subset of these may be required. See usage section below.
+
+## Code
+
+### In preprocess:
+
+preprocess\_\* functions generate a structure for use by functions in ./models
+
 * Functions for importing data from .nev and .nsx files. 
 * Functions for importing trial data from Labview (.mat) files. 
 * Functions for smoothing torque data, and converting spike times to binned spikes
 * generate_glm_data.m for simulating a GLM given input data and filters
 
-In models:
-* If the GLM has the form: E(y) = g(X\beta) where X is a data matrix and \beta is
- a vector of filter coefficients, this directory contains functions for taking raw 
- data and preparing data matrix to be input into a GLM, along with output vector y.
+### In models:
 
-In eval:
-* Functions to fit the filter coefficients beta
+Functions to take a preprocess structure output from ./preprocess, and generate a structure with data in appropriate format for fitting a GLM/linear model/etc to.
+
+If the GLM has the form: $E(y) = g(X\beta)$ where $X$ is a data matrix and $\beta$ is a vector of filter coefficients, this directory contains functions for taking raw data and preparing data matrix to be input into a GLM, along with output vector y.
+
+### In fitting: 
+
+Functions to perform MLE fit of GLM model
+
+### In eval:
+
+Functions to interpret results of MLE fitting
+
 * Functions to predict spike trains given stimulus and a fit GLM
 * Functions to plot filters of GLM
+* Granger causality connectivity
 * Other plotting functions
 
-In functions:
+### In scripts:
+* Scripts that generate plots used in paper
+
+### In functions:
+
+Various support functions
+
 * Functions to import blackrock files
-* Functions by Charlie to compute correlations, etc
+* Functions to compute correlations, etc
 * Functions to save plots as .eps
-* Some other things
+* Various other things
 
-In other: 
-* Other people's GLM code
+## In sql:
 
-In old:
-* Old code
+The size of the dataset and number of analyses performed necessitated managing fits and results in a SQL database. Here are functions to add fits and other analyses to a SQL database. Please contact us directly if you'd like to access our database containing our stored analyses and results, or would like to setup something similar yourself. 
 
-In worksheets:
-* Some scripts that make use of all this code
+## Ok enough details, how do I use this:
 
-## How to use
+The simplest use case is:
 
-If MATLAB is started in the ./matlab directory then startup.m will
-automatically add the above directories to the path. It will try to add
-the Chronux functions by adding ~/matlab/chronux to the path, and will try to
-add the .nev and .ns3 files to the path by looking in ./matlab/blackrock, but these
-are not necessary.
+* Making plots presented in paper:
+  See scripts in ./scripts
 
-See ./matlab/accessing_data.txt for information on the format of matlab,
-labview and BlackRock files
+Beyond that, you'll need to set some paths:
 
-## Version history
+1. If MATLAB is started in this directory then `startup.m` will automatically add the above directories to the path. If not, make sure `startup.m` is run to setup paths and toolboxes, etc. You'll need to open `startup.m` to check the paths to different toolboxes are set correctly.
 
-0.3 -- Can now:
+2. The next simplest use case is to use the GLM code to fit/interpret different models:
+```
+const = 'on';
+nK_sp = 100; 
+nK_pos = 100;
+%Load test preprocessed data
+pre = load('./testdata/test_preprocess_spline_short.mat');
+data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
+model = MLE_glmfit(data, const);
+```
 
--Compute Granger causality for a recording
--Estimate a range of intentional and non-intentional GLMs
--Use raised cosine basis vectors for spike history filters
--Added concept of experiment stuctures, allowing the study of entire year's worth of recordings with createExperiment, setupExperiment and runExperiment functions
+Beyond that, to further setup your environment to be able to redo all analyses performed in our paper, requires:
 
-0.2 -- Updated to include code to run LN model, and a basic version of a GLM model
+1. acquiring the data. Once acquired its path can be added to `startup.m`. By default it looks for Blackrock .nev and .ns3 files in ./blackrock and Labview experiment data files in ./labview. 
+2. Setting up a/having access to our SQL database to store results of analyses for the thousands of recordings
 
-0.1 -- contains a whole bunch of functions to compute correlation (corr_*.m) bw
-firing rate and torque (cursor) position/vel/accel. Not needed, as superseded
-by correlation_nev.m. Will be dropped from future versions.
-
+Please contact the authors for more information on each of these. See also ./accessing_data.txt for information on the format of matlab, labview and BlackRock files.
