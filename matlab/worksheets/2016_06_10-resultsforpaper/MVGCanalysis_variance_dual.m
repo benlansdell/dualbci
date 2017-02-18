@@ -97,18 +97,18 @@ end
 %%%%%%%%%%%
 
 figure
-colormap(jet)
+colormap(parula)
 x = gc1; y = gc2; c = performance;
 scatter(x,y,[],c, 'filled');
 hold on
 flm = fitlm([x',y'], c')
 %plot([0 .4], [0 .4], 'k')
-%ylim([0 1.2])
-%xlim([0 1.2])
+ylim([0 1.2])
+xlim([0 1.2])
 xlabel('Granger unit 1')
 ylabel('Granger unit 2')
 title('Performance (successes/sec; dual control)')
-caxis([0 .4])
+%caxis([0 .4])
 colorbar
 saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/grangerVsPerformance_dual.eps')
 
@@ -200,15 +200,17 @@ plot([mseconstBC1, mseconstBC2], [gc1, gc2], '.')
 figure
 colormap(parula)
 x = mseconst1; y = mseconst2; c = performance; a = 100*performance+20;
+z = performance;
+save('./worksheets/2016_06_10-resultsforpaper/varianceVsPerformance.mat', 'mseconst1', 'mseconst2', 'performance')
 scatter(x,y,[],c, 'filled');
 hold on
-plot([0 .4], [0 .4], 'k')
-%ylim([0 2])
-%xlim([0 2])
+%plot([0 .4], [0 .4], 'k')
+ylim([0 2])
+xlim([0 2])
 xlabel('MSE out Unit 1')
 ylabel('MSE out Unit 2')
 title('Performance (successes/sec)')
-caxis([0 .4])
+%caxis([0 .4])
 colorbar
 saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformance_dual.eps')
 

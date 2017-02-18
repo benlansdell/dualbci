@@ -19,7 +19,7 @@ addpath_recurse([homedir 'lansdell/projects/bci/matlab/models']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/eval']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/worksheets']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/other/pillow_code_GLM_v1']);
+%addpath_recurse([homedir 'lansdell/projects/bci/matlab/other/pillow_code_GLM_v1']);
 addpath_recurse([homedir 'lansdell/projects/bci/matlab/sql']);
 %addpath(['/home/lansdell/projects/bci/matlab/worksheets/2016_06_10-resultsforpaper']);
 %nev files, labview files, respectively
