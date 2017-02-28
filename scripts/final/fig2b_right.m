@@ -4,7 +4,7 @@ conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
 %Tuning angles, BCI units (velocity)
 bci_data = fetch(exec(conn, ['SELECT (fl1.dir+fl3.dir)/2, fl2.dir, fl5.dir, et1.`tuning_type`, rec1.`successrate`, rec2.`successrate`, '...
 ' IF(EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit), '...
-' 1, 0) FROM '...
+' 1, 0), fl3.dir FROM '...
 '`experiment_tuning` et1 '...
 'INNER JOIN `fits` flin1 '...
 'ON flin1.`nev file` = et1.`manualrecording`'...
@@ -31,6 +31,7 @@ bci_data = fetch(exec(conn, ['SELECT (fl1.dir+fl3.dir)/2, fl2.dir, fl5.dir, et1.
 'AND fl1.r2 > .01 AND fl3.r2 > .01']));
 
 all_r2 = cell2mat(bci_data.Data(:,1:3));
+mc2dir = cell2mat(bci_data.Data(:,end));
 bcituningtype = cell2mat(bci_data.Data(:,4));
 bciperformance = 50*cell2mat(bci_data.Data(:,5:6))+10;
 bciunit = cell2mat(bci_data.Data(:,7));
@@ -45,6 +46,10 @@ dof_nonbci = sum(nonbci)-1;
 %1 = mc1 
 %2 = bc
 %3 = dc 
+
+mc1mc2_difftheta = abs(center_angles(all_r2(rot,1), mc2dir(rot,1)));
+bci_mc1mc2_difftheta = abs(center_angles(all_r2(bci,1), mc2dir(bci,1)));
+nonbci_mc1mc2_difftheta = abs(center_angles(all_r2(nonbci,1), mc2dir(nonbci,1)));
 
 mc1bc_difftheta = abs(center_angles(all_r2(rot,1), all_r2(rot,2)));
 mcdc_difftheta = abs(center_angles(all_r2(rot,1), all_r2(rot,3)));
@@ -65,18 +70,16 @@ figure
 bar(180*bcidifftheta/pi)
 hold on 
 errorbar(180*bcidifftheta/pi, 180*stdbcidifftheta/pi)
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangleBCI-nonBCI-bargraph.eps')
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangleBCI-nonBCI-bargraph-rotated.eps')
 
-figure 
-subplot(1,2,1)
-grp = [zeros(size(bci_mc1bc_difftheta)); ones(size(nonbci_mc1bc_difftheta))];
-boxplot([180*bci_mc1bc_difftheta/pi; 180*nonbci_mc1bc_difftheta/pi], grp)
-ylim([0 180])
+mu_mc1mc2_difftheta =mean(mc1mc2_difftheta);
+std_mc1mc2_difftheta = std(mc1mc2_difftheta);
 
-subplot(1,2,2)
-grp = [zeros(size(bci_mcdc_difftheta)); ones(size(nonbci_mcdc_difftheta))];
-boxplot([180*bci_mcdc_difftheta/pi; 180*nonbci_mcdc_difftheta/pi], grp)
-ylim([0 180])
+mu_bci_mc1mc2_difftheta = mean(bci_mc1mc2_difftheta);
+std_bci_mc1mc2_difftheta = std(bci_mc1mc2_difftheta)
+
+mu_nonbci_mc1mc2_difftheta = mean(nonbci_mc1mc2_difftheta);
+std_nonbci_mc1mc2_difftheta = std(nonbci_mc1mc2_difftheta)
 
 mu_bci_mc1bc_difftheta = mean(bci_mc1bc_difftheta);
 mu_bci_mcdc_difftheta = mean(bci_mcdc_difftheta);
@@ -97,9 +100,6 @@ mu_nonbci_bcdc_difftheta = mean(nonbci_bcdc_difftheta);
 %[h_mcdc_nonbci, p_mcdc_nonbci] = ttest2(nonbci_mc1mc2_difftheta, nonbci_mcdc_difftheta, 0.05);
 %[h_bcdc_nonbci, p_bcdc_nonbci] = ttest2(nonbci_mc1mc2_difftheta, nonbci_bcdc_difftheta, 0.05);
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangleBCI-nonBCI-boxplot.eps')
-
-
 corrsbci(1) = corr(all_r2(bci,1), translate_angles(all_r2(bci,1), all_r2(bci,2)));
 corrsbci(2) = corr(all_r2(bci,1), translate_angles(all_r2(bci,1), all_r2(bci,3)));
 corrsbci(3) = corr(all_r2(bci,2), translate_angles(all_r2(bci,2), all_r2(bci,3)));
@@ -108,30 +108,17 @@ corrsnonbci(1) = corr(all_r2(nonbci,1), translate_angles(all_r2(nonbci,1), all_r
 corrsnonbci(2) = corr(all_r2(nonbci,1), translate_angles(all_r2(nonbci,1), all_r2(nonbci,3)));
 corrsnonbci(3) = corr(all_r2(nonbci,2), translate_angles(all_r2(nonbci,2), all_r2(nonbci,3)));
 
-clf
-cc = ones(size(bci));
-cc(bci) = 1;
-cc(nonbci) = 2;
-colors = [1 0 0; 0 0 1];
-c = [];
-for idx = 1:size(cc, 1);
-	c(idx,1:3) = colors(cc(idx),:);
-end
-colormap(colors)
-subplot(2,2,1)
-subplot(2,3,1)
-scatter(all_r2(rot,1), translate_angles(all_r2(rot,1), all_r2(rot,2)), [], cc(rot,:))
-xlabel('\theta MC1')
-ylabel('\theta BC1')
-title(['corr bci: ' num2str(corrsbci(1)) ' corr nonbci: ' num2str(corrsnonbci(1))])
-subplot(2,2,2)
-scatter(all_r2(rot,1), translate_angles(all_r2(rot,1), all_r2(rot,3)), [], cc(rot,:))
-xlabel('\theta MC1')
-ylabel('\theta DC')
-title(['corr bci: ' num2str(corrsbci(2)) ' corr nonbci: ' num2str(corrsnonbci(2))])
-subplot(2,2,3)
-scatter(all_r2(rot,2), translate_angles(all_r2(rot,2), all_r2(rot,3)), [], cc(rot,:))
-xlabel('\theta BC1')
-ylabel('\theta DC')
-title(['corr bci: ' num2str(corrsbci(3)) ' corr nonbci: ' num2str(corrsnonbci(3))])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangleVR2R2out.eps', 'eps', [10 6])
+%Proportion of brain control units whose absolute change in angle is above 
+%2 standard deviations compared to the absolute changes observed in MC-MC2
+sum(mc1bc_difftheta > mu_mc1mc2_difftheta + 2*std_mc1mc2_difftheta)
+
+100-100*sum(bci_mc1bc_difftheta > mu_mc1mc2_difftheta + 2*std_mc1mc2_difftheta)/size(bci_mc1bc_difftheta,1)
+100-100*sum(nonbci_mc1bc_difftheta > mu_mc1mc2_difftheta + 2*std_mc1mc2_difftheta)/size(nonbci_mc1bc_difftheta,1)
+
+%Proportion of dual control units whose absolute change in angle is above 
+%2 standard deviations compared to the absolute changes observed in MC-MC2
+sum(mcdc_difftheta > mu_mc1mc2_difftheta + 2*std_mc1mc2_difftheta)
+
+100-100*sum(bci_mcdc_difftheta > mu_mc1mc2_difftheta + 2*std_mc1mc2_difftheta)/size(bci_mcdc_difftheta,1)
+100-100*sum(nonbci_mcdc_difftheta > mu_mc1mc2_difftheta + 2*std_mc1mc2_difftheta)/size(nonbci_mcdc_difftheta,1)
+

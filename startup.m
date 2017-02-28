@@ -12,20 +12,18 @@ end
 
 %opengl software
 
-addpath([homedir 'lansdell/projects/bci/matlab/functions']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/functions']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/preprocess']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/models']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/fitting']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/eval']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/worksheets']);
-%addpath_recurse([homedir 'lansdell/projects/bci/matlab/other/pillow_code_GLM_v1']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/sql']);
-%addpath(['/home/lansdell/projects/bci/matlab/worksheets/2016_06_10-resultsforpaper']);
+addpath([homedir 'lansdell/projects/bci/functions']);
+addpath_recurse([homedir 'lansdell/projects/bci/functions']);
+addpath_recurse([homedir 'lansdell/projects/bci/preprocess']);
+addpath_recurse([homedir 'lansdell/projects/bci/models']);
+addpath_recurse([homedir 'lansdell/projects/bci/fitting']);
+addpath_recurse([homedir 'lansdell/projects/bci/eval']);
+addpath_recurse([homedir 'lansdell/projects/bci/worksheets']);
+addpath_recurse([homedir 'lansdell/projects/bci/sql']);
 %nev files, labview files, respectively
-addpath([homedir '/lansdell/projects/bci/matlab/blackrock'], [homedir '/lansdell/projects/bci/matlab/labview']);
+addpath([homedir '/lansdell/projects/bci/blackrock'], [homedir '/lansdell/projects/bci/labview']);
 addpath_recurse([homedir 'lansdell/matlab/schmidt']);
-addpath_recurse([homedir 'lansdell/projects/bci/matlab/gpfa']);
+addpath_recurse([homedir 'lansdell/projects/bci/gpfa']);
 
 addpath([homedir '/lansdell/matlab/mvgc_v1.0']);
 addpath([homedir '/lansdell/matlab/te_matlab_0.5/']);

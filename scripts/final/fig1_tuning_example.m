@@ -1,4 +1,4 @@
-nevfile = './testdata/20130117SpankyUtah001.nev';
+nevfile = './blackrock/20130117SpankyUtah001.nev';
 binsize = 0.05;
 offset = -0.075;
 threshold = 5;
@@ -66,4 +66,4 @@ for idx = 1:length(toplot)
 	title(num2str(processed.unitnames{i}))
 end	
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuning_example.eps')
+saveplot(gcf, './figures/fig_1tuning_example.eps')
