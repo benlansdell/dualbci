@@ -24,7 +24,7 @@ errorbar([mean((dcontrolMCBC)), mean((dnoncontrolMCBC)), mean((dcontrolMCDC)), m
 	[std(dcontrolMCBC)/sqrt(length(dcontrolMCBC)), std(dnoncontrolMCBC)/sqrt(length(dnoncontrolMCBC)), std(dcontrolMCDC)/sqrt(length(dcontrolMCDC)), std(dnoncontrolMCDC)/sqrt(length(dnoncontrolMCDC))]);
 ylim([-0.00018, 0])
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_rotated_signed_sem_control+noncontrol.eps')
+saveplot(gcf, './figures/TE-decoupling-bargraph_bootstrap_rotated_signed_sem_control+noncontrol.eps')
 
 figure
 groups = [ones(size(dcontrolMCBC)); 2*ones(size(dnoncontrolMCBC));...
@@ -35,4 +35,4 @@ set(h(7,:), 'Visible', 'off')
 ylim([-0.0005, 0.0005])
 
 title(['(rank sum) MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-value: ' num2str(pMCDCrs)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-boxplot_bootstrap_rotated_signed_sem_control+noncontrol.eps')
+saveplot(gcf, './figures/TE-decoupling-boxplot_bootstrap_rotated_signed_sem_control+noncontrol.eps')

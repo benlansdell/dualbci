@@ -110,7 +110,7 @@ ylabel('Granger unit 2')
 title('Performance (successes/sec; dual control)')
 %caxis([0 .4])
 colorbar
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/grangerVsPerformance_dual.eps')
+saveplot(gcf, './figures/grangerVsPerformance_dual.eps')
 
 figure
 colormap(jet)
@@ -127,14 +127,14 @@ ylabel('\Delta Granger (Brain control)')
 title(['R^2: ' num2str(r2)])
 %caxis([0 .4])
 %colorbar
-saveplot(gcf, ['./worksheets/2016_06_10-resultsforpaper/Const_mseoutVsGranger_dual_trendline.eps'])
+saveplot(gcf, ['./figures/Const_mseoutVsGranger_dual_trendline.eps'])
 
 
 figure
 colormap(parula)
 x = mseconst1; y = mseconst2; c = performance; a = 100*performance+20;
 z = performance;
-save('./worksheets/2016_06_10-resultsforpaper/varianceVsPerformance.mat', 'mseconst1', 'mseconst2', 'performance')
+save('./figures/varianceVsPerformance.mat', 'mseconst1', 'mseconst2', 'performance')
 scatter(x,y,[],c, 'filled');
 hold on
 %plot([0 .4], [0 .4], 'k')
@@ -145,4 +145,4 @@ ylabel('MSE out Unit 2')
 title('Performance (successes/sec)')
 %caxis([0 .4])
 colorbar
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/varianceVsPerformance_dual.eps')
+saveplot(gcf, './figures/varianceVsPerformance_dual.eps')

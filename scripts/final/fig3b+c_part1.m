@@ -356,6 +356,6 @@ title(['MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-val
 errorbar([mean(dcotunedMCBC), mean(dotherMCBC), mean(dcotunedMCDC), mean(dotherMCDC)],...
 	[std(dcotunedMCBC)/sqrt(length(dcotunedMCBC)), std(dotherMCBC)/sqrt(length(dotherMCBC)), std(dcotunedMCDC)/sqrt(length(dcotunedMCDC)), std(dotherMCDC)/sqrt(length(dotherMCDC))]);
 
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_rotated_signed_sem.eps')
+saveplot(gcf, './figures/TE-decoupling-bargraph_bootstrap_rotated_signed_sem.eps')
 
 save('bcitTEchanges_bootstrap_rotated.mat')

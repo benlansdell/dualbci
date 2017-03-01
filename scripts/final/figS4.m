@@ -1,6 +1,6 @@
 %Compute sum of granger scores for out degree for given unit and nev file
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+conn = database('',databaseuser, databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 modelID = 3;
 blackrock = './blackrock/';
 %Fetch paramcode to load
@@ -91,7 +91,7 @@ plot(wgts, presults, [0 1], [0 1], 'k:', wgts, presults+stdresults, 'r--', wgts,
 xlabel('BCI weight of unit A')
 ylabel('Proportion of total GC score of unit A')
 legend('Simulation')
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/cursorsimresults.eps')
+saveplot(gcf, './figures/cursorsimresults.eps')
 %Looks good enough...
 
 %However, the other way to do this is to take, at each time step, a random choice as to whether to

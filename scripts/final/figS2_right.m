@@ -68,4 +68,4 @@ figure
 bar(180*bcidifftheta/pi)
 hold on 
 errorbar(180*bcidifftheta/pi, 180*stdbcidifftheta/pi)
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangleBCI-nonBCI-bargraph-unrotated.eps')
+saveplot(gcf, './figures/tuningangleBCI-nonBCI-bargraph-unrotated.eps')

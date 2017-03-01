@@ -1,5 +1,5 @@
 modelID = 34;
-basename = './worksheets/2016_02_07-GPFApaired/run';
+basename = './gpfa_data/run';
 
 conn = db_conn();
 paramcode = exec(conn, ['SELECT `description` FROM models WHERE modelID = ' num2str(modelID)]);
@@ -304,7 +304,7 @@ ylabel('performance (successes/minute)')
 xlabel('orthogonal   non-orthogonal')
 title(['2 sided t test p-val' num2str(p2)])
 ylim([0 15])
-saveplot(gcf, './worksheets/2016_02_07-GPFApaired/analyseGPFA_boxplotBCperf_paMCBCI.eps')
+saveplot(gcf, './figures/analyseGPFA_boxplotBCperf_paMCBCI.eps')
 clf
 hold on 
 bar([60*mean(DCperforth), 60*mean(DCperfnonorth)])
@@ -313,4 +313,4 @@ ylabel('performance (successes/minute)')
 xlabel('orthogonal   non-orthogonal')
 title(['2 sided t test p-val' num2str(p1)])
 ylim([0 15])
-saveplot(gcf, './worksheets/2016_02_07-GPFApaired/analyseGPFA_boxplotDCperf_paMCBCI.eps')
+saveplot(gcf, './figures/analyseGPFA_boxplotDCperf_paMCBCI.eps')

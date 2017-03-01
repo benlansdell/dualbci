@@ -1,64 +1,47 @@
-%Charlie's scripts uses these global variables...
-%global metaData matpath nevpath
-%matpath = '/home/lansdell/projects/bci/matlab/labview';
-%nevpath = '/home/lansdell/projects/bci/matlab/blackrock';
-%metaData = '/home/lansdell/projects/bci/matlab/labview';
-
 if ismac
 	homedir = '/Users/';
 else
 	homedir = '/home/';
 end
 
-%opengl software
+%Change this to local database
+databaseuser = 'XXX';
+databasepwd = 'XXX';
+databaseurl = 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db';
 
-addpath([homedir 'lansdell/projects/bci/functions']);
-addpath_recurse([homedir 'lansdell/projects/bci/functions']);
-addpath_recurse([homedir 'lansdell/projects/bci/preprocess']);
-addpath_recurse([homedir 'lansdell/projects/bci/models']);
-addpath_recurse([homedir 'lansdell/projects/bci/fitting']);
-addpath_recurse([homedir 'lansdell/projects/bci/eval']);
-addpath_recurse([homedir 'lansdell/projects/bci/worksheets']);
-addpath_recurse([homedir 'lansdell/projects/bci/sql']);
-%nev files, labview files, respectively
-addpath([homedir '/lansdell/projects/bci/blackrock'], [homedir '/lansdell/projects/bci/labview']);
-addpath_recurse([homedir 'lansdell/matlab/schmidt']);
-addpath_recurse([homedir 'lansdell/projects/bci/gpfa']);
-
-addpath([homedir '/lansdell/matlab/mvgc_v1.0']);
-addpath([homedir '/lansdell/matlab/te_matlab_0.5/']);
-mvgcstartup
-
+%Add database jar file...
 javaaddpath([homedir 'lansdell/matlab/mysql-connector-java-5.1.35-bin.jar']);
-%javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
-%javaaddpath([matlabroot '/java/jar/mysql-connector-java-5.1.35-bin.jar']);
 
-%Add extra color
-%my_ColorOrder = [   0.00000   0.00000   1.00000;
-%   0.00000   0.50000   0.00000;
-%   1.00000   0.00000   0.00000;
-%   0.00000   0.75000   0.75000;
-%   0.75000   0.00000   0.75000;
-%   0.75000   0.75000   0.00000;
-%   0.25000   0.25000   0.25000;
-%   0.00000   0.90000   0.00000;
-%   1.00000   0.50000   0.00000;
-%   0.95000   0.95000   0.00000;
-%   0.60000   0.60000   0.60000;
-%   0.00000   0.00000   0.00000;
-%   1.00000   0.00000   1.00000];
-%set(0,'DefaultAxesColorOrder',my_ColorOrder);
+localdir = [homedir 'lansdell/projects/bci'];
+matlabdir = [homedir 'lansdell/matlab'];
 
-% Change default axes fonts.
-%set(0,'DefaultAxesFontName', 'Arial')
-%set(0,'DefaultAxesFontSize', 10)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Add paths to other packages%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Change default text fonts.
-%set(0,'DefaultTextFontname', 'Arial')
-%set(0,'DefaultTextFontSize', 10)
+addpath([localdir '/functions']);
+addpath_recurse([localdir '/functions']);
+addpath_recurse([localdir '/preprocess']);
+addpath_recurse([localdir '/models']);
+addpath_recurse([localdir '/fitting']);
+addpath_recurse([localdir '/eval']);
+addpath_recurse([localdir '/scripts']);
+addpath_recurse([localdir '/sql']);
 
-% Change default line width
-%set(0,'DefaultLineLineWidth',1.5)
+%nev files, labview files, respectively
+addpath([localdir '/blackrock'], [localdir '/labview']);
+
+addpath_recurse([matlabdir '/schmidt']);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Add paths to other packages%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+addpath([matlabdir '/mvgc_v1.0']);
+addpath_recurse([matlabdir '/gpfa']);
+addpath([matlabdir '/te_matlab_0.5/']);
+
+mvgcstartup
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %GPFA startup....

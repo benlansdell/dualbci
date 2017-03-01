@@ -97,4 +97,4 @@ scatter(180/pi*all_r2(rot,2), 180/pi*translate_angles(all_r2(rot,2), all_r2(rot,
 xlabel('\theta BC1')
 ylabel('\theta DC')
 title(['corr bci: ' num2str(corrsbci(5)) ' corr nonbci: ' num2str(corrsnonbci(5))])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangle-bciVnonbci-rotated.eps', 'eps', [10 6])
+saveplot(gcf, './figures/tuningangle-bciVnonbci-rotated.eps', 'eps', [10 6])

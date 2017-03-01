@@ -131,4 +131,4 @@ errorbar(180*[mean(mc1mc2_difftheta), mean(mc1bc_difftheta), mean(mcdc_difftheta
 	180*[std(mc1mc2_difftheta), std(mc1bc_difftheta), std(mcdc_difftheta)]/pi)
 ylabel('|\Delta \theta|')
 ylim([0 120])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangle-conditions-bargraph-rotated.eps')
+saveplot(gcf, './figures/tuningangle-conditions-bargraph-rotated.eps')

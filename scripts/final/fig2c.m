@@ -101,7 +101,7 @@ figure
 bar([mu_bci_mc1bc_diffsize, mu_nonbci_mc1bc_diffsize, mu_bci_mcdc_diffsize, mu_nonbci_mcdc_diffsize])
 hold on 
 errorbar([mu_bci_mc1bc_diffsize, mu_nonbci_mc1bc_diffsize, mu_bci_mcdc_diffsize, mu_nonbci_mcdc_diffsize], [std_bci_mc1bc_diffsize, std_nonbci_mc1bc_diffsize, std_bci_mcdc_diffsize, std_nonbci_mcdc_diffsize])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningstrengthBCI-nonBCI-bargraph-rotated.eps')
+saveplot(gcf, './figures/tuningstrengthBCI-nonBCI-bargraph-rotated.eps')
 
 %correlations
 corrsbci(1) = corr(all_r2(bci,1), all_r2(bci,2));
@@ -145,4 +145,4 @@ scatter(all_r2(rot,2), all_r2(rot,3), [], cc)
 xlabel('strength BC1')
 ylabel('strength DC')
 title(['corr bci: ' num2str(corrsbci(3)) ' corr nonbci: ' num2str(corrsnonbci(3))])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningstrengthBCI-nonBCI-scatter-rotated.eps')
+saveplot(gcf, './figures/tuningstrengthBCI-nonBCI-scatter-rotated.eps')

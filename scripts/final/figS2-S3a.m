@@ -131,7 +131,7 @@ errorbar(180*[mean(mc1mc2_difftheta), mean(mc1bc_difftheta), mean(mcdc_difftheta
 	180*[std(mc1mc2_difftheta), std(mc1bc_difftheta), std(mcdc_difftheta)]/pi)
 ylabel('|\Delta \theta|')
 ylim([0 120])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangle-conditions-bargraph-unrotated.eps')
+saveplot(gcf, './figures/tuningangle-conditions-bargraph-unrotated.eps')
 
 corrsdir(1) = corr(all_r2(unrot,1), translate_angles(all_r2(unrot,1), all_r2(unrot,2)));
 corrsdir(2) = corr(all_r2(unrot,1), translate_angles(all_r2(unrot,1), all_r2(unrot,3)));
@@ -186,7 +186,7 @@ scatter(180/pi*all_r2(unrot,2), 180/pi*translate_angles(all_r2(unrot,2), all_r2(
 xlabel('\theta BC1')
 ylabel('\theta DC')
 title(['corr bci: ' num2str(corrsbci(5)) ' corr nonbci: ' num2str(corrsnonbci(5))])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/tuningangle-bciVnonbci-unrotated.eps', 'eps', [10 6])
+saveplot(gcf, './figures/tuningangle-bciVnonbci-unrotated.eps', 'eps', [10 6])
 
 
 %Perform stats tests...
