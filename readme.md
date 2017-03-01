@@ -1,4 +1,4 @@
-# Analysis of dual control BCI target pursuit task
+# Code supporting "Reconfiguring motor circuits for a joint manual and BCI task"
 
 Ben Lansdell, Ivana Milovanovic 2017
 
