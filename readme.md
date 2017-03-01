@@ -1,6 +1,6 @@
 # Analysis of dual control BCI target pursuit task
 
-Ben Lansdell, Ivana Milovanovic. 2016
+Ben Lansdell, Ivana Milovanovic 2017
 
 MATLAB code for studying multi-electrode array recording data from monkey as performs manual, brain control and dual control target pursuit task. Data from [Moritz lab](http://depts.washington.edu/moritlab/), experiment setup by Charlie Matlack. 
 
@@ -16,6 +16,38 @@ A full working environment requires the following:
 * [MySQL java driver](http://dev.mysql.com/downloads/connector/j/)
 
 Depending on your usage, only a subset of these may be required. See usage section below.
+
+## Quick Setup
+
+1. Edit startup.m for your system particulars
+2. Start MATLAB in this base directory. startup.m should add necessary paths. Otherwise, run startup.m separately.
+3. The simplest use case is:
+
+* Making plots presented in paper:
+  See scripts in ./scripts
+
+## More detailed usage
+
+Beyond that, you'll need to set some paths:
+
+1. If MATLAB is started in this directory then `startup.m` will automatically add the above directories to the path. If not, make sure `startup.m` is run to setup paths and toolboxes, etc. You'll need to open `startup.m` to check the paths to different toolboxes are set correctly.
+
+2. The next simplest use case is to use the GLM code to fit/interpret different models:
+```
+const = 'on';
+nK_sp = 100; 
+nK_pos = 100;
+%Load test preprocessed data
+pre = load('./testdata/test_preprocess_spline_short.mat');
+data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
+model = MLE_glmfit(data, const);
+```
+Beyond that, to further setup your environment to be able to redo all analyses performed in our paper, requires:
+
+1. acquiring the data -- details in the paper. Once acquired its path can be added to `startup.m`. By default it looks for Blackrock .nev and .ns3 files in ./blackrock and Labview experiment data files in ./labview. 
+2. Setting up a/having access to our SQL database to store results of analyses for the thousands of recordings
+
+Please contact the authors for more information on each of these. See also ./accessing_data.txt for information on the format of matlab, labview and BlackRock files.
 
 ## Code
 
@@ -63,31 +95,3 @@ Various support functions
 
 The size of the dataset and number of analyses performed necessitated managing fits and results in a SQL database. Here are functions to add fits and other analyses to a SQL database. Please contact us directly if you'd like to access our database containing our stored analyses and results, or would like to setup something similar yourself. 
 
-## Ok enough details, how do I use this:
-
-The simplest use case is:
-
-* Making plots presented in paper:
-  See scripts in ./scripts
-
-Beyond that, you'll need to set some paths:
-
-1. If MATLAB is started in this directory then `startup.m` will automatically add the above directories to the path. If not, make sure `startup.m` is run to setup paths and toolboxes, etc. You'll need to open `startup.m` to check the paths to different toolboxes are set correctly.
-
-2. The next simplest use case is to use the GLM code to fit/interpret different models:
-```
-const = 'on';
-nK_sp = 100; 
-nK_pos = 100;
-%Load test preprocessed data
-pre = load('./testdata/test_preprocess_spline_short.mat');
-data = filters_sp_pos(pre.processed, nK_sp, nK_pos);
-model = MLE_glmfit(data, const);
-```
-
-Beyond that, to further setup your environment to be able to redo all analyses performed in our paper, requires:
-
-1. acquiring the data. Once acquired its path can be added to `startup.m`. By default it looks for Blackrock .nev and .ns3 files in ./blackrock and Labview experiment data files in ./labview. 
-2. Setting up a/having access to our SQL database to store results of analyses for the thousands of recordings
-
-Please contact the authors for more information on each of these. See also ./accessing_data.txt for information on the format of matlab, labview and BlackRock files.
