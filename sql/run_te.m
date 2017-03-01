@@ -11,8 +11,8 @@ paramcode = fetch(paramcode);
 paramcode = paramcode.Data{1};
 
 %Fetch each pair of nev files to run
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 toprocess = exec(conn, ['SELECT `1DBCrecording`, `manualrecording`, `manualrecordingafter`, `dualrecording`, `experiment_id` FROM experiment_tuning']);
 toprocess = fetch(toprocess);
 toprocess = toprocess.Data;

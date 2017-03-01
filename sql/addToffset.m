@@ -4,7 +4,8 @@
 %%%%%%%%%%%%%
 
 %Add missing columns to recordings table
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 tablename = 'recordings';
 
 %Toffset
@@ -45,7 +46,8 @@ end
 
 %Performance. Trial info.
 %Add missing columns to recordings table
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 tablename = 'trials';
 colnames = {'`nev file`', '`labview file`', '`start`', '`end`', '`duration`', '`success`', '`valid`', '`startPosX`', '`startPosY`', '`targetPosX`', '`targetPosY`'};
 nC = length(colnames);
@@ -109,7 +111,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Add BCI units to recordings%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 
 tablename = 'recordings';
 
@@ -149,7 +152,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 threshold = 5;
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 tablename = 'recordings';
 
 %Toffset
@@ -218,7 +222,8 @@ end
 
 testnev = '20121205SpankyUtah001.nev';
 
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 tablename = 'intertrials';
 colnames = {'`nev file`', '`start`', '`end`', '`duration`'};
 

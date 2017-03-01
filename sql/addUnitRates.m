@@ -1,4 +1,5 @@
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', 'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db')
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 threshold = 0;
 toprocess = exec(conn,'select `nev file` from `recordings` WHERE `nev date` > "2013-12-06"');
 toprocess = fetch(toprocess);

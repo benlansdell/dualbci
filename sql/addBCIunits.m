@@ -1,6 +1,6 @@
 %Add missing columns to bci_units table
-conn = database('','root','Fairbanks1!','com.mysql.jdbc.Driver', ...
-	'jdbc:mysql://fairbanks.amath.washington.edu:3306/spanky_db');
+conn = database('',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 tablenameUnits = 'bci_units';
 colnames = {'ID', 'unit', 'direction', 'angle'};
 
