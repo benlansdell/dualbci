@@ -1,22 +1,26 @@
-%Compute sum of granger scores for out degree for given unit and nev file
-conn = database('',databaseuser, databasepwd,'com.mysql.jdbc.Driver', ...
-	databaseurl);
-modelID = 3;
-blackrock = './blackrock/';
-%Fetch paramcode to load
-paramcode = exec(conn, ['SELECT `description` FROM models WHERE modelID = ' num2str(modelID)]);
-paramcode = fetch(paramcode);
-paramcode = paramcode.Data{1};
-eval(paramcode);
+%%Compute sum of granger scores for out degree for given unit and nev file
+%conn = database('',databaseuser, databasepwd,'com.mysql.jdbc.Driver', ...
+%	databaseurl);
+%modelID = 3;
+%blackrock = './blackrock/';
+%%Fetch paramcode to load
+%paramcode = exec(conn, ['SELECT `description` FROM models WHERE modelID = ' num2str(modelID)]);
+%paramcode = fetch(paramcode);
+%paramcode = paramcode.Data{1};
+%eval(paramcode);
+%
+%%Connections to ipsi units
+%%Pick a bunch of pairs of BCI neurons from curated dataset
+%data = exec(conn, ['SELECT bc.`ID`, bc.`unit`, bc2.`unit` FROM `bci_units` bc '...
+%'INNER JOIN experiment_tuning et '...
+%'ON et.`1DBCrecording` = bc.`ID` '...
+%'INNER JOIN `bci_units` bc2 '... 
+%'ON bc2.`ID` = bc.`ID` AND bc2.`unit` != bc.`unit` '...
+%'GROUP BY bc.`ID`']);
 
-%Connections to ipsi units
-%Pick a bunch of pairs of BCI neurons from curated dataset
-data = exec(conn, ['SELECT bc.`ID`, bc.`unit`, bc2.`unit` FROM `bci_units` bc '...
-'INNER JOIN experiment_tuning et '...
-'ON et.`1DBCrecording` = bc.`ID` '...
-'INNER JOIN `bci_units` bc2 '... 
-'ON bc2.`ID` = bc.`ID` AND bc2.`unit` != bc.`unit` '...
-'GROUP BY bc.`ID`']);
+%save('./scripts/figS4.mat')
+load('./scripts/figS4.mat')
+
 data = fetch(data);
 data = data.Data;
 nR = size(data,1);
