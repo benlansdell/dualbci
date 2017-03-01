@@ -93,5 +93,5 @@ Various support functions
 
 ## In sql:
 
-The size of the dataset and number of analyses performed necessitated managing fits and results in a SQL database. Here are functions to add fits and other analyses to a SQL database. Please contact us directly if you'd like to access our database containing our stored analyses and results, or would like to setup something similar yourself. 
+The size of the dataset and number of analyses performed necessitated managing fits and results in a SQL database. Here are functions to add fits and other analyses to a SQL database. Details on obtaining the .sql file can be found in the publication.
 
