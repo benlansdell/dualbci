@@ -21,10 +21,7 @@ Depending on your usage, only a subset of these may be required. See usage secti
 
 1. Edit startup.m for your system particulars
 2. Start MATLAB in this base directory. startup.m should add necessary paths. Otherwise, run startup.m separately.
-3. The simplest use case is:
-
-* Making plots presented in paper:
-  See scripts in ./scripts
+3. To make the plots presented in paper see the scripts in ./scripts
 
 ## More detailed usage
 
