@@ -15,6 +15,8 @@ dcotuned = [];
 
 nR = 50;
 
+rng(15);
+
 for rep = 1:nR
 	display(['rep = ' num2str(rep)])
 	for idx = 1:length(files)
@@ -39,8 +41,8 @@ for rep = 1:nR
 		'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
 		'AND fl1.r2 > 0.0 '...
 		'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
-		'AND et1.`manualrecording` = "' mcfile '"']));
-	%	'AND et1.`tuning_type` = 5']));
+		'AND et1.`manualrecording` = "' mcfile '" '...
+		'AND (et1.`tuning_type` = 1 OR et1.`tuning_type` = 3 OR et1.`tuning_type` = 4)']));
 		if strcmp(all_data.Data, 'No Data')
 			continue 
 		end
@@ -52,30 +54,18 @@ for rep = 1:nR
 		tuningtype = cell2mat(all_data.Data(:,4));
 		otherunits = all_data.Data(:,5);
 		
-		%BCI unit
-		all_data = fetch(exec(conn, ['SELECT fl1.dir, fl2.dir, fl5.dir, flin1.unit FROM '...
-		'`experiment_tuning` et1 '...
-		'INNER JOIN `fits` flin1 '...
-		'ON flin1.`nev file` = et1.`manualrecording`'...
-		'INNER JOIN `fits_linear` fl1 '...
-		'ON flin1.id = fl1.id '...
-		'INNER JOIN `fits` flin2 '...
-		'ON flin2.`nev file` = et1.`1DBCrecording`'...
-		'INNER JOIN `fits_linear` fl2 '...
-		'ON flin2.id = fl2.id '...
-		'INNER JOIN `fits` flin5 '...
-		'ON flin5.`nev file` = et1.`dualrecording`'...
-		'INNER JOIN `fits_linear` fl5 '...
-		'ON flin5.id = fl5.id '...
-		'WHERE flin1.modelID = 30 AND flin2.modelID = 30 AND flin5.modelID = 30 ' ...
-		'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
-		'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
-		'AND et1.`manualrecording` = "' mcfile '" '...
-		'LIMIT 1']));
-		%'AND et1.`tuning_type` = 5 '...
-		bci_theta = cell2mat(all_data.Data(:,1:3));
-		bci_unit = all_data.Data(:,4);
-		nU = size(all_theta,1);
+		nU = size(otherunits, 1);
+		nonbciidx = randsample(nU,1);
+		otheridx = setdiff(1:nU, nonbciidx);
+
+		bci_theta = all_theta(nonbciidx,:);
+		bci_unit = otherunits(nonbciidx);
+
+		all_theta = all_theta(otheridx,:);
+		tuningtype = tuningtype(otheridx);
+		otherunits = otherunits(otheridx);
+
+		nU = nU - 1;
 		
 		%Pick cotuned units to BCI units in MC
 		diff_MC_theta = cos(bci_theta(1) - all_theta(:,1));
@@ -110,7 +100,7 @@ for rep = 1:nR
 			'ON fconstMC.`nev file` = et.`manualrecording` AND fconstMC.unit = fMC.unit '...
 			'WHERE fMC.unit = fBC.unit AND egMC.fromunit = egBC.fromunit AND fMC.modelID = 37 AND fBC.modelID = 37 AND fMC.analyses_id = fBC.analyses_id '...
 			'AND fconstBC.modelID = 31 AND fconstMC.modelID = 31 '...
-			'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`1DBCrecording` AND bci.unit = fMC.unit) '...
+			'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`1DBCrecording` AND bci.unit = fMC.unit) '...
 			'AND egMC.fromunit = "' unit '" '...
 			'AND fMC.unit = "' bci_unit{1} '" '...
 			'AND et.`manualrecording` = "' mcfile '"']));
@@ -144,7 +134,7 @@ for rep = 1:nR
 			'ON fconstMC.`nev file` = et.`manualrecording` AND fconstMC.unit = fMC.unit '...
 			'WHERE fMC.unit = fBC.unit AND egMC.fromunit = egBC.fromunit AND fMC.modelID = 37 AND fBC.modelID = 37 AND fMC.analyses_id = fBC.analyses_id '...
 			'AND fconstBC.modelID = 31 AND fconstMC.modelID = 31 '...
-			'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`1DBCrecording` AND bci.unit = fMC.unit) '...
+			'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`1DBCrecording` AND bci.unit = fMC.unit) '...
 			'AND fMC.unit = "' bci_unit{1} '" '...
 			'AND et.`manualrecording` = "' mcfile '"']));
 			if strcmp(GC.Data, 'No Data')
@@ -164,32 +154,8 @@ for rep = 1:nR
 	end
 end
 
-figure
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dother, rng, 'Normalization', 'probability')
-%From teMCBCstats.m
-MCBCpctile = 0.0011;
-plot([MCBCpctile, MCBCpctile], [0 1], 'k--')
-plot([-MCBCpctile, -MCBCpctile], [0 1], 'k--')
-%Count units that occur outside pctile
-100*(sum(dcotuned < -MCBCpctile) + sum(dcotuned > MCBCpctile))/length(dcotuned)
-100*(sum(dother < -MCBCpctile) + sum(dother > MCBCpctile))/length(dother)
-xlabel('MCGC - BCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('Cotuned with BC-unit', 'Randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dother))
-title(['abs(dcotuned)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_histogram_bootstrap.eps')
-
-figure 
-qqplot(dcotuned, dother)
-[h, p] = kstest2(dcotuned, dother)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-BC_qqplot_bootstrap.eps')
+dcotunedMCBC = dcotuned;
+dotherMCBC = dother; 
 
 %%%%%%%%%%%%%%%%%%%%
 %Do the same for DC%
@@ -222,8 +188,8 @@ for rep = 1:nR
 		'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
 		'AND fl1.r2 > 0.0 '...
 		'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
-		'AND et1.`manualrecording` = "' mcfile '"']));
-	%	'AND et1.`tuning_type` = 5']));
+		'AND et1.`manualrecording` = "' mcfile '" '...
+		'AND (et1.`tuning_type` = 1 OR et1.`tuning_type` = 3 OR et1.`tuning_type` = 4)']));
 		if strcmp(all_data.Data, 'No Data')
 			continue 
 		end
@@ -235,30 +201,18 @@ for rep = 1:nR
 		tuningtype = cell2mat(all_data.Data(:,4));
 		otherunits = all_data.Data(:,5);
 		
-		%BCI unit
-		all_data = fetch(exec(conn, ['SELECT fl1.dir, fl2.dir, fl5.dir, flin1.unit FROM '...
-		'`experiment_tuning` et1 '...
-		'INNER JOIN `fits` flin1 '...
-		'ON flin1.`nev file` = et1.`manualrecording`'...
-		'INNER JOIN `fits_linear` fl1 '...
-		'ON flin1.id = fl1.id '...
-		'INNER JOIN `fits` flin2 '...
-		'ON flin2.`nev file` = et1.`1DBCrecording`'...
-		'INNER JOIN `fits_linear` fl2 '...
-		'ON flin2.id = fl2.id '...
-		'INNER JOIN `fits` flin5 '...
-		'ON flin5.`nev file` = et1.`dualrecording`'...
-		'INNER JOIN `fits_linear` fl5 '...
-		'ON flin5.id = fl5.id '...
-		'WHERE flin1.modelID = 30 AND flin2.modelID = 30 AND flin5.modelID = 30 ' ...
-		'AND flin1.unit = flin2.unit AND flin2.unit = flin5.unit ' ...
-		'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit) '...
-		'AND et1.`manualrecording` = "' mcfile '" '...
-		'LIMIT 1']));
-		%'AND et1.`tuning_type` = 5 '...
-		bci_theta = cell2mat(all_data.Data(:,1:3));
-		bci_unit = all_data.Data(:,4);
-		nU = size(all_theta,1);
+		nU = size(otherunits, 1);
+		nonbciidx = randsample(nU,1);
+		otheridx = setdiff(1:nU, nonbciidx);
+
+		bci_theta = all_theta(nonbciidx,:);
+		bci_unit = otherunits(nonbciidx);
+
+		all_theta = all_theta(otheridx,:);
+		tuningtype = tuningtype(otheridx);
+		otherunits = otherunits(otheridx);
+
+		nU = nU - 1;
 		
 		%Pick cotuned units to BCI units in MC
 		diff_MC_theta = cos(bci_theta(1) - all_theta(:,1));
@@ -293,7 +247,7 @@ for rep = 1:nR
 			'ON fconstMC.`nev file` = et.`manualrecording` AND fconstMC.unit = fMC.unit '...
 			'WHERE fMC.unit = fDC.unit AND egMC.fromunit = egDC.fromunit AND fMC.modelID = 37 AND fDC.modelID = 37 AND fMC.analyses_id = fDC.analyses_id '...
 			'AND fconstDC.modelID = 31 AND fconstMC.modelID = 31 '...
-			'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`dualrecording` AND bci.unit = fMC.unit) '...
+			'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`dualrecording` AND bci.unit = fMC.unit) '...
 			'AND egMC.fromunit = "' unit '" '...
 			'AND fMC.unit = "' bci_unit{1} '" '...
 			'AND et.`manualrecording` = "' mcfile '"']));
@@ -327,7 +281,7 @@ for rep = 1:nR
 			'ON fconstMC.`nev file` = et.`manualrecording` AND fconstMC.unit = fMC.unit '...
 			'WHERE fMC.unit = fBC.unit AND egMC.fromunit = egBC.fromunit AND fMC.modelID = 37 AND fBC.modelID = 37 AND fMC.analyses_id = fBC.analyses_id '...
 			'AND fconstBC.modelID = 31 AND fconstMC.modelID = 31 '...
-			'AND EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`1DBCrecording` AND bci.unit = fMC.unit) '...
+			'AND NOT EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et.`1DBCrecording` AND bci.unit = fMC.unit) '...
 			'AND fMC.unit = "' bci_unit{1} '" '...
 			'AND et.`manualrecording` = "' mcfile '"']));
 			if strcmp(GC.Data, 'No Data')
@@ -350,30 +304,34 @@ for rep = 1:nR
 	end
 end
 
-figure
-rng = linspace(-0.005, 0.005, 100);
-histogram(dcotuned, rng, 'Normalization', 'probability')
-hold on 
-histogram(dother, rng, 'Normalization', 'probability')
-%From teMCBCstats.m
-MCDCpctile = 0.0011;
-plot([MCDCpctile, MCDCpctile], [0 1], 'k--')
-plot([-MCDCpctile, -MCDCpctile], [0 1], 'k--')
-%Count units that occur outside pctile
-100*(sum(dcotuned < -MCDCpctile) + sum(dcotuned > MCDCpctile))/length(dcotuned)
-100*(sum(dother < -MCDCpctile) + sum(dother > MCDCpctile))/length(dother)
-xlabel('MCGC - DCGC')
-ylabel('Count')
-xlim([min(rng) max(rng)])
-ylim([0, 0.3])
-legend('Cotuned with BC-unit', 'Randomly selected unit')
-[h, p] = ttest2(abs(dcotuned), abs(dother))
-title(['abs(dcotuned)vs abs(dother) p-value: ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram_bootstrap.eps')
-%saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_histogram.png', 'png', [4 3])
+dcotunedMCDC = dcotuned;
+dotherMCDC = dother; 
 
-figure 
-qqplot(dcotuned, dother);
-[h, p] = kstest2(dcotuned, dother)
-title(['kstest2: p = ' num2str(p)])
-saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-MC-DC_qqplot_bootstrap.eps')
+[hMCBC, pMCBC] = ttest2(abs(dcotunedMCBC), abs(dotherMCBC))
+[hMCDC, pMCDC] = ttest2(abs(dcotunedMCDC), abs(dotherMCDC))
+
+[hMCBCsgn, pMCBCsgn] = ttest2((dcotunedMCBC), (dotherMCBC))
+[hMCDCsgn, pMCDCsgn] = ttest2((dcotunedMCDC), (dotherMCDC))
+
+[pMCBCrs, hMCBCrs] = ranksum((dcotunedMCBC), (dotherMCBC))
+[pMCDCrs, hMCDCrs] = ranksum((dcotunedMCDC), (dotherMCDC))
+
+[pMCBCsrC, hMCBCsrC] = signrank(dcotunedMCBC)
+[pMCBCsrO, hMCBCsrO] = signrank(dotherMCBC)
+[pMCDCsrC, hMCDCsrC] = signrank(dcotunedMCDC)
+[pMCDCsrO, hMCDCsrO] = signrank(dotherMCDC)
+
+[pBCDCrsC, hBCDCrsC] = ranksum((dcotunedMCBC), (dcotunedMCDC))
+[pBCDCrsO, hBCDCrsO] = ranksum((dotherMCBC), (dotherMCDC))
+
+figure
+bar([mean((dcotunedMCBC)), mean((dotherMCBC)), mean((dcotunedMCDC)), mean((dotherMCDC))]);
+hold on 
+title(['MCBC: (dc)vs (do) p-value: ' num2str(pMCBCrs) ', MCDC: (dc)vs (do) p-value: ' num2str(pMCDCrs)])
+
+errorbar([mean(dcotunedMCBC), mean(dotherMCBC), mean(dcotunedMCDC), mean(dotherMCDC)],...
+	[std(dcotunedMCBC)/sqrt(length(dcotunedMCBC)), std(dotherMCBC)/sqrt(length(dotherMCBC)), std(dcotunedMCDC)/sqrt(length(dcotunedMCDC)), std(dotherMCDC)/sqrt(length(dotherMCDC))]);
+
+saveplot(gcf, './worksheets/2016_06_10-resultsforpaper/TE-decoupling-bargraph_bootstrap_rotated_signed_sem_noncontrol.eps')
+
+save('bcitTEchanges_bootstrap_rotated_noncontrol.mat')
