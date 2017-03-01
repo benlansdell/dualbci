@@ -1,4 +1,4 @@
-# Analysis of dual control BCI target pursuit task
+# Code supporting "Reconfiguring motor circuits for a joint manual and BCI task"
 
 Ben Lansdell, Ivana Milovanovic 2017
 
@@ -21,10 +21,7 @@ Depending on your usage, only a subset of these may be required. See usage secti
 
 1. Edit startup.m for your system particulars
 2. Start MATLAB in this base directory. startup.m should add necessary paths. Otherwise, run startup.m separately.
-3. The simplest use case is:
-
-* Making plots presented in paper:
-  See scripts in ./scripts
+3. To make the plots presented in paper see the scripts in ./scripts
 
 ## More detailed usage
 
@@ -93,5 +90,5 @@ Various support functions
 
 ## In sql:
 
-The size of the dataset and number of analyses performed necessitated managing fits and results in a SQL database. Here are functions to add fits and other analyses to a SQL database. Please contact us directly if you'd like to access our database containing our stored analyses and results, or would like to setup something similar yourself. 
+The size of the dataset and number of analyses performed necessitated managing fits and results in a SQL database. Here are functions to add fits and other analyses to a SQL database. Details on obtaining the .sql file can be found in the publication.
 
