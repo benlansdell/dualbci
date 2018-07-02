@@ -1,9 +1,9 @@
-%conn = database('spanky_db',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
-%	databaseurl);
+conn = database('spanky_db',databaseuser,databasepwd,'com.mysql.jdbc.Driver', ...
+	databaseurl);
 
 %a = exec(conn, ['SELECT fl1.dir, fl2.dir, fl3.dir, fl5.dir, et1.`tuning_type`, rec1.`successrate`, rec2.`successrate`, '...
 %' IF(EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit), '...
-%' 1, 0), flin1.`nev file` FROM '...
+%' 1, 0), flin1.`nev file`, flin2.`nev file`, flin3.`nev file`, flin5.`nev file` FROM '...
 %'`experiment_tuning` et1 '...
 %'INNER JOIN `fits` flin1 '...
 %'ON flin1.`nev file` = et1.`manualrecording`'...
@@ -41,6 +41,9 @@ bcituningtype = cell2mat(bci_data(:,5));
 bciperformance = 50*cell2mat(bci_data(:,6:7))+10;
 bciunit = cell2mat(bci_data(:,8));
 nevfiles = bci_data(:,9);
+bcnevfiles = bci_data(:,10);
+mc2nevfiles = bci_data(:,11);
+dcnevfiles = bci_data(:,12);
 
 rot = (bcituningtype == 1 | bcituningtype == 3| bcituningtype == 4);
 bci = (bciunit == 1) & rot;
@@ -49,6 +52,67 @@ nonbci = (bciunit == 0) & rot;
 dof_bci = sum(bci)-1;
 dof_nonbci = sum(nonbci)-1;
 
+%duration, trials
+%Get some stats on the recordings
+%% MC1
+unevfiles = unique(nevfiles);
+trialdur = 0;
+trialnum = 0;
+for idx = 1:size(unevfiles,1)
+	nevfile = unevfiles{idx};
+	a = exec(conn, ['SELECT rec1.`duration`, rec1.`trials` FROM '...
+	'`recordings` rec1 WHERE rec1.`nev file` = "' nevfile '"']);
+	data = fetch(a);
+	data = data.Data;
+	display(sprintf('%s: duration: %f number of trials: %d', nevfile, data{1}, data{2}))
+	trialdur = trialdur + data{1};
+	trialnum = trialnum + data{2};
+end
+
+%% BC
+unevfiles = unique(bcnevfiles);
+trialdur = 0;
+trialnum = 0;
+for idx = 1:size(unevfiles,1)
+	nevfile = unevfiles{idx};
+	a = exec(conn, ['SELECT rec1.`duration`, rec1.`trials` FROM '...
+	'`recordings` rec1 WHERE rec1.`nev file` = "' nevfile '"']);
+	data = fetch(a);
+	data = data.Data;
+	display(sprintf('%s: duration: %f number of trials: %d', nevfile, data{1}, data{2}))
+	trialdur = trialdur + data{1};
+	trialnum = trialnum + data{2};
+end
+
+%% DC
+unevfiles = unique(dcnevfiles);
+trialdur = 0;
+trialnum = 0;
+for idx = 1:size(unevfiles,1)
+	nevfile = unevfiles{idx};
+	a = exec(conn, ['SELECT rec1.`duration`, rec1.`trials` FROM '...
+	'`recordings` rec1 WHERE rec1.`nev file` = "' nevfile '"']);
+	data = fetch(a);
+	data = data.Data;
+	display(sprintf('%s: duration: %f number of trials: %d', nevfile, data{1}, data{2}))
+	trialdur = trialdur + data{1};
+	trialnum = trialnum + data{2};
+end
+
+%% MC2
+unevfiles = unique(mc2nevfiles);
+trialdur = 0;
+trialnum = 0;
+for idx = 1:size(unevfiles,1)
+	nevfile = unevfiles{idx};
+	a = exec(conn, ['SELECT rec1.`duration`, rec1.`trials` FROM '...
+	'`recordings` rec1 WHERE rec1.`nev file` = "' nevfile '"']);
+	data = fetch(a);
+	data = data.Data;
+	display(sprintf('%s: duration: %f number of trials: %d', nevfile, data{1}, data{2}))
+	trialdur = trialdur + data{1};
+	trialnum = trialnum + data{2};
+end
 
 corrsdir(1) = corr(all_r2(rot,1), translate_angles(all_r2(rot,1), all_r2(rot,2)));
 corrsdir(2) = corr(all_r2(rot,1), translate_angles(all_r2(rot,1), all_r2(rot,3)));
