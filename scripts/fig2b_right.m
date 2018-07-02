@@ -2,7 +2,7 @@
 %	databaseurl);
 %
 %%Tuning angles, BCI units (velocity)
-%bci_data = fetch(exec(conn, ['SELECT (fl1.dir+fl3.dir)/2, fl2.dir, fl5.dir, et1.`tuning_type`, rec1.`successrate`, rec2.`successrate`, '...
+%a = exec(conn, ['SELECT (fl1.dir+fl3.dir)/2, fl2.dir, fl5.dir, et1.`tuning_type`, rec1.`successrate`, rec2.`successrate`, '...
 %' IF(EXISTS (SELECT * FROM `bci_units` bci WHERE bci.`ID` = et1.`1DBCrecording` AND bci.unit = flin1.unit), '...
 %' 1, 0), fl3.dir FROM '...
 %'`experiment_tuning` et1 '...
@@ -28,16 +28,18 @@
 %'ON rec2.`nev file` = et1.`dualrecording` '...
 %'WHERE flin1.modelID = 30 AND flin2.modelID = 30 AND flin3.modelID = 30 AND flin5.modelID = 30 ' ...
 %'AND flin1.unit = flin2.unit AND flin2.unit = flin3.unit AND flin2.unit = flin5.unit ' ...
-%'AND fl1.r2 > .01 AND fl3.r2 > .01']));
+%'AND fl1.r2 > .01 AND fl3.r2 > .01']);
+%bci_data = fetch(a);
+%bci_data = bci_data.Data;
 %
 %save('./scripts/fig2b_right.mat')
 load('./scripts/fig2b_right.mat')
 
-all_r2 = cell2mat(bci_data.Data(:,1:3));
-mc2dir = cell2mat(bci_data.Data(:,end));
-bcituningtype = cell2mat(bci_data.Data(:,4));
-bciperformance = 50*cell2mat(bci_data.Data(:,5:6))+10;
-bciunit = cell2mat(bci_data.Data(:,7));
+all_r2 = cell2mat(bci_data(:,1:3));
+mc2dir = cell2mat(bci_data(:,end));
+bcituningtype = cell2mat(bci_data(:,4));
+bciperformance = 50*cell2mat(bci_data(:,5:6))+10;
+bciunit = cell2mat(bci_data(:,7));
 
 rot = (bcituningtype == 1 | bcituningtype == 3| bcituningtype == 4);
 bci = (bciunit == 1) & rot;
