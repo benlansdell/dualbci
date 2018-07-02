@@ -6,8 +6,8 @@ end
 
 %Change this to local database
 databaseuser = 'root';
-databasepwd = 'car04plr';
-databaseurl = 'jdbc:mysql://localhos:3306/spanky_db';
+databasepwd = 'XXX';
+databaseurl = 'jdbc:mysql://localhost:3306/spanky_db';
 
 %Add database jar file...
 javaaddpath([homedir 'lansdell/matlab/mysql-connector-java-5.1.35-bin.jar']);
