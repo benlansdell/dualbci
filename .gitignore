@@ -11,6 +11,9 @@ matlab/GLMwGUI
 matlab/expts
 matlab/tmp*
 
+blackrock
+labview
+
 *.gif
 *.eps
 *.m~
