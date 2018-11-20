@@ -10,6 +10,15 @@ matlab/tmp
 matlab/GLMwGUI
 matlab/expts
 matlab/tmp*
+testdata
+blackrock
+labview
+Tuning
+LogProcess
+NPMK
+tmp
+blackrock2
+worksheets
 
 *.gif
 *.eps

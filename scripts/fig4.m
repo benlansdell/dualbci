@@ -293,12 +293,17 @@
 %save('./scripts/fig4.mat')
 load('./scripts/fig4.mat')
 
-DCperfnonorth = DCperf(paMCBCI < 1.3);
-DCperforth = DCperf(paMCBCI > 1.3);
+%thr = 1.3;
+
+%Get threshold from ./scripts/fig4_nulldist
+thr = 1.38;
+
+DCperfnonorth = DCperf(paMCBCI < thr);
+DCperforth = DCperf(paMCBCI > thr);
 [h1, p1] = ttest2(DCperfnonorth, DCperforth);
 
-BCperfnonorth = BCperf(paMCBCI < 1.3);
-BCperforth = BCperf(paMCBCI > 1.3);
+BCperfnonorth = BCperf(paMCBCI < thr);
+BCperforth = BCperf(paMCBCI > thr);
 [h2, p2] = ttest2(BCperfnonorth, BCperforth);
 
 clf
