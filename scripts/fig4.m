@@ -291,32 +291,36 @@ for idx = 1:nR
 end
 
 %save('./scripts/fig4.mat')
-%load('./scripts/fig4.mat')
-%
-%DCperfnonorth = DCperf(paMCBCI < 1.3);
-%DCperforth = DCperf(paMCBCI > 1.3);
-%[h1, p1] = ttest2(DCperfnonorth, DCperforth);
-%
-%BCperfnonorth = BCperf(paMCBCI < 1.3);
-%BCperforth = BCperf(paMCBCI > 1.3);
-%[h2, p2] = ttest2(BCperfnonorth, BCperforth);
-%
-%clf
-%hold on 
-%bar([60*mean(BCperforth), 60*mean(BCperfnonorth)])
-%errorbar([60*mean(BCperforth), 60*mean(BCperfnonorth)], [60*std(BCperforth), 60*std(BCperfnonorth)])
-%ylabel('performance (successes/minute)')
-%xlabel('orthogonal   non-orthogonal')
-%title(['2 sided t test p-val' num2str(p2)])
-%ylim([0 15])
-%saveplot(gcf, './figures/analyseGPFA_boxplotBCperf_paMCBCI.eps')
-%clf
-%hold on 
-%bar([60*mean(DCperforth), 60*mean(DCperfnonorth)])
-%errorbar([60*mean(DCperforth), 60*mean(DCperfnonorth)], [60*std(DCperforth), 60*std(DCperfnonorth)])
-%ylabel('performance (successes/minute)')
-%xlabel('orthogonal   non-orthogonal')
-%title(['2 sided t test p-val' num2str(p1)])
-%ylim([0 15])
-%saveplot(gcf, './figures/analyseGPFA_boxplotDCperf_paMCBCI.eps')
-%
+load('./scripts/fig4.mat')
+
+%thr = 1.3;
+
+%Get threshold from ./scripts/fig4_nulldist
+thr = 1.38;
+
+DCperfnonorth = DCperf(paMCBCI < thr);
+DCperforth = DCperf(paMCBCI > thr);
+[h1, p1] = ttest2(DCperfnonorth, DCperforth);
+
+BCperfnonorth = BCperf(paMCBCI < thr);
+BCperforth = BCperf(paMCBCI > thr);
+[h2, p2] = ttest2(BCperfnonorth, BCperforth);
+
+clf
+hold on 
+bar([60*mean(BCperforth), 60*mean(BCperfnonorth)])
+errorbar([60*mean(BCperforth), 60*mean(BCperfnonorth)], [60*std(BCperforth), 60*std(BCperfnonorth)])
+ylabel('performance (successes/minute)')
+xlabel('orthogonal   non-orthogonal')
+title(['2 sided t test p-val' num2str(p2)])
+ylim([0 15])
+saveplot(gcf, './figures/analyseGPFA_boxplotBCperf_paMCBCI.eps')
+clf
+hold on 
+bar([60*mean(DCperforth), 60*mean(DCperfnonorth)])
+errorbar([60*mean(DCperforth), 60*mean(DCperfnonorth)], [60*std(DCperforth), 60*std(DCperfnonorth)])
+ylabel('performance (successes/minute)')
+xlabel('orthogonal   non-orthogonal')
+title(['2 sided t test p-val' num2str(p1)])
+ylim([0 15])
+saveplot(gcf, './figures/analyseGPFA_boxplotDCperf_paMCBCI.eps')
