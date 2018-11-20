@@ -6,7 +6,7 @@ end
 
 %Change this to local database
 databaseuser = 'root';
-databasepwd = 'XXX';
+databasepwd = 'Eskimo1!';
 databaseurl = 'jdbc:mysql://localhost:3306/spanky_db';
 
 %Add database jar file...
