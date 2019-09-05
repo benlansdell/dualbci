@@ -7,7 +7,8 @@ end
 %Change this to local database
 databaseuser = 'root';
 databasepwd = 'Eskimo1!';
-databaseurl = 'jdbc:mysql://localhost:3306/spanky_db';
+%databaseurl = 'jdbc:mysql://localhost:3306/spanky_db';
+databaseurl = 'jdbc:mysql://bleen.seas.upenn.edu:5050/spanky_db';
 
 %Add database jar file...
 javaaddpath([homedir 'lansdell/matlab/mysql-connector-java-5.1.35-bin.jar']);
@@ -30,7 +31,8 @@ addpath_recurse([localdir '/scripts']);
 addpath_recurse([localdir '/sql']);
 
 %nev files, labview files, respectively
-addpath([localdir '/blackrock'], [localdir '/labview']);
+%addpath([localdir '/blackrock'], [localdir '/labview']);
+addpath([localdir '/blackrock2'], [localdir '/labview2']);
 
 addpath_recurse([matlabdir '/schmidt']);
 
